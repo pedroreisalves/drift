@@ -1,0 +1,71 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: drift-postgres
+    environment:
+      POSTGRES_USER: drift
+      POSTGRES_PASSWORD: drift
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./infra/init.sql:/docker-entrypoint-initdb.d/init.sql
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U drift"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:4.3.0-management-alpine
+    container_name: drift-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  post-service:
+    build:
+      context: .
+      dockerfile: app/backend/post-service/Dockerfile
+      target: dev
+    container_name: drift-post-service
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      DB_URL: postgresql://drift:drift@postgres:5432/post_db
+      RABBITMQ_URL: amqp://rabbitmq:5672
+      RABBITMQ_EXCHANGE: drift.events
+    volumes:
+      - ./app/backend/post-service/src:/repo/app/backend/post-service/src
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
