@@ -6,6 +6,7 @@ export interface PostTaggedMessage {
   eventName: string;
   occurredAt: string;
   payload: {
+    id: string;
     postId: string;
     tags: string[];
     taggedAt: string;
