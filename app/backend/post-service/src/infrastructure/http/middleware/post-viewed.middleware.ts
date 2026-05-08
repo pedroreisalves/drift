@@ -5,7 +5,7 @@ import PostViewedEvent from '../event/post-viewed.event';
 export default class PostViewedMiddleware {
   constructor(private readonly eventDispatcher: EventDispatcher) {}
 
-  handle = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  handle = (req: Request, res: Response, next: NextFunction): void => {
     const { id } = req.params;
     const clientId = req.headers['x-client-id'] as string;
 

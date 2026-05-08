@@ -32,13 +32,16 @@ describe('CreatePostHandler', () => {
 
     const postId = await handler.execute(command);
 
-    expect(repository.save).toHaveBeenCalledTimes(1);
-    const persisted = (repository.save as ReturnType<typeof vi.fn>).mock.calls[0][0] as Post;
+    const saveSpy = vi.spyOn(repository, 'save');
+    const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
+
+    expect(saveSpy).toHaveBeenCalledTimes(1);
+    const persisted = saveSpy.mock.calls[0][0];
     expect(persisted).toBeInstanceOf(Post);
     expect(persisted.id.toString()).toEqual(postId);
 
-    expect(dispatcher.dispatch).toHaveBeenCalledTimes(1);
-    expect(dispatcher.dispatch).toHaveBeenCalledWith(expect.any(PostCreatedEvent));
+    expect(dispatchSpy).toHaveBeenCalledTimes(1);
+    expect(dispatchSpy).toHaveBeenCalledWith(expect.any(PostCreatedEvent));
 
     expect(persisted.getDomainEvents()).toEqual([]);
   });
@@ -49,10 +52,10 @@ describe('CreatePostHandler', () => {
     const handler = new CreatePostHandler(repository, dispatcher);
 
     const callOrder: string[] = [];
-    (repository.save as ReturnType<typeof vi.fn>).mockImplementation(async () => {
+    (repository.save as ReturnType<typeof vi.fn>).mockImplementation(() => {
       callOrder.push('repository.save');
     });
-    (dispatcher.dispatch as ReturnType<typeof vi.fn>).mockImplementation(async () => {
+    (dispatcher.dispatch as ReturnType<typeof vi.fn>).mockImplementation(() => {
       callOrder.push('dispatcher.dispatch');
     });
 

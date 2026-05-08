@@ -48,13 +48,17 @@ describe('UpdatePostHandler', () => {
       new UpdatePostCommand(postId, clientId, 'John Doe', 'Updated Title', 'Updated body.'),
     );
 
-    expect(repository.findById).toHaveBeenCalledTimes(1);
+    const findByIdMock = repository.findById as ReturnType<typeof vi.fn>;
+    const saveMock = repository.save as ReturnType<typeof vi.fn>;
+    const dispatchMock = dispatcher.dispatch as ReturnType<typeof vi.fn>;
 
-    expect(repository.save).toHaveBeenCalledTimes(1);
-    expect((repository.save as ReturnType<typeof vi.fn>).mock.calls[0][0]).toBe(existing);
+    expect(findByIdMock).toHaveBeenCalledTimes(1);
 
-    expect(dispatcher.dispatch).toHaveBeenCalledTimes(1);
-    expect(dispatcher.dispatch).toHaveBeenCalledWith(expect.any(PostUpdatedEvent));
+    expect(saveMock).toHaveBeenCalledTimes(1);
+    expect(saveMock.mock.calls[0][0]).toBe(existing);
+
+    expect(dispatchMock).toHaveBeenCalledTimes(1);
+    expect(dispatchMock).toHaveBeenCalledWith(expect.any(PostUpdatedEvent));
 
     expect(existing.getDomainEvents()).toEqual([]);
   });
@@ -69,14 +73,14 @@ describe('UpdatePostHandler', () => {
     const existing = makeExistingPost(postId, clientId);
 
     const callOrder: string[] = [];
-    (repository.findById as ReturnType<typeof vi.fn>).mockImplementation(async () => {
+    (repository.findById as ReturnType<typeof vi.fn>).mockImplementation(() => {
       callOrder.push('repository.findById');
       return existing;
     });
-    (repository.save as ReturnType<typeof vi.fn>).mockImplementation(async () => {
+    (repository.save as ReturnType<typeof vi.fn>).mockImplementation(() => {
       callOrder.push('repository.save');
     });
-    (dispatcher.dispatch as ReturnType<typeof vi.fn>).mockImplementation(async () => {
+    (dispatcher.dispatch as ReturnType<typeof vi.fn>).mockImplementation(() => {
       callOrder.push('dispatcher.dispatch');
     });
 
@@ -93,8 +97,10 @@ describe('UpdatePostHandler', () => {
     const command = new UpdatePostCommand(uuidv7(), uuidv7(), 'John Doe', 'Title', 'Body.');
 
     await expect(handler.execute(command)).rejects.toThrow(PostNotFoundError);
-    expect(repository.save).not.toHaveBeenCalled();
-    expect(dispatcher.dispatch).not.toHaveBeenCalled();
+    const saveMock = repository.save as ReturnType<typeof vi.fn>;
+    const dispatchMock = dispatcher.dispatch as ReturnType<typeof vi.fn>;
+    expect(saveMock).not.toHaveBeenCalled();
+    expect(dispatchMock).not.toHaveBeenCalled();
   });
 
   it('should throw ForbiddenPostUpdateError when the post belongs to a different client', async () => {
@@ -111,7 +117,9 @@ describe('UpdatePostHandler', () => {
     const command = new UpdatePostCommand(postId, otherClientId, 'John Doe', 'Title', 'Body.');
 
     await expect(handler.execute(command)).rejects.toThrow(ForbiddenPostUpdateError);
-    expect(repository.save).not.toHaveBeenCalled();
-    expect(dispatcher.dispatch).not.toHaveBeenCalled();
+    const saveMock = repository.save as ReturnType<typeof vi.fn>;
+    const dispatchMock = dispatcher.dispatch as ReturnType<typeof vi.fn>;
+    expect(saveMock).not.toHaveBeenCalled();
+    expect(dispatchMock).not.toHaveBeenCalled();
   });
 });

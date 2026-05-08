@@ -39,8 +39,9 @@ describe('GetPostHandler', () => {
 
     expect(result.id).toEqual(postId);
 
-    expect(repository.findById).toHaveBeenCalledTimes(1);
-    const fetchedId = (repository.findById as ReturnType<typeof vi.fn>).mock.calls[0][0] as PostId;
+    const findByIdMock = repository.findById as ReturnType<typeof vi.fn>;
+    expect(findByIdMock).toHaveBeenCalledTimes(1);
+    const fetchedId = findByIdMock.mock.calls[0][0] as PostId;
     expect(fetchedId.toString()).toEqual(postId);
   });
 

@@ -45,13 +45,17 @@ describe('UpdatePostTagsHandler', () => {
     const tags = ['tag1', 'tag2'];
     await handler.execute(new UpdatePostTagsCommand(postId, tags));
 
-    expect(repository.findById).toHaveBeenCalledTimes(1);
+    const findByIdMock = repository.findById as ReturnType<typeof vi.fn>;
+    const saveMock = repository.save as ReturnType<typeof vi.fn>;
+    const dispatchMock = dispatcher.dispatch as ReturnType<typeof vi.fn>;
 
-    expect(repository.save).toHaveBeenCalledTimes(1);
-    expect((repository.save as ReturnType<typeof vi.fn>).mock.calls[0][0]).toBe(existing);
+    expect(findByIdMock).toHaveBeenCalledTimes(1);
 
-    expect(dispatcher.dispatch).toHaveBeenCalledTimes(1);
-    expect(dispatcher.dispatch).toHaveBeenCalledWith(expect.any(PostTagsUpdated));
+    expect(saveMock).toHaveBeenCalledTimes(1);
+    expect(saveMock.mock.calls[0][0]).toBe(existing);
+
+    expect(dispatchMock).toHaveBeenCalledTimes(1);
+    expect(dispatchMock).toHaveBeenCalledWith(expect.any(PostTagsUpdated));
 
     expect(existing.getDomainEvents()).toEqual([]);
   });
@@ -65,14 +69,14 @@ describe('UpdatePostTagsHandler', () => {
     const existing = makeExistingPost(postId);
 
     const callOrder: string[] = [];
-    (repository.findById as ReturnType<typeof vi.fn>).mockImplementation(async () => {
+    (repository.findById as ReturnType<typeof vi.fn>).mockImplementation(() => {
       callOrder.push('repository.findById');
       return existing;
     });
-    (repository.save as ReturnType<typeof vi.fn>).mockImplementation(async () => {
+    (repository.save as ReturnType<typeof vi.fn>).mockImplementation(() => {
       callOrder.push('repository.save');
     });
-    (dispatcher.dispatch as ReturnType<typeof vi.fn>).mockImplementation(async () => {
+    (dispatcher.dispatch as ReturnType<typeof vi.fn>).mockImplementation(() => {
       callOrder.push('dispatcher.dispatch');
     });
 
@@ -89,7 +93,9 @@ describe('UpdatePostTagsHandler', () => {
     const command = new UpdatePostTagsCommand(uuidv7(), ['tag1']);
 
     await expect(handler.execute(command)).rejects.toThrow(PostNotFoundError);
-    expect(repository.save).not.toHaveBeenCalled();
-    expect(dispatcher.dispatch).not.toHaveBeenCalled();
+    const saveMock = repository.save as ReturnType<typeof vi.fn>;
+    const dispatchMock = dispatcher.dispatch as ReturnType<typeof vi.fn>;
+    expect(saveMock).not.toHaveBeenCalled();
+    expect(dispatchMock).not.toHaveBeenCalled();
   });
 });

@@ -19,7 +19,7 @@ interface PostProps {
   updatedAt: Date;
 }
 
-interface CreatePostProps {
+export interface CreatePostProps {
   id: PostId;
   clientId: ClientId;
   clientName: string;

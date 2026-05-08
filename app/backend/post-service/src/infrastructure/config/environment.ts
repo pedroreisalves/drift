@@ -16,10 +16,12 @@ if (!parsed.success) {
   process.exit(1);
 }
 
+const env = parsed.data;
+
 export default class Environment {
-  static readonly NODE_ENV = parsed.data.NODE_ENV;
-  static readonly PORT = parsed.data.PORT;
-  static readonly DB_URL = parsed.data.DB_URL;
-  static readonly RABBITMQ_EXCHANGE = parsed.data.RABBITMQ_EXCHANGE;
-  static readonly RABBITMQ_URL = parsed.data.RABBITMQ_URL;
+  static readonly NODE_ENV = env.NODE_ENV;
+  static readonly PORT = env.PORT;
+  static readonly DB_URL = env.DB_URL;
+  static readonly RABBITMQ_EXCHANGE = env.RABBITMQ_EXCHANGE;
+  static readonly RABBITMQ_URL = env.RABBITMQ_URL;
 }

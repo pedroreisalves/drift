@@ -31,11 +31,11 @@ export default class RabbitMQEventConsumer implements EventConsumer {
       await channel.assertQueue(queueName, { durable: true });
       await channel.bindQueue(queueName, this.exchange, eventName);
 
-      await channel.consume(queueName, async (message: ConsumeMessage | null) => {
+      await channel.consume(queueName, (message: ConsumeMessage | null) => {
         if (!message) return;
 
-        try {
-          const event = JSON.parse(message.content.toString());
+        const processMessage = async (): Promise<void> => {
+          const event = JSON.parse(message.content.toString()) as { eventName: string };
           const registeredHandler = this.handlers.get(event.eventName);
 
           if (registeredHandler) {
@@ -43,10 +43,12 @@ export default class RabbitMQEventConsumer implements EventConsumer {
           }
 
           channel.ack(message);
-        } catch (error) {
+        };
+
+        processMessage().catch((error: unknown) => {
           console.error(`Failed to process ${eventName}:`, error);
           channel.nack(message, false, false);
-        }
+        });
       });
     });
   }

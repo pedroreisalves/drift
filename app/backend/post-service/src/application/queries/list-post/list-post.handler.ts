@@ -12,6 +12,6 @@ export default class ListPostHandler {
       offset: query.offset ?? 0,
     });
 
-    return posts.map(PostMapper.toDTO);
+    return posts.map((post) => PostMapper.toDTO(post));
   }
 }

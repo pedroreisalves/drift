@@ -2,7 +2,7 @@ import type EventHandler from '../@shared/interface/event-handler.interface';
 import UpdatePostTagsCommand from '../command/update-post-tags/update-post-tags.command';
 import type UpdatePostTagsHandler from '../command/update-post-tags/update-post-tags.handler';
 
-interface PostTaggedMessage {
+export interface PostTaggedMessage {
   eventName: string;
   occurredAt: string;
   payload: {

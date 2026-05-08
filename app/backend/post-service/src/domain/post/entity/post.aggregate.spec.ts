@@ -1,7 +1,7 @@
 import { uuidv7 } from 'uuidv7';
 import PostId from '../value-object/post-id.value-object';
 import ClientId from '../value-object/client-id.value-object';
-import Post from './post.aggregate';
+import Post, { type CreatePostProps } from './post.aggregate';
 import InvalidPostError from '../error/invalid-post.error';
 import InvalidPostTagsError from '../error/invalid-post-tags.error';
 import PostCreatedEvent from '../event/post-created.event';
@@ -9,7 +9,7 @@ import PostUpdatedEvent from '../event/post-updated.event';
 import PostTagsUpdated from '../event/post-tags-updated.event';
 
 describe('PostAggregate', () => {
-  const makeProps = (overrides: Partial<Parameters<typeof Post.create>[0]> = {}) => ({
+  const makeProps = (overrides: Partial<CreatePostProps> = {}): CreatePostProps => ({
     id: new PostId(uuidv7()),
     clientId: new ClientId(uuidv7()),
     clientName: 'John Doe',

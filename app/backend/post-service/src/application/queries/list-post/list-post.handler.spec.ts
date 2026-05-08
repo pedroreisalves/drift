@@ -50,7 +50,8 @@ describe('ListPostHandler', () => {
 
     await handler.execute(new ListPostQuery(20, 5));
 
-    expect(repository.findAll).toHaveBeenCalledWith({ limit: 20, offset: 5 });
+    const findAllMock = repository.findAll as ReturnType<typeof vi.fn>;
+    expect(findAllMock).toHaveBeenCalledWith({ limit: 20, offset: 5 });
   });
 
   it('should default to limit 10 and offset 0 when both are omitted', async () => {
@@ -59,7 +60,8 @@ describe('ListPostHandler', () => {
 
     await handler.execute(new ListPostQuery());
 
-    expect(repository.findAll).toHaveBeenCalledWith({ limit: 10, offset: 0 });
+    const findAllMock = repository.findAll as ReturnType<typeof vi.fn>;
+    expect(findAllMock).toHaveBeenCalledWith({ limit: 10, offset: 0 });
   });
 
   it('should default only the omitted field when one is provided', async () => {
@@ -68,6 +70,7 @@ describe('ListPostHandler', () => {
 
     await handler.execute(new ListPostQuery(50));
 
-    expect(repository.findAll).toHaveBeenCalledWith({ limit: 50, offset: 0 });
+    const findAllMock = repository.findAll as ReturnType<typeof vi.fn>;
+    expect(findAllMock).toHaveBeenCalledWith({ limit: 50, offset: 0 });
   });
 });

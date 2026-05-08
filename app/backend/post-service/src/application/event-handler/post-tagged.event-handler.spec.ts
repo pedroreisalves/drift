@@ -1,7 +1,9 @@
 import { uuidv7 } from 'uuidv7';
-import PostTaggedEventHandler from './post-tagged.event-handler';
+import PostTaggedEventHandler, { type PostTaggedMessage } from './post-tagged.event-handler';
 import type UpdatePostTagsHandler from '../command/update-post-tags/update-post-tags.handler';
 import UpdatePostTagsCommand from '../command/update-post-tags/update-post-tags.command';
+
+type MessageOverrides = Partial<Pick<PostTaggedMessage['payload'], 'postId' | 'tags'>>;
 
 describe('PostTaggedEventHandler', () => {
   const makeUpdatePostTagsHandler = (): UpdatePostTagsHandler =>
@@ -9,7 +11,7 @@ describe('PostTaggedEventHandler', () => {
       execute: vi.fn().mockResolvedValue(undefined),
     }) as unknown as UpdatePostTagsHandler;
 
-  const makeMessage = (overrides: { postId?: string; tags?: string[] } = {}) => ({
+  const makeMessage = (overrides: MessageOverrides = {}): PostTaggedMessage => ({
     eventName: 'PostTagged',
     occurredAt: '2026-05-07T12:00:00.000Z',
     payload: {
@@ -25,10 +27,12 @@ describe('PostTaggedEventHandler', () => {
     const postId = uuidv7();
     const tags = ['tech', 'news', 'sports'];
 
+    const executeSpy = vi.spyOn(updatePostTagsHandler, 'execute');
+
     await eventHandler.handle(makeMessage({ postId, tags }));
 
-    expect(updatePostTagsHandler.execute).toHaveBeenCalledTimes(1);
-    const command = (updatePostTagsHandler.execute as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    expect(executeSpy).toHaveBeenCalledTimes(1);
+    const command = executeSpy.mock.calls[0][0];
     expect(command).toBeInstanceOf(UpdatePostTagsCommand);
     expect(command.postId).toBe(postId);
     expect(command.tags).toEqual(tags);

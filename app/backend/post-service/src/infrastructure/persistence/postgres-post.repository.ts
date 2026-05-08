@@ -76,7 +76,7 @@ export default class PostgresPostRepository implements PostRepository {
       clientName: row.client_name,
       title: row.title,
       body: row.body,
-      tags: row.tags ?? [],
+      tags: row.tags,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     });

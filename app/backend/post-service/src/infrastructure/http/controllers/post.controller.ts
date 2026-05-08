@@ -10,6 +10,24 @@ import GetPostQuery from '../../../application/queries/get-post/get-post.query';
 import type ListPostHandler from '../../../application/queries/list-post/list-post.handler';
 import ListPostQuery from '../../../application/queries/list-post/list-post.query';
 
+interface CreatePostBody {
+  clientId: string;
+  clientName: string;
+  title: string;
+  body: string;
+}
+
+interface UpdatePostBody {
+  clientId: string;
+  clientName: string;
+  title?: string;
+  body?: string;
+}
+
+interface DeletePostBody {
+  clientId: string;
+}
+
 export default class PostController {
   constructor(
     private readonly createPostHandler: CreatePostHandler,
@@ -21,7 +39,7 @@ export default class PostController {
 
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { clientId, clientName, title, body } = req.body;
+      const { clientId, clientName, title, body } = req.body as CreatePostBody;
 
       const command = new CreatePostCommand(clientId, clientName, title, body);
       const postId = await this.createPostHandler.execute(command);
@@ -35,7 +53,7 @@ export default class PostController {
   async update(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
-      const { clientId, clientName, title, body } = req.body;
+      const { clientId, clientName, title, body } = req.body as UpdatePostBody;
 
       const command = new UpdatePostCommand(id as string, clientId, clientName, title, body);
       await this.updatePostHandler.execute(command);
@@ -49,7 +67,7 @@ export default class PostController {
   async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
-      const { clientId } = req.body;
+      const { clientId } = req.body as DeletePostBody;
 
       const command = new DeletePostCommand(id as string, clientId);
       await this.deletePostHandler.execute(command);

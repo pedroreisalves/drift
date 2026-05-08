@@ -46,18 +46,20 @@ describe('DeletePostHandler', () => {
 
     await handler.execute(new DeletePostCommand(postId, clientId));
 
-    expect(repository.delete).toHaveBeenCalledTimes(1);
-    const deletedId = (repository.delete as ReturnType<typeof vi.fn>).mock.calls[0][0] as PostId;
+    const deleteMock = repository.delete as ReturnType<typeof vi.fn>;
+    const dispatchMock = dispatcher.dispatch as ReturnType<typeof vi.fn>;
+
+    expect(deleteMock).toHaveBeenCalledTimes(1);
+    const deletedId = deleteMock.mock.calls[0][0] as PostId;
     expect(deletedId.toString()).toEqual(postId);
 
-    expect(dispatcher.dispatch).toHaveBeenCalledTimes(1);
-    const dispatchedEvent = (dispatcher.dispatch as ReturnType<typeof vi.fn>).mock
-      .calls[0][0] as PostDeletedEvent;
+    expect(dispatchMock).toHaveBeenCalledTimes(1);
+    const dispatchedEvent = dispatchMock.mock.calls[0][0] as PostDeletedEvent;
     expect(dispatchedEvent).toBeInstanceOf(PostDeletedEvent);
     expect(dispatchedEvent.payload).toEqual({
       postId,
       clientId,
-      deletedAt: expect.any(String),
+      deletedAt: expect.any(String) as string,
     });
   });
 
@@ -71,14 +73,14 @@ describe('DeletePostHandler', () => {
     const existing = makeExistingPost(postId, clientId);
 
     const callOrder: string[] = [];
-    (repository.findById as ReturnType<typeof vi.fn>).mockImplementation(async () => {
+    (repository.findById as ReturnType<typeof vi.fn>).mockImplementation(() => {
       callOrder.push('repository.findById');
       return existing;
     });
-    (repository.delete as ReturnType<typeof vi.fn>).mockImplementation(async () => {
+    (repository.delete as ReturnType<typeof vi.fn>).mockImplementation(() => {
       callOrder.push('repository.delete');
     });
-    (dispatcher.dispatch as ReturnType<typeof vi.fn>).mockImplementation(async () => {
+    (dispatcher.dispatch as ReturnType<typeof vi.fn>).mockImplementation(() => {
       callOrder.push('dispatcher.dispatch');
     });
 
@@ -95,7 +97,9 @@ describe('DeletePostHandler', () => {
     const command = new DeletePostCommand(uuidv7(), uuidv7());
 
     await expect(handler.execute(command)).rejects.toThrow(PostNotFoundError);
-    expect(repository.delete).not.toHaveBeenCalled();
-    expect(dispatcher.dispatch).not.toHaveBeenCalled();
+    const deleteMock = repository.delete as ReturnType<typeof vi.fn>;
+    const dispatchMock = dispatcher.dispatch as ReturnType<typeof vi.fn>;
+    expect(deleteMock).not.toHaveBeenCalled();
+    expect(dispatchMock).not.toHaveBeenCalled();
   });
 });

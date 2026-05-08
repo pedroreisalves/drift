@@ -61,7 +61,7 @@ async function main(): Promise<void> {
   app.use(errorMiddleware);
 
   app.listen(Environment.PORT, () => {
-    console.log(`Post Service running on port ${Environment.PORT}`);
+    console.warn(`Post Service running on port ${Environment.PORT}`);
   });
 }
 
