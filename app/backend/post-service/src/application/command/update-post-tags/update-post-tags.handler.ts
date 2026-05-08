@@ -1,7 +1,7 @@
-import UpdatePostTagsCommand from './update-post-tags.command';
+import type UpdatePostTagsCommand from './update-post-tags.command';
 import PostId from '../../../domain/post/value-object/post-id.value-object';
-import PostRepository from '../../../domain/post/repository/post.repository';
-import EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
+import type PostRepository from '../../../domain/post/repository/post.repository';
+import type EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 
 export default class UpdatePostTagsHandler {

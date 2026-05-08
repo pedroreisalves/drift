@@ -1,8 +1,8 @@
-import GetPostQuery from './get-post.query';
+import type GetPostQuery from './get-post.query';
 import PostId from '../../../domain/post/value-object/post-id.value-object';
-import PostRepository from '../../../domain/post/repository/post.repository';
+import type PostRepository from '../../../domain/post/repository/post.repository';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
-import PostDTO from '../../@shared/dto/post.dto';
+import type PostDTO from '../../@shared/dto/post.dto';
 import PostMapper from '../../@shared/dto/post.mapper';
 
 export default class GetPostHandler {

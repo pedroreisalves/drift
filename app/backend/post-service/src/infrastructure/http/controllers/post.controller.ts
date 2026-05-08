@@ -1,13 +1,13 @@
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import CreatePostCommand from '../../../application/command/create-post/create-post.command';
-import CreatePostHandler from '../../../application/command/create-post/create-post.handler';
+import type CreatePostHandler from '../../../application/command/create-post/create-post.handler';
 import DeletePostCommand from '../../../application/command/delete-post/delete-post.command';
-import DeletePostHandler from '../../../application/command/delete-post/delete-post.handler';
+import type DeletePostHandler from '../../../application/command/delete-post/delete-post.handler';
 import UpdatePostCommand from '../../../application/command/update-post/update-post.command';
-import UpdatePostHandler from '../../../application/command/update-post/update-post.handler';
-import GetPostHandler from '../../../application/queries/get-post/get-post.handler';
+import type UpdatePostHandler from '../../../application/command/update-post/update-post.handler';
+import type GetPostHandler from '../../../application/queries/get-post/get-post.handler';
 import GetPostQuery from '../../../application/queries/get-post/get-post.query';
-import ListPostHandler from '../../../application/queries/list-post/list-post.handler';
+import type ListPostHandler from '../../../application/queries/list-post/list-post.handler';
 import ListPostQuery from '../../../application/queries/list-post/list-post.query';
 
 export default class PostController {

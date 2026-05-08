@@ -1,5 +1,5 @@
-import Post from '../entity/post.aggregate';
-import PostId from '../value-object/post-id.value-object';
+import type Post from '../entity/post.aggregate';
+import type PostId from '../value-object/post-id.value-object';
 
 export default interface PostRepository {
   save(post: Post): Promise<void>;

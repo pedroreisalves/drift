@@ -4,8 +4,8 @@ import UpdatePostTagsCommand from './update-post-tags.command';
 import Post from '../../../domain/post/entity/post.aggregate';
 import PostId from '../../../domain/post/value-object/post-id.value-object';
 import ClientId from '../../../domain/post/value-object/client-id.value-object';
-import PostRepository from '../../../domain/post/repository/post.repository';
-import EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
+import type PostRepository from '../../../domain/post/repository/post.repository';
+import type EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
 import PostTagsUpdated from '../../../domain/post/event/post-tags-updated.event';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 

@@ -1,10 +1,10 @@
 import { z } from 'zod';
-import DomainEvent from '../../@shared/interface/domain-event.interface';
+import type DomainEvent from '../../@shared/interface/domain-event.interface';
 import PostCreatedEvent from '../event/post-created.event';
 import PostTagsUpdated from '../event/post-tags-updated.event';
 import PostUpdatedEvent from '../event/post-updated.event';
-import ClientId from '../value-object/client-id.value-object';
-import PostId from '../value-object/post-id.value-object';
+import type ClientId from '../value-object/client-id.value-object';
+import type PostId from '../value-object/post-id.value-object';
 import InvalidPostError from '../error/invalid-post.error';
 import InvalidPostTagsError from '../error/invalid-post-tags.error';
 

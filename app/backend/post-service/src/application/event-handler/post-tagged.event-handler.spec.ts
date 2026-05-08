@@ -1,6 +1,6 @@
 import { uuidv7 } from 'uuidv7';
 import PostTaggedEventHandler from './post-tagged.event-handler';
-import UpdatePostTagsHandler from '../command/update-post-tags/update-post-tags.handler';
+import type UpdatePostTagsHandler from '../command/update-post-tags/update-post-tags.handler';
 import UpdatePostTagsCommand from '../command/update-post-tags/update-post-tags.command';
 
 describe('PostTaggedEventHandler', () => {

@@ -1,7 +1,8 @@
-import amqp, { ChannelWrapper } from 'amqp-connection-manager';
-import { ConfirmChannel, ConsumeMessage } from 'amqplib';
-import EventConsumer from '../../application/@shared/interface/event-consumer.interface';
-import EventHandler from '../../application/@shared/interface/event-handler.interface';
+import type { ChannelWrapper } from 'amqp-connection-manager';
+import amqp from 'amqp-connection-manager';
+import type { ConfirmChannel, ConsumeMessage } from 'amqplib';
+import type EventConsumer from '../../application/@shared/interface/event-consumer.interface';
+import type EventHandler from '../../application/@shared/interface/event-handler.interface';
 
 export default class RabbitMQEventConsumer implements EventConsumer {
   private channelWrapper: ChannelWrapper;

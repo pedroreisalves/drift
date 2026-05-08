@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import PostController from '../controllers/post.controller';
-import PostViewedMiddleware from '../middleware/post-viewed.middleware';
+import type PostController from '../controllers/post.controller';
+import type PostViewedMiddleware from '../middleware/post-viewed.middleware';
 
 export default function createPostRoutes(
   controller: PostController,

@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
-import EventDispatcher from '../../../application/@shared/interface/event-dispatcher.interface';
+import type { Request, Response, NextFunction } from 'express';
+import type EventDispatcher from '../../../application/@shared/interface/event-dispatcher.interface';
 import PostViewedEvent from '../event/post-viewed.event';
 
 export default class PostViewedMiddleware {

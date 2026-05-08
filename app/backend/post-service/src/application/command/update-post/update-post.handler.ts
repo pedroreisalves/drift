@@ -1,8 +1,8 @@
-import UpdatePostCommand from './update-post.command';
+import type UpdatePostCommand from './update-post.command';
 import PostId from '../../../domain/post/value-object/post-id.value-object';
 import ClientId from '../../../domain/post/value-object/client-id.value-object';
-import PostRepository from '../../../domain/post/repository/post.repository';
-import EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
+import type PostRepository from '../../../domain/post/repository/post.repository';
+import type EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 import ForbiddenPostUpdateError from '../../@shared/error/forbidden-post-update.error';
 

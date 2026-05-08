@@ -1,7 +1,7 @@
 import PostId from '../../../domain/post/value-object/post-id.value-object';
-import PostRepository from '../../../domain/post/repository/post.repository';
-import EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
-import DeletePostCommand from './delete-post.command';
+import type PostRepository from '../../../domain/post/repository/post.repository';
+import type EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
+import type DeletePostCommand from './delete-post.command';
 import PostDeletedEvent from './post-deleted.event';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 

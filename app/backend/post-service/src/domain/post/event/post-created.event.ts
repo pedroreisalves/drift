@@ -1,4 +1,4 @@
-import DomainEvent from '../../@shared/interface/domain-event.interface';
+import type DomainEvent from '../../@shared/interface/domain-event.interface';
 
 interface PostCreatedEventPayload extends Record<string, unknown> {
   postId: string;

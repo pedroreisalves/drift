@@ -1,7 +1,7 @@
-import PostRepository from '../../../domain/post/repository/post.repository';
-import PostDTO from '../../@shared/dto/post.dto';
+import type PostRepository from '../../../domain/post/repository/post.repository';
+import type PostDTO from '../../@shared/dto/post.dto';
 import PostMapper from '../../@shared/dto/post.mapper';
-import ListPostQuery from './list-post.query';
+import type ListPostQuery from './list-post.query';
 
 export default class ListPostHandler {
   constructor(private readonly postRepository: PostRepository) {}

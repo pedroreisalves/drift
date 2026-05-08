@@ -2,8 +2,8 @@ import { uuidv7 } from 'uuidv7';
 import CreatePostHandler from './create-post.handler';
 import CreatePostCommand from './create-post.command';
 import Post from '../../../domain/post/entity/post.aggregate';
-import PostRepository from '../../../domain/post/repository/post.repository';
-import EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
+import type PostRepository from '../../../domain/post/repository/post.repository';
+import type EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
 import PostCreatedEvent from '../../../domain/post/event/post-created.event';
 
 describe('CreatePostHandler', () => {

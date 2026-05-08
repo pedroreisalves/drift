@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import InvalidPostError from '../../../domain/post/error/invalid-post.error';
 import InvalidPostTagsError from '../../../domain/post/error/invalid-post-tags.error';
 import InvalidValueObjectError from '../../../domain/@shared/error/invalid-value-object.error';

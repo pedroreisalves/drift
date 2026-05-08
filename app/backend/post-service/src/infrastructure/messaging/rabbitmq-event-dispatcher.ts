@@ -1,7 +1,8 @@
-import amqp, { ChannelWrapper } from 'amqp-connection-manager';
-import { ConfirmChannel } from 'amqplib';
-import EventDispatcher from '../../application/@shared/interface/event-dispatcher.interface';
-import DomainEvent from '../../domain/@shared/interface/domain-event.interface';
+import type { ChannelWrapper } from 'amqp-connection-manager';
+import amqp from 'amqp-connection-manager';
+import type { ConfirmChannel } from 'amqplib';
+import type EventDispatcher from '../../application/@shared/interface/event-dispatcher.interface';
+import type DomainEvent from '../../domain/@shared/interface/domain-event.interface';
 
 export default class RabbitMQEventDispatcher implements EventDispatcher {
   private channelWrapper: ChannelWrapper;

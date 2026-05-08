@@ -1,5 +1,5 @@
-import Post from '../../../domain/post/entity/post.aggregate';
-import PostDTO from './post.dto';
+import type Post from '../../../domain/post/entity/post.aggregate';
+import type PostDTO from './post.dto';
 
 export default class PostMapper {
   static toDTO(post: Post): PostDTO {
