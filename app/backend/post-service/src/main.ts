@@ -14,8 +14,8 @@ import PostTaggedEventHandler from './application/event-handler/post-tagged.even
 
 import PostViewedMiddleware from './infrastructure/http/middleware/post-viewed.middleware';
 import PostgresPostRepository from './infrastructure/persistence/postgres-post.repository';
-import GetPostHandler from './application/queries/get-post/get-post.handler';
-import ListPostHandler from './application/queries/list-post/list-post.handler';
+import GetPostHandler from './application/query/get-post/get-post.handler';
+import ListPostHandler from './application/query/list-post/list-post.handler';
 import PostController from './infrastructure/http/controllers/post.controller';
 import createPostRoutes from './infrastructure/http/routes/post.routes';
 import errorMiddleware from './infrastructure/http/middleware/error.middleware';

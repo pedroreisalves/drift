@@ -5,10 +5,10 @@ import DeletePostCommand from '../../../application/command/delete-post/delete-p
 import type DeletePostHandler from '../../../application/command/delete-post/delete-post.handler';
 import UpdatePostCommand from '../../../application/command/update-post/update-post.command';
 import type UpdatePostHandler from '../../../application/command/update-post/update-post.handler';
-import type GetPostHandler from '../../../application/queries/get-post/get-post.handler';
-import GetPostQuery from '../../../application/queries/get-post/get-post.query';
-import type ListPostHandler from '../../../application/queries/list-post/list-post.handler';
-import ListPostQuery from '../../../application/queries/list-post/list-post.query';
+import type GetPostHandler from '../../../application/query/get-post/get-post.handler';
+import GetPostQuery from '../../../application/query/get-post/get-post.query';
+import type ListPostHandler from '../../../application/query/list-post/list-post.handler';
+import ListPostQuery from '../../../application/query/list-post/list-post.query';
 
 interface CreatePostBody {
   clientId: string;
