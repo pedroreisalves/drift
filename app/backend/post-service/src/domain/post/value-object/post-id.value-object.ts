@@ -9,9 +9,8 @@ export default class PostId {
   }
 
   validate(): void {
-    try {
-      postIdSchema.parse(this.value);
-    } catch {
+    const result = postIdSchema.safeParse(this.value);
+    if (!result.success) {
       throw new InvalidValueObjectError('PostId', this.value);
     }
   }

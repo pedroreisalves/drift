@@ -9,9 +9,8 @@ export default class ClientId {
   }
 
   validate(): void {
-    try {
-      clientIdSchema.parse(this.value);
-    } catch {
+    const result = clientIdSchema.safeParse(this.value);
+    if (!result.success) {
       throw new InvalidValueObjectError('ClientId', this.value);
     }
   }
