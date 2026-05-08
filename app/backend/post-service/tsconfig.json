@@ -11,7 +11,7 @@
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "strictNullChecks": false,
+    "strictNullChecks": true,
     "types": ["vitest/globals", "node"]
   },
   "include": ["src/**/*.ts"],
