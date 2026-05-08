@@ -2,7 +2,7 @@ import UpdatePostTagsCommand from './update-post-tags.command';
 import PostId from '../../../domain/post/value-object/post-id.value-object';
 import PostRepository from '../../../domain/post/repository/post.repository';
 import EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
-import { PostNotFoundError } from '../../@shared/error/post-not-found.error';
+import PostNotFoundError from '../../@shared/error/post-not-found.error';
 
 export default class UpdatePostTagsHandler {
   constructor(

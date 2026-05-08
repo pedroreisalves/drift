@@ -16,7 +16,7 @@ if (!parsed.success) {
   process.exit(1);
 }
 
-export class Environment {
+export default class Environment {
   static readonly NODE_ENV = parsed.data.NODE_ENV;
   static readonly PORT = parsed.data.PORT;
   static readonly DB_URL = parsed.data.DB_URL;

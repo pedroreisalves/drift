@@ -5,8 +5,8 @@ import PostTagsUpdated from '../event/post-tags-updated.event';
 import PostUpdatedEvent from '../event/post-updated.event';
 import ClientId from '../value-object/client-id.value-object';
 import PostId from '../value-object/post-id.value-object';
-import { InvalidPostError } from '../error/invalid-post.error';
-import { InvalidPostTagsError } from '../error/invalid-post-tags.error';
+import InvalidPostError from '../error/invalid-post.error';
+import InvalidPostTagsError from '../error/invalid-post-tags.error';
 
 interface PostProps {
   id: PostId;

@@ -12,7 +12,7 @@ interface PostTaggedMessage {
   };
 }
 
-export class PostTaggedEventHandler implements EventHandler<PostTaggedMessage> {
+export default class PostTaggedEventHandler implements EventHandler<PostTaggedMessage> {
   constructor(private readonly updatePostTagsHandler: UpdatePostTagsHandler) {}
 
   async handle(event: PostTaggedMessage): Promise<void> {

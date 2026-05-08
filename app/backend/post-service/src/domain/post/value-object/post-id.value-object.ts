@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { InvalidValueObjectError } from '../../@shared/error/invalid-value-object.error';
+import InvalidValueObjectError from '../../@shared/error/invalid-value-object.error';
 
 const postIdSchema = z.uuidv7({ error: 'Invalid Post ID format' });
 

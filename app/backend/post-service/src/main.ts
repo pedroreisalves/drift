@@ -1,6 +1,6 @@
 import express from 'express';
 import { Pool } from 'pg';
-import { Environment } from './infrastructure/config/environment';
+import Environment from './infrastructure/config/environment';
 
 import RabbitMQEventDispatcher from './infrastructure/messaging/rabbitmq-event-dispatcher';
 import RabbitMQEventConsumer from './infrastructure/messaging/rabbitmq-event-consumer';
@@ -10,7 +10,7 @@ import UpdatePostHandler from './application/command/update-post/update-post.han
 import DeletePostHandler from './application/command/delete-post/delete-post.handler';
 import UpdatePostTagsHandler from './application/command/update-post-tags/update-post-tags.handler';
 
-import { PostTaggedEventHandler } from './application/event-handler/post-tagged.event-handler';
+import PostTaggedEventHandler from './application/event-handler/post-tagged.event-handler';
 
 import PostViewedMiddleware from './infrastructure/http/middleware/post-viewed.middleware';
 import PostgresPostRepository from './infrastructure/persistence/postgres-post.repository';

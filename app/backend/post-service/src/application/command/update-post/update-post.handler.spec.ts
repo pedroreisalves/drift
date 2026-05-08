@@ -7,8 +7,8 @@ import ClientId from '../../../domain/post/value-object/client-id.value-object';
 import PostRepository from '../../../domain/post/repository/post.repository';
 import EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
 import PostUpdatedEvent from '../../../domain/post/event/post-updated.event';
-import { PostNotFoundError } from '../../@shared/error/post-not-found.error';
-import { ForbiddenPostUpdateError } from '../../@shared/error/forbidden-post-update.error';
+import PostNotFoundError from '../../@shared/error/post-not-found.error';
+import ForbiddenPostUpdateError from '../../@shared/error/forbidden-post-update.error';
 
 describe('UpdatePostHandler', () => {
   const makeRepository = (): PostRepository => ({

@@ -3,7 +3,7 @@ import PostRepository from '../../../domain/post/repository/post.repository';
 import EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
 import DeletePostCommand from './delete-post.command';
 import PostDeletedEvent from './post-deleted.event';
-import { PostNotFoundError } from '../../@shared/error/post-not-found.error';
+import PostNotFoundError from '../../@shared/error/post-not-found.error';
 
 export default class DeletePostHandler {
   constructor(

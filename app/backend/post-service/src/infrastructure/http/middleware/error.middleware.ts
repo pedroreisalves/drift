@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import { InvalidPostError } from '../../../domain/post/error/invalid-post.error';
-import { InvalidPostTagsError } from '../../../domain/post/error/invalid-post-tags.error';
-import { InvalidValueObjectError } from '../../../domain/@shared/error/invalid-value-object.error';
-import { PostNotFoundError } from '../../../application/@shared/error/post-not-found.error';
-import { ForbiddenPostUpdateError } from '../../../application/@shared/error/forbidden-post-update.error';
+import InvalidPostError from '../../../domain/post/error/invalid-post.error';
+import InvalidPostTagsError from '../../../domain/post/error/invalid-post-tags.error';
+import InvalidValueObjectError from '../../../domain/@shared/error/invalid-value-object.error';
+import PostNotFoundError from '../../../application/@shared/error/post-not-found.error';
+import ForbiddenPostUpdateError from '../../../application/@shared/error/forbidden-post-update.error';
 
 export default function errorMiddleware(
   error: Error,

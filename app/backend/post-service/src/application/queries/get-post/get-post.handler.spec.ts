@@ -5,7 +5,7 @@ import Post from '../../../domain/post/entity/post.aggregate';
 import PostId from '../../../domain/post/value-object/post-id.value-object';
 import ClientId from '../../../domain/post/value-object/client-id.value-object';
 import PostRepository from '../../../domain/post/repository/post.repository';
-import { PostNotFoundError } from '../../@shared/error/post-not-found.error';
+import PostNotFoundError from '../../@shared/error/post-not-found.error';
 
 describe('GetPostHandler', () => {
   const makeRepository = (): PostRepository => ({
