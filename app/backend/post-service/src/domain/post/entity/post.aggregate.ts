@@ -148,7 +148,10 @@ export default class Post {
       throw new InvalidPostTagsError(result.error.issues.map((e) => e.message));
     }
 
+    const updatedAt = new Date();
+
     this.props.tags = tags;
+    this.props.updatedAt = updatedAt;
 
     const event = new PostTagsUpdated({
       postId: this.props.id.toString(),
