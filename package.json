@@ -9,7 +9,8 @@
   ],
   "scripts": {
     "test:post-service": "npm run test --workspace post-service",
-    "coverage:post-service": "npm run coverage --workspace post-service"
+    "coverage:post-service": "npm run coverage --workspace post-service",
+    "coverage:tag-service": "npm run coverage --workspace tag-service"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

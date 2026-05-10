@@ -40,11 +40,37 @@ services:
       timeout: 5s
       retries: 5
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: drift-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      "ollama serve & pid=$$!;
+      until ollama list >/dev/null 2>&1; do sleep 1; done;
+      ollama pull qwen2.5:1.5b;
+      wait $$pid"
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 6G
+        reservations:
+          memory: 2G
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list | grep -q 'qwen2.5:1.5b'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
   post-service:
     build:
       context: .
       dockerfile: app/backend/post-service/Dockerfile
-      target: dev
     container_name: drift-post-service
     ports:
       - "3001:3001"
@@ -66,6 +92,34 @@ services:
       rabbitmq:
         condition: service_healthy
 
+  tag-service:
+    build:
+      context: .
+      dockerfile: app/backend/tag-service/Dockerfile
+    container_name: drift-tag-service
+    environment:
+      DB_URL: postgresql://drift:drift@postgres:5432/tag_db
+      RABBITMQ_URL: amqp://rabbitmq:5672
+      RABBITMQ_EXCHANGE: drift.events
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_MODEL: qwen2.5:1.5b
+      OLLAMA_TIMEOUT_MS: 60000
+    volumes:
+      - ./app/backend/tag-service/src:/repo/app/backend/tag-service/src
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   rabbitmq_data:
+  ollama_data:
