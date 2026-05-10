@@ -4,6 +4,7 @@ import Environment from './infrastructure/config/environment';
 
 import RabbitMQEventDispatcher from './infrastructure/messaging/rabbitmq-event-dispatcher';
 import RabbitMQEventConsumer from './infrastructure/messaging/rabbitmq-event-consumer';
+import PinoLogger from './infrastructure/logging/pino-logger';
 
 import CreatePostHandler from './application/command/create-post/create-post.handler';
 import UpdatePostHandler from './application/command/update-post/update-post.handler';
@@ -20,6 +21,8 @@ import PostController from './infrastructure/http/controllers/post.controller';
 import createPostRoutes from './infrastructure/http/routes/post.routes';
 import errorMiddleware from './infrastructure/http/middleware/error.middleware';
 
+const logger = new PinoLogger(Environment.SERVICE_NAME);
+
 async function main(): Promise<void> {
   const pool = new Pool({ connectionString: Environment.DB_URL });
   const repository = new PostgresPostRepository(pool);
@@ -30,18 +33,18 @@ async function main(): Promise<void> {
   const consumer = new RabbitMQEventConsumer(
     Environment.RABBITMQ_URL,
     Environment.RABBITMQ_EXCHANGE,
-    'post-service',
+    Environment.SERVICE_NAME,
   );
 
-  const createPostHandler = new CreatePostHandler(repository, dispatcher);
-  const updatePostHandler = new UpdatePostHandler(repository, dispatcher);
-  const deletePostHandler = new DeletePostHandler(repository, dispatcher);
-  const updatePostTagsHandler = new UpdatePostTagsHandler(repository, dispatcher);
+  const createPostHandler = new CreatePostHandler(repository, dispatcher, logger);
+  const updatePostHandler = new UpdatePostHandler(repository, dispatcher, logger);
+  const deletePostHandler = new DeletePostHandler(repository, dispatcher, logger);
+  const updatePostTagsHandler = new UpdatePostTagsHandler(repository, dispatcher, logger);
 
   const getPostHandler = new GetPostHandler(repository);
   const listPostHandler = new ListPostHandler(repository);
 
-  const postTaggedEventHandler = new PostTaggedEventHandler(updatePostTagsHandler);
+  const postTaggedEventHandler = new PostTaggedEventHandler(updatePostTagsHandler, logger);
 
   await consumer.subscribe('PostTagged', postTaggedEventHandler);
 
@@ -60,12 +63,18 @@ async function main(): Promise<void> {
   app.use(routes);
   app.use(errorMiddleware);
 
+  logger.info(`${Environment.SERVICE_NAME} started`, {
+    subscriptions: ['PostTagged'],
+  });
+
   app.listen(Environment.PORT, () => {
-    console.warn(`Post Service running on port ${Environment.PORT}`);
+    logger.info(`HTTP server running`, { port: Environment.PORT });
   });
 }
 
 main().catch((error) => {
-  console.error('Failed to start Post Service:', error);
+  logger.error(`Failed to start ${Environment.SERVICE_NAME}`, {
+    error: error instanceof Error ? error.message : String(error),
+  });
   process.exit(1);
 });

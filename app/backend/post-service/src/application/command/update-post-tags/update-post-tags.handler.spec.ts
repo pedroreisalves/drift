@@ -6,6 +6,7 @@ import PostId from '../../../domain/post/value-object/post-id.value-object';
 import ClientId from '../../../domain/post/value-object/client-id.value-object';
 import type PostRepository from '../../../domain/post/repository/post.repository';
 import type EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
+import type Logger from '../../@shared/interface/logger.interface';
 import PostTagsUpdated from '../../../domain/post/event/post-tags-updated.event';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 
@@ -19,6 +20,12 @@ describe('UpdatePostTagsHandler', () => {
 
   const makeDispatcher = (): EventDispatcher => ({
     dispatch: vi.fn().mockResolvedValue(undefined),
+  });
+
+  const makeLogger = (): Logger => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
   });
 
   const makeExistingPost = (postId: string): Post => {
@@ -36,7 +43,7 @@ describe('UpdatePostTagsHandler', () => {
   it('should fetch the post, persist it, dispatch the PostTagsUpdatedEvent and clear events', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
-    const handler = new UpdatePostTagsHandler(repository, dispatcher);
+    const handler = new UpdatePostTagsHandler(repository, dispatcher, makeLogger());
 
     const postId = uuidv7();
     const existing = makeExistingPost(postId);
@@ -63,7 +70,7 @@ describe('UpdatePostTagsHandler', () => {
   it('should call findById, then repository.save, then dispatcher.dispatch in order', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
-    const handler = new UpdatePostTagsHandler(repository, dispatcher);
+    const handler = new UpdatePostTagsHandler(repository, dispatcher, makeLogger());
 
     const postId = uuidv7();
     const existing = makeExistingPost(postId);
@@ -88,7 +95,7 @@ describe('UpdatePostTagsHandler', () => {
   it('should throw PostNotFoundError when the post does not exist', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
-    const handler = new UpdatePostTagsHandler(repository, dispatcher);
+    const handler = new UpdatePostTagsHandler(repository, dispatcher, makeLogger());
 
     const command = new UpdatePostTagsCommand(uuidv7(), ['tag1']);
 

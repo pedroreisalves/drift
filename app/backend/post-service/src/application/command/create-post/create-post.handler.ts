@@ -5,11 +5,13 @@ import PostId from '../../../domain/post/value-object/post-id.value-object';
 import ClientId from '../../../domain/post/value-object/client-id.value-object';
 import type PostRepository from '../../../domain/post/repository/post.repository';
 import type EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
+import type Logger from '../../@shared/interface/logger.interface';
 
 export default class CreatePostHandler {
   constructor(
     private readonly postRepository: PostRepository,
     private readonly eventDispatcher: EventDispatcher,
+    private readonly logger: Logger,
   ) {}
 
   async execute(command: CreatePostCommand): Promise<string> {
@@ -25,6 +27,11 @@ export default class CreatePostHandler {
     });
 
     await this.postRepository.save(post);
+
+    this.logger.info('Post created', {
+      postId: postId.toString(),
+      clientId: clientId.toString(),
+    });
 
     const events = post.getDomainEvents();
 

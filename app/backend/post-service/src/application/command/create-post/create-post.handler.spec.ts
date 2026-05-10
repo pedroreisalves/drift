@@ -4,6 +4,7 @@ import CreatePostCommand from './create-post.command';
 import Post from '../../../domain/post/entity/post.aggregate';
 import type PostRepository from '../../../domain/post/repository/post.repository';
 import type EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
+import type Logger from '../../@shared/interface/logger.interface';
 import PostCreatedEvent from '../../../domain/post/event/post-created.event';
 
 describe('CreatePostHandler', () => {
@@ -18,10 +19,16 @@ describe('CreatePostHandler', () => {
     dispatch: vi.fn().mockResolvedValue(undefined),
   });
 
+  const makeLogger = (): Logger => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+  });
+
   it('should persist the created post, dispatch its events, clear them and return the post id', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
-    const handler = new CreatePostHandler(repository, dispatcher);
+    const handler = new CreatePostHandler(repository, dispatcher, makeLogger());
 
     const command = new CreatePostCommand(
       uuidv7(),
@@ -49,7 +56,7 @@ describe('CreatePostHandler', () => {
   it('should call repository.save before dispatcher.dispatch', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
-    const handler = new CreatePostHandler(repository, dispatcher);
+    const handler = new CreatePostHandler(repository, dispatcher, makeLogger());
 
     const callOrder: string[] = [];
     (repository.save as ReturnType<typeof vi.fn>).mockImplementation(() => {

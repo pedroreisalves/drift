@@ -6,6 +6,7 @@ import PostId from '../../../domain/post/value-object/post-id.value-object';
 import ClientId from '../../../domain/post/value-object/client-id.value-object';
 import type PostRepository from '../../../domain/post/repository/post.repository';
 import type EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
+import type Logger from '../../@shared/interface/logger.interface';
 import PostDeletedEvent from './post-deleted.event';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 
@@ -19,6 +20,12 @@ describe('DeletePostHandler', () => {
 
   const makeDispatcher = (): EventDispatcher => ({
     dispatch: vi.fn().mockResolvedValue(undefined),
+  });
+
+  const makeLogger = (): Logger => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
   });
 
   const makeExistingPost = (postId: string, clientId: string): Post => {
@@ -36,7 +43,7 @@ describe('DeletePostHandler', () => {
   it('should fetch the post, delete it and dispatch a PostDeletedEvent built from the command data', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
-    const handler = new DeletePostHandler(repository, dispatcher);
+    const handler = new DeletePostHandler(repository, dispatcher, makeLogger());
 
     const postId = uuidv7();
     const clientId = uuidv7();
@@ -66,7 +73,7 @@ describe('DeletePostHandler', () => {
   it('should call findById, then repository.delete, then dispatcher.dispatch in order', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
-    const handler = new DeletePostHandler(repository, dispatcher);
+    const handler = new DeletePostHandler(repository, dispatcher, makeLogger());
 
     const postId = uuidv7();
     const clientId = uuidv7();
@@ -92,7 +99,7 @@ describe('DeletePostHandler', () => {
   it('should throw PostNotFoundError when the post does not exist', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
-    const handler = new DeletePostHandler(repository, dispatcher);
+    const handler = new DeletePostHandler(repository, dispatcher, makeLogger());
 
     const command = new DeletePostCommand(uuidv7(), uuidv7());
 

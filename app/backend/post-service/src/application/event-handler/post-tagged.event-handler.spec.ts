@@ -2,6 +2,7 @@ import { uuidv7 } from 'uuidv7';
 import PostTaggedEventHandler, { type PostTaggedMessage } from './post-tagged.event-handler';
 import type UpdatePostTagsHandler from '../command/update-post-tags/update-post-tags.handler';
 import UpdatePostTagsCommand from '../command/update-post-tags/update-post-tags.command';
+import type Logger from '../@shared/interface/logger.interface';
 
 type MessageOverrides = Partial<Pick<PostTaggedMessage['payload'], 'postId' | 'tags'>>;
 
@@ -10,6 +11,12 @@ describe('PostTaggedEventHandler', () => {
     ({
       execute: vi.fn().mockResolvedValue(undefined),
     }) as unknown as UpdatePostTagsHandler;
+
+  const makeLogger = (): Logger => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+  });
 
   const makeMessage = (overrides: MessageOverrides = {}): PostTaggedMessage => ({
     eventName: 'PostTagged',
@@ -23,7 +30,7 @@ describe('PostTaggedEventHandler', () => {
 
   it('should invoke UpdatePostTagsHandler.execute with a command built from the message payload', async () => {
     const updatePostTagsHandler = makeUpdatePostTagsHandler();
-    const eventHandler = new PostTaggedEventHandler(updatePostTagsHandler);
+    const eventHandler = new PostTaggedEventHandler(updatePostTagsHandler, makeLogger());
     const postId = uuidv7();
     const tags = ['tech', 'news', 'sports'];
 
