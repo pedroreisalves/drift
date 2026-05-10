@@ -34,6 +34,7 @@ Automatically generates tags for posts using a local LLM, with retry logic for f
 - **Messaging:** RabbitMQ topic exchange (`drift.events`)
 - **LLM:** Ollama (local inference, default model `qwen2.5:1.5b`)
 - **Key libraries:** `amqplib`, `pg`, `pino`, `zod`, `uuidv7`
+- **Schema:** [`init.sql`](init.sql)
 
 ## Environment variables
 

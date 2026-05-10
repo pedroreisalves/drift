@@ -32,6 +32,7 @@ Manages post lifecycle (create, update, delete, read) and exposes a REST API for
 - **Messaging:** RabbitMQ topic exchange (`drift.events`)
 - **HTTP:** Express 5
 - **Key libraries:** `amqp-connection-manager`, `pg`, `pino`, `zod`, `uuidv7`
+- **Schema:** [`init.sql`](init.sql)
 
 ## Environment variables
 
