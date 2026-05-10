@@ -33,7 +33,7 @@ services:
       resources:
         limits:
           cpus: "0.5"
-          memory: 256M
+          memory: 512M
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 5s
@@ -57,9 +57,9 @@ services:
       resources:
         limits:
           cpus: "2.0"
-          memory: 6G
+          memory: 3G
         reservations:
-          memory: 2G
+          memory: 1536M
     healthcheck:
       test: ["CMD-SHELL", "ollama list | grep -q 'qwen2.5:1.5b'"]
       interval: 30s
