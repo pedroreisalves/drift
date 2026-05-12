@@ -5,6 +5,7 @@ import Post, { type CreatePostProps } from './post.aggregate';
 import InvalidPostError from '../error/invalid-post.error';
 import InvalidPostTagsError from '../error/invalid-post-tags.error';
 import PostCreatedEvent from '../event/post-created.event';
+import PostDeletedEvent from '../event/post-deleted.event';
 import PostUpdatedEvent from '../event/post-updated.event';
 import PostTagsUpdated from '../event/post-tags-updated.event';
 
@@ -286,6 +287,25 @@ describe('PostAggregate', () => {
 
     expect(() => post.applyTags([''])).toThrow(InvalidPostTagsError);
     expect(post.getDomainEvents()).toHaveLength(1);
+  });
+
+  it('should add a PostDeletedEvent when deleting a post aggregate', () => {
+    const props = makeProps();
+    const post = Post.create(props);
+    post.clearDomainEvents();
+
+    post.delete();
+
+    const events = post.getDomainEvents();
+
+    expect(events).toHaveLength(1);
+    expect(events[0]).toBeInstanceOf(PostDeletedEvent);
+    expect(events[0].eventName).toEqual('PostDeleted');
+    expect(events[0].payload).toEqual({
+      postId: props.id.toString(),
+      clientId: props.clientId.toString(),
+      deletedAt: expect.any(String) as string,
+    });
   });
 
   it('should clear all domain events when calling clearDomainEvents', () => {

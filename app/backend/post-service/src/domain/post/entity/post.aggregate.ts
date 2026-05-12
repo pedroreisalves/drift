@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type DomainEvent from '../../@shared/interface/domain-event.interface';
 import PostCreatedEvent from '../event/post-created.event';
+import PostDeletedEvent from '../event/post-deleted.event';
 import PostTagsUpdated from '../event/post-tags-updated.event';
 import PostUpdatedEvent from '../event/post-updated.event';
 import type ClientId from '../value-object/client-id.value-object';
@@ -157,6 +158,16 @@ export default class Post {
       postId: this.props.id.toString(),
       clientId: this.props.clientId.toString(),
       tags,
+    });
+
+    this.addDomainEvent(event);
+  }
+
+  delete(): void {
+    const event = new PostDeletedEvent({
+      postId: this.props.id.toString(),
+      clientId: this.props.clientId.toString(),
+      deletedAt: new Date().toISOString(),
     });
 
     this.addDomainEvent(event);

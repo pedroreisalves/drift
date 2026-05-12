@@ -1,9 +1,10 @@
 import PostId from '../../../domain/post/value-object/post-id.value-object';
+import ClientId from '../../../domain/post/value-object/client-id.value-object';
 import type PostRepository from '../../../domain/post/repository/post.repository';
 import type EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
 import type DeletePostCommand from './delete-post.command';
-import PostDeletedEvent from './post-deleted.event';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
+import ForbiddenPostUpdateError from '../../@shared/error/forbidden-post-update.error';
 import type Logger from '../../@shared/interface/logger.interface';
 
 export default class DeletePostHandler {
@@ -15,6 +16,7 @@ export default class DeletePostHandler {
 
   async execute(command: DeletePostCommand): Promise<void> {
     const postId = new PostId(command.postId);
+    const clientId = new ClientId(command.clientId);
 
     const post = await this.postRepository.findById(postId);
 
@@ -23,16 +25,24 @@ export default class DeletePostHandler {
       throw new PostNotFoundError(postId.toString());
     }
 
+    if (!post.clientId.equals(clientId)) {
+      this.logger.warn('Forbidden post delete attempt', {
+        postId: postId.toString(),
+        clientId: clientId.toString(),
+      });
+      throw new ForbiddenPostUpdateError(postId.toString(), clientId.toString());
+    }
+
+    post.delete();
+
     await this.postRepository.delete(postId);
 
     this.logger.info('Post deleted', { postId: postId.toString() });
 
-    const event = new PostDeletedEvent({
-      postId: postId.toString(),
-      clientId: command.clientId,
-      deletedAt: new Date().toISOString(),
-    });
+    for (const event of post.getDomainEvents()) {
+      await this.eventDispatcher.dispatch(event);
+    }
 
-    await this.eventDispatcher.dispatch(event);
+    post.clearDomainEvents();
   }
 }
