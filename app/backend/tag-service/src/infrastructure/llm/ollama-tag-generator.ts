@@ -99,19 +99,14 @@ export default class OllamaTagGenerator implements TagGenerator {
   private parseResponse(raw: string): string[] {
     const parsed = JSON.parse(raw) as unknown;
 
-    if (Array.isArray(parsed)) {
-      return parsed as string[];
+    if (!Array.isArray(parsed)) {
+      throw new TagGenerationFailedError(`Unexpected Ollama response format: ${raw}`);
     }
 
-    if (
-      parsed !== null &&
-      typeof parsed === 'object' &&
-      'tags' in parsed &&
-      Array.isArray(parsed.tags)
-    ) {
-      return (parsed as { tags: string[] }).tags;
+    if (!parsed.every((tag) => typeof tag === 'string')) {
+      throw new TagGenerationFailedError(`Ollama returned non-string tags: ${raw}`);
     }
 
-    throw new TagGenerationFailedError(`Unexpected Ollama response format: ${raw}`);
+    return parsed;
   }
 }
