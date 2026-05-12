@@ -1,9 +1,13 @@
 import type { Request, Response, NextFunction } from 'express';
 import type EventDispatcher from '../../../application/@shared/interface/event-dispatcher.interface';
+import type Logger from '../../../application/@shared/interface/logger.interface';
 import PostViewedEvent from '../event/post-viewed.event';
 
 export default class PostViewedMiddleware {
-  constructor(private readonly eventDispatcher: EventDispatcher) {}
+  constructor(
+    private readonly eventDispatcher: EventDispatcher,
+    private readonly logger: Logger,
+  ) {}
 
   handle = (req: Request, res: Response, next: NextFunction): void => {
     const { id } = req.params;
@@ -20,8 +24,11 @@ export default class PostViewedMiddleware {
       viewedAt: new Date().toISOString(),
     });
 
-    this.eventDispatcher.dispatch(event).catch((error) => {
-      console.error('Failed to dispatch PostViewed event:', error);
+    this.eventDispatcher.dispatch(event).catch((error: unknown) => {
+      this.logger.error('Failed to dispatch PostViewed event', {
+        postId: id,
+        error: error instanceof Error ? error.message : String(error),
+      });
     });
 
     next();

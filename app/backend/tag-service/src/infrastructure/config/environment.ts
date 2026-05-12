@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import pino from 'pino';
 import { z } from 'zod';
 
 const envSchema = z.object({
@@ -16,7 +17,7 @@ const envSchema = z.object({
 const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
-  console.error('Invalid environment variables:', parsed.error.format());
+  pino().error({ errors: parsed.error.issues }, 'Invalid environment variables');
   process.exit(1);
 }
 

@@ -19,7 +19,7 @@ import GetPostHandler from './application/query/get-post/get-post.handler';
 import ListPostHandler from './application/query/list-post/list-post.handler';
 import PostController from './infrastructure/http/controllers/post.controller';
 import createPostRoutes from './infrastructure/http/routes/post.routes';
-import errorMiddleware from './infrastructure/http/middleware/error.middleware';
+import createErrorMiddleware from './infrastructure/http/middleware/error.middleware';
 
 const logger = new PinoLogger(Environment.SERVICE_NAME);
 
@@ -34,6 +34,7 @@ async function main(): Promise<void> {
     Environment.RABBITMQ_URL,
     Environment.RABBITMQ_EXCHANGE,
     Environment.SERVICE_NAME,
+    logger,
   );
 
   const createPostHandler = new CreatePostHandler(repository, dispatcher, logger);
@@ -55,13 +56,13 @@ async function main(): Promise<void> {
     getPostHandler,
     listPostHandler,
   );
-  const postViewedMiddleware = new PostViewedMiddleware(dispatcher);
+  const postViewedMiddleware = new PostViewedMiddleware(dispatcher, logger);
   const routes = createPostRoutes(controller, postViewedMiddleware);
 
   const app = express();
   app.use(express.json());
   app.use(routes);
-  app.use(errorMiddleware);
+  app.use(createErrorMiddleware(logger));
 
   logger.info(`${Environment.SERVICE_NAME} started`, {
     subscriptions: ['PostTagged'],

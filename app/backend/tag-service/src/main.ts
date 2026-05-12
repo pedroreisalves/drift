@@ -30,6 +30,7 @@ async function main(): Promise<void> {
     Environment.RABBITMQ_URL,
     Environment.RABBITMQ_EXCHANGE,
     Environment.SERVICE_NAME,
+    logger,
   );
 
   const executeTaggingHandler = new ExecuteTaggingHandler(

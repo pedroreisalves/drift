@@ -3,6 +3,7 @@ import amqp from 'amqp-connection-manager';
 import type { ConfirmChannel, ConsumeMessage } from 'amqplib';
 import type EventConsumer from '../../application/@shared/interface/event-consumer.interface';
 import type EventHandler from '../../application/@shared/interface/event-handler.interface';
+import type Logger from '../../application/@shared/interface/logger.interface';
 
 export default class RabbitMQEventConsumer implements EventConsumer {
   private channelWrapper: ChannelWrapper;
@@ -12,6 +13,7 @@ export default class RabbitMQEventConsumer implements EventConsumer {
     private readonly url: string,
     private readonly exchange: string,
     private readonly serviceName: string,
+    private readonly logger: Logger,
   ) {
     const connection = amqp.connect(this.url);
 
@@ -46,7 +48,10 @@ export default class RabbitMQEventConsumer implements EventConsumer {
         };
 
         processMessage().catch((error: unknown) => {
-          console.error(`Failed to process ${eventName}:`, error);
+          this.logger.error('Failed to process message, requeuing', {
+            eventName,
+            error: error instanceof Error ? error.message : String(error),
+          });
           channel.nack(message, false, true);
         });
       });
