@@ -38,7 +38,7 @@ describe('PostTaggedEventHandler', () => {
     eventName: 'PostTagged',
     occurredAt: '2026-01-01T00:00:00.000Z',
     payload: {
-      id: uuidv7(),
+      taggingProcessId: uuidv7(),
       postId: overrides.postId ?? uuidv7(),
       tags: overrides.tags ?? ['tech', 'news'],
       taggedAt: '2026-01-01T00:00:00.000Z',
@@ -78,6 +78,19 @@ describe('PostTaggedEventHandler', () => {
     const executeSpy = vi.spyOn(updatePostTagsHandler, 'execute');
 
     await eventHandler.handle(makeMessage({ postId, postUpdatedAt }));
+
+    expect(executeSpy).not.toHaveBeenCalled();
+  });
+
+  it('should skip applying tags when the post no longer exists', async () => {
+    const updatePostTagsHandler = makeUpdatePostTagsHandler();
+    const logger = makeLogger();
+    const postRepository = makePostRepository(null);
+    const eventHandler = new PostTaggedEventHandler(updatePostTagsHandler, postRepository, logger);
+
+    const executeSpy = vi.spyOn(updatePostTagsHandler, 'execute');
+
+    await eventHandler.handle(makeMessage());
 
     expect(executeSpy).not.toHaveBeenCalled();
   });

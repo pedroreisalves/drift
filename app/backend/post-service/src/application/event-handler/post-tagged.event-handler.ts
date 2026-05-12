@@ -9,7 +9,7 @@ export interface PostTaggedMessage {
   eventName: string;
   occurredAt: string;
   payload: {
-    id: string;
+    taggingProcessId: string;
     postId: string;
     tags: string[];
     taggedAt: string;
@@ -34,7 +34,12 @@ export default class PostTaggedEventHandler implements EventHandler<PostTaggedMe
 
     const post = await this.postRepository.findById(new PostId(postId));
 
-    if (post && post.updatedAt.toISOString() !== postUpdatedAt) {
+    if (!post) {
+      this.logger.warn('Dropping PostTagged event: post no longer exists', { postId });
+      return;
+    }
+
+    if (post.updatedAt.toISOString() !== postUpdatedAt) {
       this.logger.warn('Dropping stale PostTagged event: post content has changed since tagging', {
         postId,
         eventPostUpdatedAt: postUpdatedAt,
