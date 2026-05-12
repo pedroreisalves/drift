@@ -26,7 +26,7 @@ export default class ExecuteTaggingHandler {
 
     try {
       this.logger.info('Starting tag generation', {
-        taggingProcessId: taggingProcessId,
+        taggingProcessId: taggingProcessId.toString(),
         postId: taggingProcess.postId.toString(),
       });
 
@@ -34,7 +34,7 @@ export default class ExecuteTaggingHandler {
       taggingProcess.succeed({ tags });
 
       this.logger.info('Tag generation succeeded', {
-        taggingProcessId: taggingProcessId,
+        taggingProcessId: taggingProcessId.toString(),
         postId: taggingProcess.postId.toString(),
         tags,
         tagCount: tags.length,
@@ -45,14 +45,14 @@ export default class ExecuteTaggingHandler {
 
       if (taggingProcess.status.toString() === 'abandoned') {
         this.logger.warn('Tagging abandoned after max retries', {
-          taggingProcessId: taggingProcessId,
+          taggingProcessId: taggingProcessId.toString(),
           postId: taggingProcess.postId.toString(),
           retryCount: taggingProcess.retryCount,
           reason,
         });
       } else {
         this.logger.error('Tag generation failed, will retry', {
-          taggingProcessId: taggingProcessId,
+          taggingProcessId: taggingProcessId.toString(),
           postId: taggingProcess.postId.toString(),
           retryCount: taggingProcess.retryCount,
           reason,
