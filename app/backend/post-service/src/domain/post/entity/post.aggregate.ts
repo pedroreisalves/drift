@@ -156,8 +156,8 @@ export default class Post {
 
     const event = new PostTagsUpdated({
       postId: this.props.id.toString(),
-      clientId: this.props.clientId.toString(),
       tags,
+      updatedAt: updatedAt.toISOString(),
     });
 
     this.addDomainEvent(event);

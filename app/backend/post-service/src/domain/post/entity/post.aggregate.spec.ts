@@ -270,8 +270,8 @@ describe('PostAggregate', () => {
     expect(events[1].eventName).toEqual('PostTagsUpdated');
     expect(events[1].payload).toEqual({
       postId: props.id.toString(),
-      clientId: props.clientId.toString(),
       tags,
+      updatedAt: expect.any(String) as string,
     });
   });
 

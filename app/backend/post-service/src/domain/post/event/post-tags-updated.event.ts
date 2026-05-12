@@ -2,8 +2,8 @@ import type DomainEvent from '../../@shared/interface/domain-event.interface';
 
 interface PostTagsUpdatedEventPayload extends Record<string, unknown> {
   postId: string;
-  clientId: string;
   tags: string[];
+  updatedAt: string;
 }
 
 export default class PostTagsUpdated implements DomainEvent {
