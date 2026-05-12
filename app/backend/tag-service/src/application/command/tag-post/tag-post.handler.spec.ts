@@ -57,7 +57,7 @@ describe('TagPostHandler', () => {
     const dispatchMock = dispatcher.dispatch as ReturnType<typeof vi.fn>;
 
     expect(saveMock).toHaveBeenCalledTimes(1);
-    const persisted = saveMock.mock.calls[0][0];
+    const persisted = saveMock.mock.calls[0][0] as TaggingProcess;
     expect(persisted).toBeInstanceOf(TaggingProcess);
 
     expect(dispatchMock).toHaveBeenCalledTimes(1);
