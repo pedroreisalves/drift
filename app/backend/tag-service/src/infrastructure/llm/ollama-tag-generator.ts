@@ -49,7 +49,9 @@ export default class OllamaTagGenerator implements TagGenerator {
       Your task is to generate accurate and relevant tags for a blog post based strictly on the provided title and body.
 
       Instructions:
-      - Return ONLY a valid JSON array of strings
+      - Return ONLY a raw JSON array of strings with no wrapper object
+      - The response must be exactly this shape: ["tag1", "tag2", "tag3"]
+      - Do not wrap the array in an object like { "tags": [...] }
       - Do not include markdown, explanations, comments, or extra text
       - The response must always be valid JSON
       - Generate a maximum of 10 tags
@@ -59,15 +61,18 @@ export default class OllamaTagGenerator implements TagGenerator {
 
       Tag formatting rules:
       - lowercase only
-      - use only letters, numbers, and hyphens
+      - use only letters, numbers, hyphens, and spaces
       - concise and semantically precise
       - no duplicate tags
 
+      Tag style rules:
+      - Prefer single-word tags whenever possible: "postgresql", "indexing", "performance"
+      - Use multi-word tags only when a single word would lose essential meaning: "strength training", "high protein diet"
+      - Never use more than 3 words in a tag
+      - Avoid generic or vague tags: prefer "postgresql" over "database", "hypertrophy" over "fitness"
+
       Tag quality rules:
       - Tags should represent the most important topics, themes, entities, concepts, categories, activities, locations, industries, people, technologies, or subjects discussed in the post
-      - Prefer specific tags over vague or generic ones
-        - Good: "strength-training"
-        - Bad: "fitness"
       - Avoid redundant or overlapping tags
       - Avoid overly broad tags unless they are central to the article
       - Use the same language as the post
@@ -86,7 +91,7 @@ export default class OllamaTagGenerator implements TagGenerator {
       - Detailed/complex posts: 8-10 tags only when justified by the content
 
       Output example:
-      ["strength training", "muscle growth", "high-protein diet"]
+      ["postgresql", "indexing", "query optimization", "performance", "b-tree"]
 
       Title:
       ${title}
@@ -99,14 +104,26 @@ export default class OllamaTagGenerator implements TagGenerator {
   private parseResponse(raw: string): string[] {
     const parsed = JSON.parse(raw) as unknown;
 
-    if (!Array.isArray(parsed)) {
-      throw new TagGenerationFailedError(`Unexpected Ollama response format: ${raw}`);
+    if (Array.isArray(parsed)) {
+      if (!parsed.every((tag) => typeof tag === 'string')) {
+        throw new TagGenerationFailedError(`Ollama returned non-string tags: ${raw}`);
+      }
+      return parsed;
     }
 
-    if (!parsed.every((tag) => typeof tag === 'string')) {
-      throw new TagGenerationFailedError(`Ollama returned non-string tags: ${raw}`);
+    if (
+      parsed !== null &&
+      typeof parsed === 'object' &&
+      'tags' in parsed &&
+      Array.isArray(parsed.tags)
+    ) {
+      const tags = (parsed as { tags: unknown[] }).tags;
+      if (!tags.every((tag) => typeof tag === 'string')) {
+        throw new TagGenerationFailedError(`Ollama returned non-string tags: ${raw}`);
+      }
+      return tags;
     }
 
-    return parsed;
+    throw new TagGenerationFailedError(`Unexpected Ollama response format: ${raw}`);
   }
 }
