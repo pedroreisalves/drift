@@ -110,4 +110,25 @@ describe('DeletePostHandler', () => {
     expect(deleteMock).not.toHaveBeenCalled();
     expect(dispatchMock).not.toHaveBeenCalled();
   });
+
+  it('should throw ForbiddenPostUpdateError when the post belongs to a different client', async () => {
+    const repository = makeRepository();
+    const dispatcher = makeDispatcher();
+    const handler = new DeletePostHandler(repository, dispatcher, makeLogger());
+
+    const postId = uuidv7();
+    const ownerClientId = uuidv7();
+    const otherClientId = uuidv7();
+    (repository.findById as ReturnType<typeof vi.fn>).mockResolvedValue(
+      makeExistingPost(postId, ownerClientId),
+    );
+
+    const command = new DeletePostCommand(postId, otherClientId);
+
+    await expect(handler.execute(command)).rejects.toThrow(ForbiddenPostUpdateError);
+    const deleteMock = repository.delete as ReturnType<typeof vi.fn>;
+    const dispatchMock = dispatcher.dispatch as ReturnType<typeof vi.fn>;
+    expect(deleteMock).not.toHaveBeenCalled();
+    expect(dispatchMock).not.toHaveBeenCalled();
+  });
 });

@@ -55,7 +55,7 @@ export default class PostController {
       const { id } = req.params;
       const { clientId, clientName, title, body } = req.body as UpdatePostBody;
 
-      const command = new UpdatePostCommand(id as string, clientId, clientName, title, body);
+      const command = new UpdatePostCommand(id as string, clientId, title, body);
       await this.updatePostHandler.execute(command);
 
       res.status(204).send();

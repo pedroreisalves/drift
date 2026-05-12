@@ -51,9 +51,7 @@ describe('UpdatePostHandler', () => {
     const existing = makeExistingPost(postId, clientId);
     (repository.findById as ReturnType<typeof vi.fn>).mockResolvedValue(existing);
 
-    await handler.execute(
-      new UpdatePostCommand(postId, clientId, 'John Doe', 'Updated Title', 'Updated body.'),
-    );
+    await handler.execute(new UpdatePostCommand(postId, clientId, 'Updated Title', 'Updated body.'));
 
     const findByIdMock = repository.findById as ReturnType<typeof vi.fn>;
     const saveMock = repository.save as ReturnType<typeof vi.fn>;
@@ -91,7 +89,7 @@ describe('UpdatePostHandler', () => {
       callOrder.push('dispatcher.dispatch');
     });
 
-    await handler.execute(new UpdatePostCommand(postId, clientId, 'John Doe', 'Title', 'Body.'));
+    await handler.execute(new UpdatePostCommand(postId, clientId, 'Title', 'Body.'));
 
     expect(callOrder).toEqual(['repository.findById', 'repository.save', 'dispatcher.dispatch']);
   });
@@ -101,7 +99,7 @@ describe('UpdatePostHandler', () => {
     const dispatcher = makeDispatcher();
     const handler = new UpdatePostHandler(repository, dispatcher, makeLogger());
 
-    const command = new UpdatePostCommand(uuidv7(), uuidv7(), 'John Doe', 'Title', 'Body.');
+    const command = new UpdatePostCommand(uuidv7(), uuidv7(), 'Title', 'Body.');
 
     await expect(handler.execute(command)).rejects.toThrow(PostNotFoundError);
     const saveMock = repository.save as ReturnType<typeof vi.fn>;
@@ -121,7 +119,7 @@ describe('UpdatePostHandler', () => {
     const existing = makeExistingPost(postId, ownerClientId);
     (repository.findById as ReturnType<typeof vi.fn>).mockResolvedValue(existing);
 
-    const command = new UpdatePostCommand(postId, otherClientId, 'John Doe', 'Title', 'Body.');
+    const command = new UpdatePostCommand(postId, otherClientId, 'Title', 'Body.');
 
     await expect(handler.execute(command)).rejects.toThrow(ForbiddenPostUpdateError);
     const saveMock = repository.save as ReturnType<typeof vi.fn>;

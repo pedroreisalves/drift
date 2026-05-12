@@ -33,10 +33,7 @@ export default class UpdatePostHandler {
       throw new ForbiddenPostUpdateError(postId.toString(), clientId.toString());
     }
 
-    post.update({
-      title: command.title,
-      body: command.body,
-    });
+    post.update({ title: command.title, body: command.body });
 
     await this.postRepository.save(post);
 
