@@ -9,11 +9,15 @@ export default class PostViewedMiddleware {
     private readonly logger: Logger,
   ) {}
 
-  handle = (req: Request, res: Response, next: NextFunction): void => {
+  handle = (req: Request, _res: Response, next: NextFunction): void => {
     const { id } = req.params;
     const clientId = req.headers['x-client-id'] as string;
 
     if (!id || !clientId) {
+      this.logger.warn('PostViewed skipped: missing required fields', {
+        postId: id ?? null,
+        clientId: clientId ?? null,
+      });
       next();
       return;
     }

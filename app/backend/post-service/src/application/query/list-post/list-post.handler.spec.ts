@@ -5,6 +5,7 @@ import Post from '../../../domain/post/entity/post.aggregate';
 import PostId from '../../../domain/post/value-object/post-id.value-object';
 import ClientId from '../../../domain/post/value-object/client-id.value-object';
 import type PostRepository from '../../../domain/post/repository/post.repository';
+import type Logger from '../../@shared/interface/logger.interface';
 
 describe('ListPostHandler', () => {
   const makeRepository = (): PostRepository => ({
@@ -12,6 +13,12 @@ describe('ListPostHandler', () => {
     delete: vi.fn().mockResolvedValue(undefined),
     findById: vi.fn().mockResolvedValue(null),
     findAll: vi.fn().mockResolvedValue([]),
+  });
+
+  const makeLogger = (): Logger => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
   });
 
   const makePost = (postId = uuidv7()): Post => {
@@ -28,7 +35,7 @@ describe('ListPostHandler', () => {
 
   it('should return the posts fetched from the repository as DTOs', async () => {
     const repository = makeRepository();
-    const handler = new ListPostHandler(repository);
+    const handler = new ListPostHandler(repository, makeLogger());
 
     const firstId = uuidv7();
     const secondId = uuidv7();
@@ -46,7 +53,7 @@ describe('ListPostHandler', () => {
 
   it('should forward the provided limit and offset to the repository', async () => {
     const repository = makeRepository();
-    const handler = new ListPostHandler(repository);
+    const handler = new ListPostHandler(repository, makeLogger());
 
     await handler.execute(new ListPostQuery(20, 5));
 
@@ -56,7 +63,7 @@ describe('ListPostHandler', () => {
 
   it('should default to limit 10 and offset 0 when both are omitted', async () => {
     const repository = makeRepository();
-    const handler = new ListPostHandler(repository);
+    const handler = new ListPostHandler(repository, makeLogger());
 
     await handler.execute(new ListPostQuery());
 
@@ -66,7 +73,7 @@ describe('ListPostHandler', () => {
 
   it('should default only the omitted field when one is provided', async () => {
     const repository = makeRepository();
-    const handler = new ListPostHandler(repository);
+    const handler = new ListPostHandler(repository, makeLogger());
 
     await handler.execute(new ListPostQuery(50));
 

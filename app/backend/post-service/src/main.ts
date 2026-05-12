@@ -42,8 +42,8 @@ async function main(): Promise<void> {
   const deletePostHandler = new DeletePostHandler(repository, dispatcher, logger);
   const updatePostTagsHandler = new UpdatePostTagsHandler(repository, dispatcher, logger);
 
-  const getPostHandler = new GetPostHandler(repository);
-  const listPostHandler = new ListPostHandler(repository);
+  const getPostHandler = new GetPostHandler(repository, logger);
+  const listPostHandler = new ListPostHandler(repository, logger);
 
   const postTaggedEventHandler = new PostTaggedEventHandler(updatePostTagsHandler, repository, logger);
 

@@ -5,6 +5,7 @@ import Post from '../../../domain/post/entity/post.aggregate';
 import PostId from '../../../domain/post/value-object/post-id.value-object';
 import ClientId from '../../../domain/post/value-object/client-id.value-object';
 import type PostRepository from '../../../domain/post/repository/post.repository';
+import type Logger from '../../@shared/interface/logger.interface';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 
 describe('GetPostHandler', () => {
@@ -13,6 +14,12 @@ describe('GetPostHandler', () => {
     delete: vi.fn().mockResolvedValue(undefined),
     findById: vi.fn().mockResolvedValue(null),
     findAll: vi.fn().mockResolvedValue([]),
+  });
+
+  const makeLogger = (): Logger => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
   });
 
   const makePost = (postId: string): Post => {
@@ -29,7 +36,7 @@ describe('GetPostHandler', () => {
 
   it('should fetch the post from the repository and return it as a DTO', async () => {
     const repository = makeRepository();
-    const handler = new GetPostHandler(repository);
+    const handler = new GetPostHandler(repository, makeLogger());
 
     const postId = uuidv7();
     const existing = makePost(postId);
@@ -47,7 +54,7 @@ describe('GetPostHandler', () => {
 
   it('should throw PostNotFoundError when the post does not exist', async () => {
     const repository = makeRepository();
-    const handler = new GetPostHandler(repository);
+    const handler = new GetPostHandler(repository, makeLogger());
 
     await expect(handler.execute(new GetPostQuery(uuidv7()))).rejects.toThrow(PostNotFoundError);
   });
