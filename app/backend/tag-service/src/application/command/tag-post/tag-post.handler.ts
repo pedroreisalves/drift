@@ -34,6 +34,7 @@ export default class TagPostHandler {
       postId,
       title: command.title,
       body: command.body,
+      postUpdatedAt: new Date(command.postUpdatedAt),
     });
 
     await this.taggingProcessRepository.save(taggingProcess);

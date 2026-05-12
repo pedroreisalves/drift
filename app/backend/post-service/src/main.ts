@@ -44,7 +44,7 @@ async function main(): Promise<void> {
   const getPostHandler = new GetPostHandler(repository);
   const listPostHandler = new ListPostHandler(repository);
 
-  const postTaggedEventHandler = new PostTaggedEventHandler(updatePostTagsHandler, logger);
+  const postTaggedEventHandler = new PostTaggedEventHandler(updatePostTagsHandler, repository, logger);
 
   await consumer.subscribe('PostTagged', postTaggedEventHandler);
 

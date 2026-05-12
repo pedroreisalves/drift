@@ -18,6 +18,7 @@ describe('TaggingProcess', () => {
     postId: new PostId(uuidv7()),
     title: 'My First Post',
     body: 'This is the body of my first post.',
+    postUpdatedAt: new Date('2026-01-01T00:00:00.000Z'),
     ...overrides,
   });
 
@@ -94,6 +95,7 @@ describe('TaggingProcess', () => {
       retryCount: 2,
       status: new TaggingStatus('failed'),
       tags: [],
+      postUpdatedAt: new Date('2026-01-01T00:00:00.000Z'),
       createdAt,
       updatedAt,
     };
@@ -108,6 +110,7 @@ describe('TaggingProcess', () => {
     expect(tp.reason).toEqual(props.reason);
     expect(tp.retryCount).toBe(2);
     expect(tp.status.toString()).toBe('failed');
+    expect(tp.postUpdatedAt).toEqual(props.postUpdatedAt);
     expect(tp.createdAt).toEqual(createdAt);
     expect(tp.updatedAt).toEqual(updatedAt);
   });
@@ -122,6 +125,7 @@ describe('TaggingProcess', () => {
       retryCount: 0,
       status: new TaggingStatus('initialized'),
       tags: [],
+      postUpdatedAt: new Date('2026-01-01T00:00:00.000Z'),
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -233,6 +237,7 @@ describe('TaggingProcess', () => {
       retryCount: 3,
       status: new TaggingStatus('failed'),
       tags: [],
+      postUpdatedAt: new Date('2026-01-01T00:00:00.000Z'),
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -276,6 +281,7 @@ describe('TaggingProcess', () => {
       postId: props.postId.toString(),
       tags,
       taggedAt: tp.updatedAt.toISOString(),
+      postUpdatedAt: props.postUpdatedAt.toISOString(),
     });
   });
 
@@ -324,6 +330,7 @@ describe('TaggingProcess', () => {
       retryCount: 3,
       status: new TaggingStatus('failed'),
       tags: [],
+      postUpdatedAt: new Date('2026-01-01T00:00:00.000Z'),
       createdAt: new Date(),
       updatedAt: new Date(),
     });

@@ -41,6 +41,7 @@ describe('ExecuteTaggingHandler', () => {
       postId: new PostId(uuidv7()),
       title: 'My Post Title',
       body: 'This is the post body content.',
+      postUpdatedAt: new Date('2026-01-01T00:00:00.000Z'),
       retryCount: overrides.retryCount ?? 0,
       reason: null,
       status: new TaggingStatus('initialized'),

@@ -19,6 +19,7 @@ interface TaggingProcessProps {
   status: TaggingStatus;
   tags: string[];
   title: string;
+  postUpdatedAt: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -28,6 +29,7 @@ export interface CreateTaggingProcessProps {
   title: string;
   body: string;
   postId: PostId;
+  postUpdatedAt: Date;
 }
 
 const createTaggingProcessSchema = z
@@ -138,6 +140,7 @@ export default class TaggingProcess {
       postId: this.props.postId.toString(),
       tags: props.tags,
       taggedAt: taggedAt.toISOString(),
+      postUpdatedAt: this.props.postUpdatedAt.toISOString(),
     });
 
     this.addDomainEvent(event);
@@ -238,6 +241,10 @@ export default class TaggingProcess {
 
   get body(): string {
     return this.props.body;
+  }
+
+  get postUpdatedAt(): Date {
+    return this.props.postUpdatedAt;
   }
 
   get createdAt(): Date {
