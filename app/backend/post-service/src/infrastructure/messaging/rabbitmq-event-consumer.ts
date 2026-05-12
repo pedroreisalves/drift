@@ -47,7 +47,7 @@ export default class RabbitMQEventConsumer implements EventConsumer {
 
         processMessage().catch((error: unknown) => {
           console.error(`Failed to process ${eventName}:`, error);
-          channel.nack(message, false, false);
+          channel.nack(message, false, true);
         });
       });
     });
