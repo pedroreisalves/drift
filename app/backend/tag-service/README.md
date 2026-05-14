@@ -26,14 +26,14 @@ Automatically generates tags for posts using a local LLM, with retry logic for f
 | `TaggingInitialized` | tag-service (self — triggers execution) |
 | `PostTagged` | post-service |
 | `TaggingFailed` | tag-service (self — triggers retry) |
-| `TaggingAbandoned` | — |
+| `TaggingAbandoned` | post-service (clears tagging lock) |
 
 ## Tech
 
 - **Database:** PostgreSQL (tagging process state)
 - **Messaging:** RabbitMQ topic exchange (`drift.events`)
 - **LLM:** Ollama (local inference, default model `qwen2.5:1.5b`)
-- **Key libraries:** `amqplib`, `pg`, `pino`, `zod`, `uuidv7`
+- **Key libraries:** `amqp-connection-manager`, `amqplib`, `pg`, `pino`, `zod`, `uuidv7`
 - **Schema:** [`init.sql`](init.sql)
 
 ## Environment variables
