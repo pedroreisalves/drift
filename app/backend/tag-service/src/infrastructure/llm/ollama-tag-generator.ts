@@ -49,15 +49,23 @@ export default class OllamaTagGenerator implements TagGenerator {
       Your task is to generate accurate and relevant tags for a blog post based strictly on the provided title and body.
 
       Instructions:
-      - Return ONLY a raw JSON array of strings with no wrapper object
-      - The response must be exactly this shape: ["tag1", "tag2", "tag3"]
-      - Do not wrap the array in an object like { "tags": [...] }
+      - Return ONLY a JSON object with a single key "tags" containing an array of strings
+      - The response must be exactly this shape: { "tags": ["tag1", "tag2", "tag3"] }
+      - Do not return a raw array
       - Do not include markdown, explanations, comments, or extra text
       - The response must always be valid JSON
       - Generate a maximum of 10 tags
       - Each tag must contain a maximum of 45 characters
       - Every tag must be directly supported by the content
       - Never invent, infer, or hallucinate topics not clearly present in the post
+
+      CORRECT output:
+      { "tags": ["postgresql", "indexing", "performance"] }
+
+      INCORRECT output (never do this):
+      ["postgresql", "indexing", "performance"]
+      { "result": ["postgresql"] }
+      { "data": ["postgresql"] }
 
       Tag formatting rules:
       - lowercase only
@@ -90,9 +98,6 @@ export default class OllamaTagGenerator implements TagGenerator {
       - Medium posts: 5-8 tags
       - Detailed/complex posts: 8-10 tags only when justified by the content
 
-      Output example:
-      ["postgresql", "indexing", "query optimization", "performance", "b-tree"]
-
       Title:
       ${title}
 
@@ -103,13 +108,6 @@ export default class OllamaTagGenerator implements TagGenerator {
 
   private parseResponse(raw: string): string[] {
     const parsed = JSON.parse(raw) as unknown;
-
-    if (Array.isArray(parsed)) {
-      if (!parsed.every((tag) => typeof tag === 'string')) {
-        throw new TagGenerationFailedError(`Ollama returned non-string tags: ${raw}`);
-      }
-      return parsed;
-    }
 
     if (
       parsed !== null &&
