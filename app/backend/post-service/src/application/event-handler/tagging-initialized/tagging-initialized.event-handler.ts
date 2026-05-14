@@ -1,6 +1,7 @@
 import { type EventHandler } from '@drift/shared';
-import type PostLockRepository from '../@shared/interface/post-lock.repository';
 import { type Logger } from '@drift/shared';
+import LockPostForTaggingCommand from '../../command/lock-post-for-tagging/lock-post-for-tagging.command';
+import type LockPostForTaggingHandler from '../../command/lock-post-for-tagging/lock-post-for-tagging.handler';
 
 export interface TaggingInitializedMessage {
   eventName: string;
@@ -15,15 +16,15 @@ export interface TaggingInitializedMessage {
 
 export default class TaggingInitializedEventHandler implements EventHandler<TaggingInitializedMessage> {
   constructor(
-    private readonly postLockRepository: PostLockRepository,
+    private readonly lockPostForTaggingHandler: LockPostForTaggingHandler,
     private readonly logger: Logger,
   ) {}
 
   async handle(event: TaggingInitializedMessage): Promise<void> {
     const { postId } = event.payload;
 
-    await this.postLockRepository.lock(postId, 'tagging');
+    await this.lockPostForTaggingHandler.execute(new LockPostForTaggingCommand(postId));
 
-    this.logger.info('Post locked for tagging', { postId });
+    this.logger.info('TaggingInitialized handled', { postId });
   }
 }

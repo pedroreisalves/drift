@@ -10,10 +10,12 @@ import CreatePostHandler from './application/command/create-post/create-post.han
 import UpdatePostHandler from './application/command/update-post/update-post.handler';
 import DeletePostHandler from './application/command/delete-post/delete-post.handler';
 import UpdatePostTagsHandler from './application/command/update-post-tags/update-post-tags.handler';
+import LockPostForTaggingHandler from './application/command/lock-post-for-tagging/lock-post-for-tagging.handler';
+import UnlockPostForTaggingHandler from './application/command/unlock-post-for-tagging/unlock-post-for-tagging.handler';
 
-import PostTaggedEventHandler from './application/event-handler/post-tagged.event-handler';
-import TaggingInitializedEventHandler from './application/event-handler/tagging-initialized.event-handler';
-import TaggingAbandonedEventHandler from './application/event-handler/tagging-abandoned.event-handler';
+import PostTaggedEventHandler from './application/event-handler/post-tagged/post-tagged.event-handler';
+import TaggingInitializedEventHandler from './application/event-handler/tagging-initialized/tagging-initialized.event-handler';
+import TaggingAbandonedEventHandler from './application/event-handler/tagging-abandoned/tagging-abandoned.event-handler';
 
 import PostgresPostLockRepository from './infrastructure/persistence/postgres-post-lock.repository';
 
@@ -51,21 +53,25 @@ async function main(): Promise<void> {
   );
   const deletePostHandler = new DeletePostHandler(repository, dispatcher, logger);
   const updatePostTagsHandler = new UpdatePostTagsHandler(repository, dispatcher, logger);
+  const lockPostForTaggingHandler = new LockPostForTaggingHandler(postLockRepository, logger);
+  const unlockPostForTaggingHandler = new UnlockPostForTaggingHandler(postLockRepository, logger);
 
   const getPostHandler = new GetPostHandler(repository, logger);
   const listPostHandler = new ListPostHandler(repository, logger);
 
   const postTaggedEventHandler = new PostTaggedEventHandler(
     updatePostTagsHandler,
-    repository,
-    postLockRepository,
+    unlockPostForTaggingHandler,
     logger,
   );
   const taggingInitializedEventHandler = new TaggingInitializedEventHandler(
-    postLockRepository,
+    lockPostForTaggingHandler,
     logger,
   );
-  const taggingAbandonedEventHandler = new TaggingAbandonedEventHandler(postLockRepository, logger);
+  const taggingAbandonedEventHandler = new TaggingAbandonedEventHandler(
+    unlockPostForTaggingHandler,
+    logger,
+  );
 
   await consumer.subscribe('PostTagged', postTaggedEventHandler);
   await consumer.subscribe('TaggingInitialized', taggingInitializedEventHandler);

@@ -2,7 +2,8 @@ import { uuidv7 } from 'uuidv7';
 import TaggingInitializedEventHandler, {
   type TaggingInitializedMessage,
 } from './tagging-initialized.event-handler';
-import type PostLockRepository from '../@shared/interface/post-lock.repository';
+import LockPostForTaggingHandler from '../../command/lock-post-for-tagging/lock-post-for-tagging.handler';
+import type PostLockRepository from '../../@shared/interface/post-lock.repository';
 import { type Logger } from '@drift/shared';
 
 describe('TaggingInitializedEventHandler', () => {
@@ -18,6 +19,9 @@ describe('TaggingInitializedEventHandler', () => {
     error: vi.fn(),
   });
 
+  const makeLockPostForTaggingHandler = (): LockPostForTaggingHandler =>
+    new LockPostForTaggingHandler(makePostLockRepository(), makeLogger());
+
   const makeMessage = (postId = uuidv7()): TaggingInitializedMessage => ({
     eventName: 'TaggingInitialized',
     occurredAt: '2026-01-01T00:00:00.000Z',
@@ -29,13 +33,17 @@ describe('TaggingInitializedEventHandler', () => {
     },
   });
 
-  it('should lock the post for tagging when a TaggingInitialized event is received', async () => {
-    const postLockRepository = makePostLockRepository();
-    const handler = new TaggingInitializedEventHandler(postLockRepository, makeLogger());
+  it('should dispatch LockPostForTaggingCommand when a TaggingInitialized event is received', async () => {
+    const lockHandler = makeLockPostForTaggingHandler();
+    const handler = new TaggingInitializedEventHandler(lockHandler, makeLogger());
     const postId = uuidv7();
+
+    const executeSpy = vi.spyOn(lockHandler, 'execute');
 
     await handler.handle(makeMessage(postId));
 
-    expect(postLockRepository.lock).toHaveBeenCalledWith(postId, 'tagging');
+    expect(executeSpy).toHaveBeenCalledTimes(1);
+    const command = executeSpy.mock.calls[0][0];
+    expect(command.postId).toBe(postId);
   });
 });

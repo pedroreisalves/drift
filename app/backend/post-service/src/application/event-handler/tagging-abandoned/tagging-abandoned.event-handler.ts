@@ -1,6 +1,7 @@
 import { type EventHandler } from '@drift/shared';
-import type PostLockRepository from '../@shared/interface/post-lock.repository';
 import { type Logger } from '@drift/shared';
+import UnlockPostForTaggingCommand from '../../command/unlock-post-for-tagging/unlock-post-for-tagging.command';
+import type UnlockPostForTaggingHandler from '../../command/unlock-post-for-tagging/unlock-post-for-tagging.handler';
 
 export interface TaggingAbandonedMessage {
   eventName: string;
@@ -16,15 +17,15 @@ export interface TaggingAbandonedMessage {
 
 export default class TaggingAbandonedEventHandler implements EventHandler<TaggingAbandonedMessage> {
   constructor(
-    private readonly postLockRepository: PostLockRepository,
+    private readonly unlockPostForTaggingHandler: UnlockPostForTaggingHandler,
     private readonly logger: Logger,
   ) {}
 
   async handle(event: TaggingAbandonedMessage): Promise<void> {
     const { postId } = event.payload;
 
-    await this.postLockRepository.unlock(postId, 'tagging');
+    await this.unlockPostForTaggingHandler.execute(new UnlockPostForTaggingCommand(postId));
 
-    this.logger.info('Post unlocked after tagging abandoned', { postId });
+    this.logger.info('TaggingAbandoned handled', { postId });
   }
 }
