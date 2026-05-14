@@ -1,3 +1,22 @@
+x-app-resources: &app-resources
+  deploy:
+    resources:
+      limits:
+        cpus: "0.5"
+        memory: 256M
+
+x-rabbitmq-env: &rabbitmq-env
+  RABBITMQ_URL: amqp://rabbitmq:5672
+  RABBITMQ_EXCHANGE: drift.events
+
+x-shared-src-volume: &shared-src-volume
+  ./app/backend/@shared/src:/repo/app/backend/@shared/src
+
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 5s
+  timeout: 5s
+  retries: 5
+
 services:
   postgres:
     image: postgres:18-alpine
@@ -18,9 +37,7 @@ services:
           memory: 512M
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U drift"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      <<: *healthcheck-defaults
 
   rabbitmq:
     image: rabbitmq:4.3.0-management-alpine
@@ -37,9 +54,7 @@ services:
           memory: 512M
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      <<: *healthcheck-defaults
 
   meilisearch:
     image: getmeili/meilisearch:v1.43.0
@@ -90,16 +105,11 @@ services:
     environment:
       PORT: 3001
       DB_URL: postgresql://drift:drift@postgres:5432/post_db
-      RABBITMQ_URL: amqp://rabbitmq:5672
-      RABBITMQ_EXCHANGE: drift.events
+      <<: *rabbitmq-env
     volumes:
       - ./app/backend/post-service/src:/repo/app/backend/post-service/src
-      - ./app/backend/@shared/src:/repo/app/backend/@shared/src
-    deploy:
-      resources:
-        limits:
-          cpus: "0.5"
-          memory: 256M
+      - *shared-src-volume
+    <<: *app-resources
     depends_on:
       postgres:
         condition: service_healthy
@@ -116,16 +126,11 @@ services:
     environment:
       PORT: 3002
       MEILISEARCH_URL: http://meilisearch:7700
-      RABBITMQ_URL: amqp://rabbitmq:5672
-      RABBITMQ_EXCHANGE: drift.events
+      <<: *rabbitmq-env
     volumes:
       - ./app/backend/search-service/src:/repo/app/backend/search-service/src
-      - ./app/backend/@shared/src:/repo/app/backend/@shared/src
-    deploy:
-      resources:
-        limits:
-          cpus: "0.5"
-          memory: 256M
+      - *shared-src-volume
+    <<: *app-resources
     depends_on:
       postgres:
         condition: service_healthy
@@ -141,19 +146,14 @@ services:
     container_name: drift-tag-service
     environment:
       DB_URL: postgresql://drift:drift@postgres:5432/tag_db
-      RABBITMQ_URL: amqp://rabbitmq:5672
-      RABBITMQ_EXCHANGE: drift.events
       OLLAMA_URL: http://ollama:11434
       OLLAMA_MODEL: qwen2.5:1.5b
       OLLAMA_TIMEOUT_MS: 60000
+      <<: *rabbitmq-env
     volumes:
       - ./app/backend/tag-service/src:/repo/app/backend/tag-service/src
-      - ./app/backend/@shared/src:/repo/app/backend/@shared/src
-    deploy:
-      resources:
-        limits:
-          cpus: "0.5"
-          memory: 256M
+      - *shared-src-volume
+    <<: *app-resources
     depends_on:
       postgres:
         condition: service_healthy
