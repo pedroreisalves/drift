@@ -82,6 +82,7 @@ services:
       RABBITMQ_EXCHANGE: drift.events
     volumes:
       - ./app/backend/post-service/src:/repo/app/backend/post-service/src
+      - ./app/backend/@shared/src:/repo/app/backend/@shared/src
     deploy:
       resources:
         limits:
@@ -107,6 +108,7 @@ services:
       OLLAMA_TIMEOUT_MS: 60000
     volumes:
       - ./app/backend/tag-service/src:/repo/app/backend/tag-service/src
+      - ./app/backend/@shared/src:/repo/app/backend/@shared/src
     deploy:
       resources:
         limits:
