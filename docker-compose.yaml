@@ -98,7 +98,10 @@ services:
   post-service:
     build:
       context: .
-      dockerfile: app/backend/post-service/Dockerfile
+      dockerfile: app/backend/Dockerfile
+      args:
+        SERVICE_NAME: post-service
+        PORT: 3001
     container_name: drift-post-service
     ports:
       - "3001:3001"
@@ -119,7 +122,10 @@ services:
   search-service:
     build:
       context: .
-      dockerfile: app/backend/search-service/Dockerfile
+      dockerfile: app/backend/Dockerfile
+      args:
+        SERVICE_NAME: search-service
+        PORT: 3002
     container_name: drift-search-service
     ports:
       - "3002:3002"
@@ -142,7 +148,9 @@ services:
   tag-service:
     build:
       context: .
-      dockerfile: app/backend/tag-service/Dockerfile
+      dockerfile: app/backend/Dockerfile
+      args:
+        SERVICE_NAME: tag-service
     container_name: drift-tag-service
     environment:
       DB_URL: postgresql://drift:drift@postgres:5432/tag_db
