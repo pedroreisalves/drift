@@ -8,9 +8,9 @@ import OllamaTagGenerator from './infrastructure/llm/ollama-tag-generator';
 import { PinoLogger } from '@drift/shared';
 import ExecuteTaggingHandler from './application/command/execute-tagging/execute-tagging.handler';
 import TagPostHandler from './application/command/tag-post/tag-post.handler';
-import PostChangedEventHandler from './application/event-handler/post-changed.event-handler';
-import TaggingInitializedEventHandler from './application/event-handler/tagging-initialized.event-handler';
-import TaggingFailedEventHandler from './application/event-handler/tagging-failed.event-handler';
+import PostChangedEventHandler from './application/event-handler/post-changed/post-changed.event-handler';
+import TaggingInitializedEventHandler from './application/event-handler/tagging-initialized/tagging-initialized.event-handler';
+import TaggingFailedEventHandler from './application/event-handler/tagging-failed/tagging-failed.event-handler';
 
 const logger = new PinoLogger(Environment.SERVICE_NAME, Environment.LOG_LEVEL);
 

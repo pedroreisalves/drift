@@ -1,7 +1,7 @@
-import type { TaggingFailedEventPayload } from '../../domain/tagging-process/event/tagging-failed.event';
+import type { TaggingFailedEventPayload } from '../../../domain/tagging-process/event/tagging-failed.event';
 import { type EventHandler } from '@drift/shared';
-import ExecuteTaggingCommand from '../command/execute-tagging/execute-tagging.command';
-import type ExecuteTaggingHandler from '../command/execute-tagging/execute-tagging.handler';
+import ExecuteTaggingCommand from '../../command/execute-tagging/execute-tagging.command';
+import type ExecuteTaggingHandler from '../../command/execute-tagging/execute-tagging.handler';
 import { type Logger } from '@drift/shared';
 
 export interface TaggingFailedMessage {

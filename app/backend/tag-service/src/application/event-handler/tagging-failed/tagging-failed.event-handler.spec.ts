@@ -2,8 +2,8 @@ import { uuidv7 } from 'uuidv7';
 import TaggingFailedEventHandler, {
   type TaggingFailedMessage,
 } from './tagging-failed.event-handler';
-import ExecuteTaggingCommand from '../command/execute-tagging/execute-tagging.command';
-import type ExecuteTaggingHandler from '../command/execute-tagging/execute-tagging.handler';
+import ExecuteTaggingCommand from '../../command/execute-tagging/execute-tagging.command';
+import type ExecuteTaggingHandler from '../../command/execute-tagging/execute-tagging.handler';
 import { type Logger } from '@drift/shared';
 
 describe('TaggingFailedEventHandler', () => {

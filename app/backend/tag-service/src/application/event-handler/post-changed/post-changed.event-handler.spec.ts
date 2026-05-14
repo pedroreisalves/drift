@@ -1,7 +1,7 @@
 import { uuidv7 } from 'uuidv7';
 import PostChangedEventHandler, { type PostChangedMessage } from './post-changed.event-handler';
-import TagPostCommand from '../command/tag-post/tag-post.command';
-import type TagPostHandler from '../command/tag-post/tag-post.handler';
+import TagPostCommand from '../../command/tag-post/tag-post.command';
+import type TagPostHandler from '../../command/tag-post/tag-post.handler';
 import { type Logger } from '@drift/shared';
 
 describe('PostChangedEventHandler', () => {
