@@ -2,11 +2,11 @@ import { uuidv7 } from 'uuidv7';
 import UpdatePostTagsHandler from './update-post-tags.handler';
 import UpdatePostTagsCommand from './update-post-tags.command';
 import Post from '../../../domain/post/entity/post.aggregate';
-import PostId from '../../../domain/post/value-object/post-id.value-object';
-import ClientId from '../../../domain/post/value-object/client-id.value-object';
+import { PostId } from '@drift/shared';
+import { ClientId } from '@drift/shared';
 import type PostRepository from '../../../domain/post/repository/post.repository';
-import type EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
-import type Logger from '../../@shared/interface/logger.interface';
+import { type EventDispatcher } from '@drift/shared';
+import { type Logger } from '@drift/shared';
 import PostTagsUpdated from '../../../domain/post/event/post-tags-updated.event';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 

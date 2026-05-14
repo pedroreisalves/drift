@@ -1,5 +1,5 @@
 import { uuidv7 } from 'uuidv7';
-import InvalidValueObjectError from '../../@shared/error/invalid-value-object.error';
+import { InvalidValueObjectError } from '@drift/shared';
 import TaggingProcessId from './tagging-process-id.value-object';
 
 describe('TaggingProcessId', () => {

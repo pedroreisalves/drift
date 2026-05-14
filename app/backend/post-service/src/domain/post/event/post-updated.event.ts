@@ -1,4 +1,4 @@
-import type DomainEvent from '../../@shared/interface/domain-event.interface';
+import { type DomainEvent } from '@drift/shared';
 
 interface PostUpdatedEventPayload extends Record<string, unknown> {
   postId: string;

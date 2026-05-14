@@ -1,8 +1,8 @@
 import type { TaggingInitializedEventPayload } from '../../domain/tagging-process/event/tagging-initialized.event';
-import type EventHandler from '../@shared/interface/event-handler.interface';
+import { type EventHandler } from '@drift/shared';
 import ExecuteTaggingCommand from '../command/execute-tagging/execute-tagging.command';
 import type ExecuteTaggingHandler from '../command/execute-tagging/execute-tagging.handler';
-import type Logger from '../@shared/interface/logger.interface';
+import { type Logger } from '@drift/shared';
 
 export interface TaggingInitializedMessage {
   eventName: string;

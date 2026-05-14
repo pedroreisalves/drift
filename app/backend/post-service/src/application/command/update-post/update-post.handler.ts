@@ -1,13 +1,13 @@
 import type UpdatePostCommand from './update-post.command';
-import PostId from '../../../domain/post/value-object/post-id.value-object';
-import ClientId from '../../../domain/post/value-object/client-id.value-object';
+import { PostId } from '@drift/shared';
+import { ClientId } from '@drift/shared';
 import type PostRepository from '../../../domain/post/repository/post.repository';
 import type PostLockRepository from '../../@shared/interface/post-lock.repository';
-import type EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
+import { type EventDispatcher } from '@drift/shared';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 import ForbiddenPostUpdateError from '../../@shared/error/forbidden-post-update.error';
 import TaggingInProgressError from '../../@shared/error/tagging-in-progress.error';
-import type Logger from '../../@shared/interface/logger.interface';
+import { type Logger } from '@drift/shared';
 
 export default class UpdatePostHandler {
   constructor(

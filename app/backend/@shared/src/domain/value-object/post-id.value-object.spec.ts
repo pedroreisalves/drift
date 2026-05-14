@@ -1,6 +1,5 @@
 import { uuidv7 } from 'uuidv7';
-import InvalidValueObjectError from '../../@shared/error/invalid-value-object.error';
-import PostId from './post-id.value-object';
+import { InvalidValueObjectError, PostId } from '../../index';
 
 describe('PostId', () => {
   it('should create a PostId with a valid uuidv7', () => {

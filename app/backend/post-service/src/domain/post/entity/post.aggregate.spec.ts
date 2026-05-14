@@ -1,6 +1,6 @@
 import { uuidv7 } from 'uuidv7';
-import PostId from '../value-object/post-id.value-object';
-import ClientId from '../value-object/client-id.value-object';
+import { PostId } from '@drift/shared';
+import { ClientId } from '@drift/shared';
 import Post, { type CreatePostProps } from './post.aggregate';
 import InvalidPostError from '../error/invalid-post.error';
 import InvalidPostTagsError from '../error/invalid-post-tags.error';

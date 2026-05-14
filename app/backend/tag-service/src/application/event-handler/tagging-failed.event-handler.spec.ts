@@ -4,7 +4,7 @@ import TaggingFailedEventHandler, {
 } from './tagging-failed.event-handler';
 import ExecuteTaggingCommand from '../command/execute-tagging/execute-tagging.command';
 import type ExecuteTaggingHandler from '../command/execute-tagging/execute-tagging.handler';
-import type Logger from '../@shared/interface/logger.interface';
+import { type Logger } from '@drift/shared';
 
 describe('TaggingFailedEventHandler', () => {
   const makeExecuteTaggingHandler = (): ExecuteTaggingHandler =>

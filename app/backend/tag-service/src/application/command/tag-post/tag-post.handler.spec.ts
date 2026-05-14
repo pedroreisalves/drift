@@ -2,12 +2,12 @@ import { uuidv7 } from 'uuidv7';
 import TagPostHandler from './tag-post.handler';
 import TagPostCommand from './tag-post.command';
 import TaggingProcess from '../../../domain/tagging-process/entity/tagging-process.aggregate';
-import PostId from '../../../domain/tagging-process/value-object/post-id.value-object';
+import { PostId } from '@drift/shared';
 import TaggingProcessId from '../../../domain/tagging-process/value-object/tagging-process-id.value-object';
 import TaggingStatus from '../../../domain/tagging-process/value-object/tagging-status.value-object';
 import type TaggingProcessRepository from '../../../domain/tagging-process/repository/tagging-process.repository';
-import type EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
-import type Logger from '../../@shared/interface/logger.interface';
+import { type EventDispatcher } from '@drift/shared';
+import { type Logger } from '@drift/shared';
 import TaggingInitializedEvent from '../../../domain/tagging-process/event/tagging-initialized.event';
 
 describe('TagPostHandler', () => {

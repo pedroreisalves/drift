@@ -1,6 +1,6 @@
-import type EventHandler from '../@shared/interface/event-handler.interface';
+import { type EventHandler } from '@drift/shared';
 import type PostLockRepository from '../@shared/interface/post-lock.repository';
-import type Logger from '../@shared/interface/logger.interface';
+import { type Logger } from '@drift/shared';
 
 export interface TaggingInitializedMessage {
   eventName: string;

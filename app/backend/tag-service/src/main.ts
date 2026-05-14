@@ -1,18 +1,18 @@
 import { Pool } from 'pg';
 import Environment from './infrastructure/config/environment';
 
-import RabbitMQEventDispatcher from './infrastructure/messaging/rabbitmq-event-dispatcher';
-import RabbitMQEventConsumer from './infrastructure/messaging/rabbitmq-event-consumer';
+import { RabbitMQEventDispatcher } from '@drift/shared';
+import { RabbitMQEventConsumer } from '@drift/shared';
 import PostgresTaggingProcessRepository from './infrastructure/persistence/postgres-tagging-process.repository';
 import OllamaTagGenerator from './infrastructure/llm/ollama-tag-generator';
-import PinoLogger from './infrastructure/logging/pino-logger';
+import { PinoLogger } from '@drift/shared';
 import ExecuteTaggingHandler from './application/command/execute-tagging/execute-tagging.handler';
 import TagPostHandler from './application/command/tag-post/tag-post.handler';
 import PostChangedEventHandler from './application/event-handler/post-changed.event-handler';
 import TaggingInitializedEventHandler from './application/event-handler/tagging-initialized.event-handler';
 import TaggingFailedEventHandler from './application/event-handler/tagging-failed.event-handler';
 
-const logger = new PinoLogger(Environment.SERVICE_NAME);
+const logger = new PinoLogger(Environment.SERVICE_NAME, Environment.LOG_LEVEL);
 
 async function main(): Promise<void> {
   const pool = new Pool({ connectionString: Environment.DB_URL });

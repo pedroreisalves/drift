@@ -1,11 +1,11 @@
 import { uuidv7 } from 'uuidv7';
 import Post from '../../../domain/post/entity/post.aggregate';
 import type CreatePostCommand from './create-post.command';
-import PostId from '../../../domain/post/value-object/post-id.value-object';
-import ClientId from '../../../domain/post/value-object/client-id.value-object';
+import { PostId } from '@drift/shared';
+import { ClientId } from '@drift/shared';
 import type PostRepository from '../../../domain/post/repository/post.repository';
-import type EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
-import type Logger from '../../@shared/interface/logger.interface';
+import { type EventDispatcher } from '@drift/shared';
+import { type Logger } from '@drift/shared';
 
 export default class CreatePostHandler {
   constructor(

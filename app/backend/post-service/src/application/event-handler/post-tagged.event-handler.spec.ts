@@ -2,7 +2,7 @@ import { uuidv7 } from 'uuidv7';
 import PostTaggedEventHandler, { type PostTaggedMessage } from './post-tagged.event-handler';
 import type UpdatePostTagsHandler from '../command/update-post-tags/update-post-tags.handler';
 import UpdatePostTagsCommand from '../command/update-post-tags/update-post-tags.command';
-import type Logger from '../@shared/interface/logger.interface';
+import { type Logger } from '@drift/shared';
 import type PostRepository from '../../domain/post/repository/post.repository';
 import type PostLockRepository from '../@shared/interface/post-lock.repository';
 import type Post from '../../domain/post/entity/post.aggregate';

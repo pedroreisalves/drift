@@ -1,7 +1,7 @@
 import type { Pool } from 'pg';
 import type TaggingProcessRepository from '../../domain/tagging-process/repository/tagging-process.repository';
 import TaggingProcess from '../../domain/tagging-process/entity/tagging-process.aggregate';
-import PostId from '../../domain/tagging-process/value-object/post-id.value-object';
+import { PostId } from '@drift/shared';
 import TaggingProcessId from '../../domain/tagging-process/value-object/tagging-process-id.value-object';
 import type { TaggingStatusEnum } from '../../domain/tagging-process/value-object/tagging-status.value-object';
 import TaggingStatus from '../../domain/tagging-process/value-object/tagging-status.value-object';

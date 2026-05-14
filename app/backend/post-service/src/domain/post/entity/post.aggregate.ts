@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import type DomainEvent from '../../@shared/interface/domain-event.interface';
+import { AggregateRoot } from '@drift/shared';
 import PostCreatedEvent from '../event/post-created.event';
 import PostDeletedEvent from '../event/post-deleted.event';
 import PostTagsUpdated from '../event/post-tags-updated.event';
 import PostUpdatedEvent from '../event/post-updated.event';
-import type ClientId from '../value-object/client-id.value-object';
-import type PostId from '../value-object/post-id.value-object';
+import { type ClientId } from '@drift/shared';
+import { type PostId } from '@drift/shared';
 import InvalidPostError from '../error/invalid-post.error';
 import InvalidPostTagsError from '../error/invalid-post-tags.error';
 
@@ -72,10 +72,10 @@ const applyTagsSchema = z
     message: 'Tags cannot be duplicated',
   });
 
-export default class Post {
-  private domainEvents: DomainEvent[] = [];
-
-  private constructor(private props: PostProps) {}
+export default class Post extends AggregateRoot {
+  private constructor(private props: PostProps) {
+    super();
+  }
 
   static reconstruct(props: PostProps): Post {
     return new Post(props);
@@ -175,18 +175,6 @@ export default class Post {
 
   resetTags(): void {
     this.props.tags = [];
-  }
-
-  private addDomainEvent(domainEvent: DomainEvent): void {
-    this.domainEvents.push(domainEvent);
-  }
-
-  getDomainEvents(): DomainEvent[] {
-    return this.domainEvents;
-  }
-
-  clearDomainEvents(): void {
-    this.domainEvents = [];
   }
 
   get id(): PostId {

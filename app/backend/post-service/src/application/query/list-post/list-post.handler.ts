@@ -2,7 +2,7 @@ import type PostRepository from '../../../domain/post/repository/post.repository
 import type PostDTO from '../../@shared/dto/post.dto';
 import PostMapper from '../../@shared/dto/post.mapper';
 import type ListPostQuery from './list-post.query';
-import type Logger from '../../@shared/interface/logger.interface';
+import { type Logger } from '@drift/shared';
 
 export default class ListPostHandler {
   constructor(

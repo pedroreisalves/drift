@@ -4,9 +4,7 @@
   "description": "",
   "main": "",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "start": "node dist/main.js",
-    "dev": "tsx --watch src/main.ts",
+"dev": "tsx --watch src/main.ts",
     "test": "vitest",
     "coverage": "vitest run --coverage",
     "lint": "eslint .",
@@ -19,6 +17,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@drift/shared": "*",
     "amqp-connection-manager": "^5.0.0",
     "amqplib": "^1.0.6",
     "dotenv": "^17.4.2",

@@ -1,4 +1,4 @@
-import InvalidValueObjectError from '../../@shared/error/invalid-value-object.error';
+import { InvalidValueObjectError } from '@drift/shared';
 import TaggingStatus from './tagging-status.value-object';
 
 describe('TaggingStatus', () => {

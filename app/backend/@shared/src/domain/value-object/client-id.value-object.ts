@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import InvalidValueObjectError from '../../@shared/error/invalid-value-object.error';
+import InvalidValueObjectError from '../error/invalid-value-object.error';
 
-const clientIdSchema = z.uuidv7({ error: 'Invalid Client ID format' });
+export const clientIdSchema = z.uuidv7({ error: 'Invalid Client ID format' });
 
 export default class ClientId {
   constructor(private readonly value: string) {

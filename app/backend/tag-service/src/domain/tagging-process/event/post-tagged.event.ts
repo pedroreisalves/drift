@@ -1,4 +1,4 @@
-import type DomainEvent from '../../@shared/interface/domain-event.interface';
+import { type DomainEvent } from '@drift/shared';
 
 interface PostTaggedEventPayload extends Record<string, unknown> {
   taggingProcessId: string;

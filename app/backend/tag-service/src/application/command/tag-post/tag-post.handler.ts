@@ -1,11 +1,11 @@
-import type EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
+import { type EventDispatcher } from '@drift/shared';
 import type TaggingProcessRepository from '../../../domain/tagging-process/repository/tagging-process.repository';
-import PostId from '../../../domain/tagging-process/value-object/post-id.value-object';
+import { PostId } from '@drift/shared';
 import type TagPostCommand from './tag-post.command';
 import TaggingProcess from '../../../domain/tagging-process/entity/tagging-process.aggregate';
 import TaggingProcessId from '../../../domain/tagging-process/value-object/tagging-process-id.value-object';
 import { uuidv7 } from 'uuidv7';
-import type Logger from '../../@shared/interface/logger.interface';
+import { type Logger } from '@drift/shared';
 
 export default class TagPostHandler {
   constructor(

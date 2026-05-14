@@ -1,7 +1,7 @@
 import type { Pool } from 'pg';
 import Post from '../../domain/post/entity/post.aggregate';
-import PostId from '../../domain/post/value-object/post-id.value-object';
-import ClientId from '../../domain/post/value-object/client-id.value-object';
+import { PostId } from '@drift/shared';
+import { ClientId } from '@drift/shared';
 import type PostRepository from '../../domain/post/repository/post.repository';
 
 interface PostRow {

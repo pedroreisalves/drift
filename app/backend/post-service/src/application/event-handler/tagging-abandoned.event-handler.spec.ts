@@ -3,7 +3,7 @@ import TaggingAbandonedEventHandler, {
   type TaggingAbandonedMessage,
 } from './tagging-abandoned.event-handler';
 import type PostLockRepository from '../@shared/interface/post-lock.repository';
-import type Logger from '../@shared/interface/logger.interface';
+import { type Logger } from '@drift/shared';
 
 describe('TaggingAbandonedEventHandler', () => {
   const makePostLockRepository = (): PostLockRepository => ({

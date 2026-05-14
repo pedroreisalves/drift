@@ -1,14 +1,13 @@
 import pino from 'pino';
-import type Logger from '../../application/@shared/interface/logger.interface';
-import Environment from '../config/environment';
+import type Logger from '../../application/interface/logger.interface';
 
 export default class PinoLogger implements Logger {
   private readonly logger: pino.Logger;
 
-  constructor(serviceName: string) {
+  constructor(serviceName: string, logLevel: string) {
     this.logger = pino({
       name: serviceName,
-      level: Environment.LOG_LEVEL,
+      level: logLevel,
     });
   }
 

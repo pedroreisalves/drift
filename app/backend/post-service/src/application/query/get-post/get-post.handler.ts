@@ -1,10 +1,10 @@
 import type GetPostQuery from './get-post.query';
-import PostId from '../../../domain/post/value-object/post-id.value-object';
+import { PostId } from '@drift/shared';
 import type PostRepository from '../../../domain/post/repository/post.repository';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 import type PostDTO from '../../@shared/dto/post.dto';
 import PostMapper from '../../@shared/dto/post.mapper';
-import type Logger from '../../@shared/interface/logger.interface';
+import { type Logger } from '@drift/shared';
 
 export default class GetPostHandler {
   constructor(

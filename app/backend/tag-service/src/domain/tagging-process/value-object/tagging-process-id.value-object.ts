@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import InvalidValueObjectError from '../../@shared/error/invalid-value-object.error';
+import { InvalidValueObjectError } from '@drift/shared';
 
 export const taggingProcessIdSchema = z.uuidv7({ error: 'Invalid Post ID format' });
 

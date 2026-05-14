@@ -3,8 +3,8 @@ import CreatePostHandler from './create-post.handler';
 import CreatePostCommand from './create-post.command';
 import Post from '../../../domain/post/entity/post.aggregate';
 import type PostRepository from '../../../domain/post/repository/post.repository';
-import type EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
-import type Logger from '../../@shared/interface/logger.interface';
+import { type EventDispatcher } from '@drift/shared';
+import { type Logger } from '@drift/shared';
 import PostCreatedEvent from '../../../domain/post/event/post-created.event';
 
 describe('CreatePostHandler', () => {

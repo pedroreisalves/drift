@@ -1,10 +1,10 @@
-import type EventHandler from '../@shared/interface/event-handler.interface';
+import { type EventHandler } from '@drift/shared';
 import UpdatePostTagsCommand from '../command/update-post-tags/update-post-tags.command';
 import type UpdatePostTagsHandler from '../command/update-post-tags/update-post-tags.handler';
 import type PostLockRepository from '../@shared/interface/post-lock.repository';
-import type Logger from '../@shared/interface/logger.interface';
+import { type Logger } from '@drift/shared';
 import type PostRepository from '../../domain/post/repository/post.repository';
-import PostId from '../../domain/post/value-object/post-id.value-object';
+import { PostId } from '@drift/shared';
 
 export interface PostTaggedMessage {
   eventName: string;

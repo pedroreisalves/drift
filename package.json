@@ -8,7 +8,10 @@
     "app/frontend"
   ],
   "scripts": {
+    "test:shared": "npm run test --workspace @drift/shared",
     "test:post-service": "npm run test --workspace post-service",
+    "test:tag-service": "npm run test --workspace tag-service",
+    "coverage:shared": "npm run coverage --workspace @drift/shared",
     "coverage:post-service": "npm run coverage --workspace post-service",
     "coverage:tag-service": "npm run coverage --workspace tag-service"
   },

@@ -1,9 +1,9 @@
 import type UpdatePostTagsCommand from './update-post-tags.command';
-import PostId from '../../../domain/post/value-object/post-id.value-object';
+import { PostId } from '@drift/shared';
 import type PostRepository from '../../../domain/post/repository/post.repository';
-import type EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
+import { type EventDispatcher } from '@drift/shared';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
-import type Logger from '../../@shared/interface/logger.interface';
+import { type Logger } from '@drift/shared';
 
 export default class UpdatePostTagsHandler {
   constructor(

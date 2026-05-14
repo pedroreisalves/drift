@@ -1,10 +1,10 @@
-import type EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
+import { type EventDispatcher } from '@drift/shared';
 import type TaggingProcessRepository from '../../../domain/tagging-process/repository/tagging-process.repository';
 import type ExecuteTaggingCommand from './execute-tagging.command';
 import type TagGenerator from '../../@shared/interface/tag-generator.interface';
 import TaggingProcessNotFoundError from '../../@shared/error/tagging-process-not-found.error';
 import TaggingProcessId from '../../../domain/tagging-process/value-object/tagging-process-id.value-object';
-import type Logger from '../../@shared/interface/logger.interface';
+import { type Logger } from '@drift/shared';
 
 export default class ExecuteTaggingHandler {
   constructor(

@@ -1,7 +1,7 @@
-import type EventHandler from '../@shared/interface/event-handler.interface';
+import { type EventHandler } from '@drift/shared';
 import TagPostCommand from '../command/tag-post/tag-post.command';
 import type TagPostHandler from '../command/tag-post/tag-post.handler';
-import type Logger from '../@shared/interface/logger.interface';
+import { type Logger } from '@drift/shared';
 
 export interface PostChangedMessage {
   eventName: string;

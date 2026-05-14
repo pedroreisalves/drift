@@ -2,9 +2,9 @@ import express from 'express';
 import { Pool } from 'pg';
 import Environment from './infrastructure/config/environment';
 
-import RabbitMQEventDispatcher from './infrastructure/messaging/rabbitmq-event-dispatcher';
-import RabbitMQEventConsumer from './infrastructure/messaging/rabbitmq-event-consumer';
-import PinoLogger from './infrastructure/logging/pino-logger';
+import { RabbitMQEventDispatcher } from '@drift/shared';
+import { RabbitMQEventConsumer } from '@drift/shared';
+import { PinoLogger } from '@drift/shared';
 
 import CreatePostHandler from './application/command/create-post/create-post.handler';
 import UpdatePostHandler from './application/command/update-post/update-post.handler';
@@ -25,7 +25,7 @@ import PostController from './infrastructure/http/controllers/post.controller';
 import createPostRoutes from './infrastructure/http/routes/post.routes';
 import createErrorMiddleware from './infrastructure/http/middleware/error.middleware';
 
-const logger = new PinoLogger(Environment.SERVICE_NAME);
+const logger = new PinoLogger(Environment.SERVICE_NAME, Environment.LOG_LEVEL);
 
 async function main(): Promise<void> {
   const pool = new Pool({ connectionString: Environment.DB_URL });

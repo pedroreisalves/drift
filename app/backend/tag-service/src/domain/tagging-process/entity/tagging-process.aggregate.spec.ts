@@ -1,6 +1,6 @@
 import { uuidv7 } from 'uuidv7';
 import TaggingProcess from './tagging-process.aggregate';
-import PostId from '../value-object/post-id.value-object';
+import { PostId } from '@drift/shared';
 import TaggingProcessId from '../value-object/tagging-process-id.value-object';
 import TaggingStatus from '../value-object/tagging-status.value-object';
 import InvalidTaggingProcessError from '../error/invalid-tagging-process.error';

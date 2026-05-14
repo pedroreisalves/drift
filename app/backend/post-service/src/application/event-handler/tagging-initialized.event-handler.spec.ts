@@ -3,7 +3,7 @@ import TaggingInitializedEventHandler, {
   type TaggingInitializedMessage,
 } from './tagging-initialized.event-handler';
 import type PostLockRepository from '../@shared/interface/post-lock.repository';
-import type Logger from '../@shared/interface/logger.interface';
+import { type Logger } from '@drift/shared';
 
 describe('TaggingInitializedEventHandler', () => {
   const makePostLockRepository = (): PostLockRepository => ({

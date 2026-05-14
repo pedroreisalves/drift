@@ -1,11 +1,11 @@
 import type { Request, Response, NextFunction } from 'express';
 import InvalidPostError from '../../../domain/post/error/invalid-post.error';
 import InvalidPostTagsError from '../../../domain/post/error/invalid-post-tags.error';
-import InvalidValueObjectError from '../../../domain/@shared/error/invalid-value-object.error';
+import { InvalidValueObjectError } from '@drift/shared';
 import PostNotFoundError from '../../../application/@shared/error/post-not-found.error';
 import ForbiddenPostUpdateError from '../../../application/@shared/error/forbidden-post-update.error';
 import TaggingInProgressError from '../../../application/@shared/error/tagging-in-progress.error';
-import type Logger from '../../../application/@shared/interface/logger.interface';
+import { type Logger } from '@drift/shared';
 
 export default function createErrorMiddleware(logger: Logger) {
   return function errorMiddleware(

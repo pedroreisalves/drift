@@ -1,6 +1,5 @@
 import { uuidv7 } from 'uuidv7';
-import ClientId from './client-id.value-object';
-import InvalidValueObjectError from '../../@shared/error/invalid-value-object.error';
+import { ClientId, InvalidValueObjectError } from '../../index';
 
 describe('ClientId', () => {
   it('should create a ClientId with a valid uuidv7', () => {
