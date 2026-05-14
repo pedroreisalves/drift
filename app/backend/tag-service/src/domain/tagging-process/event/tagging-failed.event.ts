@@ -1,4 +1,4 @@
-import { type DomainEvent } from '@drift/shared';
+import { DomainEvent } from '@drift/shared';
 
 export interface TaggingFailedEventPayload extends Record<string, unknown> {
   taggingProcessId: string;
@@ -8,14 +8,12 @@ export interface TaggingFailedEventPayload extends Record<string, unknown> {
   failedAt: string;
 }
 
-export default class TaggingFailedEvent implements DomainEvent {
-  readonly eventName: string;
-  readonly occurredAt: Date;
+export default class TaggingFailedEvent extends DomainEvent<TaggingFailedEventPayload> {
+  readonly eventName = 'TaggingFailed';
   readonly payload: TaggingFailedEventPayload;
 
-  constructor(eventPayload: TaggingFailedEventPayload) {
-    this.eventName = 'TaggingFailed';
-    this.occurredAt = new Date();
-    this.payload = eventPayload;
+  constructor(payload: TaggingFailedEventPayload) {
+    super();
+    this.payload = payload;
   }
 }

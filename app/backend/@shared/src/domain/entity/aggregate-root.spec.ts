@@ -1,12 +1,12 @@
 import { AggregateRoot } from './aggregate-root';
-import type DomainEvent from '../interface/domain-event.interface';
+import { DomainEvent } from '../event/domain-event';
 
-class StubEvent implements DomainEvent {
-  eventName = 'StubEvent';
-  occurredAt = new Date();
-  payload: Record<string, unknown>;
+class StubEvent extends DomainEvent {
+  readonly eventName = 'StubEvent';
+  readonly payload: Record<string, unknown>;
 
   constructor(payload: Record<string, unknown> = {}) {
+    super();
     this.payload = payload;
   }
 }

@@ -1,4 +1,4 @@
-export type { default as DomainEvent } from './domain/interface/domain-event.interface';
+export { DomainEvent } from './domain/event/domain-event';
 export { default as InvalidValueObjectError } from './domain/error/invalid-value-object.error';
 export { default as PostId, postIdSchema } from './domain/value-object/post-id.value-object';
 export { default as ClientId, clientIdSchema } from './domain/value-object/client-id.value-object';

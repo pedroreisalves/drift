@@ -1,4 +1,4 @@
-import { type DomainEvent } from '@drift/shared';
+import { DomainEvent } from '@drift/shared';
 
 interface PostTaggedEventPayload extends Record<string, unknown> {
   taggingProcessId: string;
@@ -7,14 +7,12 @@ interface PostTaggedEventPayload extends Record<string, unknown> {
   taggedAt: string;
 }
 
-export default class PostTaggedEvent implements DomainEvent {
-  readonly eventName: string;
-  readonly occurredAt: Date;
+export default class PostTaggedEvent extends DomainEvent<PostTaggedEventPayload> {
+  readonly eventName = 'PostTagged';
   readonly payload: PostTaggedEventPayload;
 
-  constructor(eventPayload: PostTaggedEventPayload) {
-    this.eventName = 'PostTagged';
-    this.occurredAt = new Date();
-    this.payload = eventPayload;
+  constructor(payload: PostTaggedEventPayload) {
+    super();
+    this.payload = payload;
   }
 }

@@ -1,4 +1,4 @@
-import { type DomainEvent } from '@drift/shared';
+import { DomainEvent } from '@drift/shared';
 
 interface PostDeletedEventPayload extends Record<string, unknown> {
   postId: string;
@@ -6,14 +6,12 @@ interface PostDeletedEventPayload extends Record<string, unknown> {
   deletedAt: string;
 }
 
-export default class PostDeletedEvent implements DomainEvent {
-  readonly eventName: string;
-  readonly occurredAt: Date;
+export default class PostDeletedEvent extends DomainEvent<PostDeletedEventPayload> {
+  readonly eventName = 'PostDeleted';
   readonly payload: PostDeletedEventPayload;
 
-  constructor(eventPayload: PostDeletedEventPayload) {
-    this.eventName = 'PostDeleted';
-    this.occurredAt = new Date();
-    this.payload = eventPayload;
+  constructor(payload: PostDeletedEventPayload) {
+    super();
+    this.payload = payload;
   }
 }
