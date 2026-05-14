@@ -41,6 +41,18 @@ services:
       timeout: 5s
       retries: 5
 
+  meilisearch:
+    image: getmeili/meilisearch:v1.43.0
+    container_name: drift-meilisearch
+    ports:
+      - "7700:7700"
+    volumes:
+      - meilisearch_data:/meili_data
+    healthcheck:
+      test: set -o pipefail;curl -fsS http://localhost:7700/health | grep -q '{"status":"available"}'
+      retries: 3
+      timeout: 5s
+
   ollama:
     image: ollama/ollama:latest
     container_name: drift-ollama
@@ -94,6 +106,34 @@ services:
       rabbitmq:
         condition: service_healthy
 
+  search-service:
+    build:
+      context: .
+      dockerfile: app/backend/search-service/Dockerfile
+    container_name: drift-search-service
+    ports:
+      - "3002:3002"
+    environment:
+      PORT: 3002
+      MEILISEARCH_URL: http://meilisearch:7700
+      RABBITMQ_URL: amqp://rabbitmq:5672
+      RABBITMQ_EXCHANGE: drift.events
+    volumes:
+      - ./app/backend/search-service/src:/repo/app/backend/search-service/src
+      - ./app/backend/@shared/src:/repo/app/backend/@shared/src
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      meilisearch:
+        condition: service_healthy
+
   tag-service:
     build:
       context: .
@@ -126,3 +166,4 @@ volumes:
   postgres_data:
   rabbitmq_data:
   ollama_data:
+  meilisearch_data:
