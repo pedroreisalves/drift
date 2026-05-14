@@ -28,9 +28,11 @@ describe('TagPostHandler', () => {
   });
 
   const makeCommand = (postId = uuidv7()): TagPostCommand =>
-    new TagPostCommand(postId, 'My Post Title', 'This is the post body content.', '2026-01-01T00:00:00.000Z');
+    new TagPostCommand(postId, 'My Post Title', 'This is the post body content.');
 
-  const makeExistingProcess = (status: 'initialized' | 'failed' | 'tagged' | 'abandoned'): TaggingProcess => {
+  const makeExistingProcess = (
+    status: 'initialized' | 'failed' | 'tagged' | 'abandoned',
+  ): TaggingProcess => {
     const process = TaggingProcess.reconstruct({
       id: new TaggingProcessId(uuidv7()),
       postId: new PostId(uuidv7()),
@@ -40,7 +42,6 @@ describe('TagPostHandler', () => {
       reason: null,
       status: new TaggingStatus(status),
       tags: [],
-      postUpdatedAt: new Date('2026-01-01T00:00:00.000Z'),
       createdAt: new Date(),
       updatedAt: new Date(),
     });

@@ -12,6 +12,10 @@ import DeletePostHandler from './application/command/delete-post/delete-post.han
 import UpdatePostTagsHandler from './application/command/update-post-tags/update-post-tags.handler';
 
 import PostTaggedEventHandler from './application/event-handler/post-tagged.event-handler';
+import TaggingInitializedEventHandler from './application/event-handler/tagging-initialized.event-handler';
+import TaggingAbandonedEventHandler from './application/event-handler/tagging-abandoned.event-handler';
+
+import PostgresPostLockRepository from './infrastructure/persistence/postgres-post-lock.repository';
 
 import PostViewedMiddleware from './infrastructure/http/middleware/post-viewed.middleware';
 import PostgresPostRepository from './infrastructure/persistence/postgres-post.repository';
@@ -26,6 +30,7 @@ const logger = new PinoLogger(Environment.SERVICE_NAME);
 async function main(): Promise<void> {
   const pool = new Pool({ connectionString: Environment.DB_URL });
   const repository = new PostgresPostRepository(pool);
+  const postLockRepository = new PostgresPostLockRepository(pool);
   const dispatcher = new RabbitMQEventDispatcher(
     Environment.RABBITMQ_URL,
     Environment.RABBITMQ_EXCHANGE,
@@ -38,16 +43,33 @@ async function main(): Promise<void> {
   );
 
   const createPostHandler = new CreatePostHandler(repository, dispatcher, logger);
-  const updatePostHandler = new UpdatePostHandler(repository, dispatcher, logger);
+  const updatePostHandler = new UpdatePostHandler(
+    repository,
+    postLockRepository,
+    dispatcher,
+    logger,
+  );
   const deletePostHandler = new DeletePostHandler(repository, dispatcher, logger);
   const updatePostTagsHandler = new UpdatePostTagsHandler(repository, dispatcher, logger);
 
   const getPostHandler = new GetPostHandler(repository, logger);
   const listPostHandler = new ListPostHandler(repository, logger);
 
-  const postTaggedEventHandler = new PostTaggedEventHandler(updatePostTagsHandler, repository, logger);
+  const postTaggedEventHandler = new PostTaggedEventHandler(
+    updatePostTagsHandler,
+    repository,
+    postLockRepository,
+    logger,
+  );
+  const taggingInitializedEventHandler = new TaggingInitializedEventHandler(
+    postLockRepository,
+    logger,
+  );
+  const taggingAbandonedEventHandler = new TaggingAbandonedEventHandler(postLockRepository, logger);
 
   await consumer.subscribe('PostTagged', postTaggedEventHandler);
+  await consumer.subscribe('TaggingInitialized', taggingInitializedEventHandler);
+  await consumer.subscribe('TaggingAbandoned', taggingAbandonedEventHandler);
 
   const controller = new PostController(
     createPostHandler,
@@ -65,7 +87,7 @@ async function main(): Promise<void> {
   app.use(createErrorMiddleware(logger));
 
   logger.info(`${Environment.SERVICE_NAME} started`, {
-    subscriptions: ['PostTagged'],
+    subscriptions: ['PostTagged', 'TaggingInitialized', 'TaggingAbandoned'],
   });
 
   app.listen(Environment.PORT, () => {

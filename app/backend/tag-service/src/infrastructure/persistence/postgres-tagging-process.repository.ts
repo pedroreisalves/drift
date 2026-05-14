@@ -15,7 +15,6 @@ interface TaggingProcessRow {
   status: TaggingStatusEnum;
   reason: string | null;
   tags: string[];
-  post_updated_at: string;
   created_at: Date;
   updated_at: Date;
 }
@@ -47,8 +46,8 @@ export default class PostgresTaggingProcessRepository implements TaggingProcessR
 
   async save(taggingProcess: TaggingProcess): Promise<void> {
     const query = `
-      INSERT INTO tagging_process (id, post_id, retry_count, title, body, status, reason, tags, post_updated_at, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      INSERT INTO tagging_process (id, post_id, retry_count, title, body, status, reason, tags, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       ON CONFLICT (id) DO UPDATE SET
         retry_count = EXCLUDED.retry_count,
         status = EXCLUDED.status,
@@ -66,7 +65,6 @@ export default class PostgresTaggingProcessRepository implements TaggingProcessR
       taggingProcess.status.toString(),
       taggingProcess.reason,
       taggingProcess.tags,
-      taggingProcess.postUpdatedAt,
       taggingProcess.createdAt,
       taggingProcess.updatedAt,
     ]);
@@ -82,7 +80,6 @@ export default class PostgresTaggingProcessRepository implements TaggingProcessR
       status: new TaggingStatus(row.status),
       reason: row.reason,
       tags: row.tags,
-      postUpdatedAt: new Date(row.post_updated_at),
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     });

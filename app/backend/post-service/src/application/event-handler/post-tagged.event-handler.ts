@@ -1,6 +1,7 @@
 import type EventHandler from '../@shared/interface/event-handler.interface';
 import UpdatePostTagsCommand from '../command/update-post-tags/update-post-tags.command';
 import type UpdatePostTagsHandler from '../command/update-post-tags/update-post-tags.handler';
+import type PostLockRepository from '../@shared/interface/post-lock.repository';
 import type Logger from '../@shared/interface/logger.interface';
 import type PostRepository from '../../domain/post/repository/post.repository';
 import PostId from '../../domain/post/value-object/post-id.value-object';
@@ -13,7 +14,6 @@ export interface PostTaggedMessage {
     postId: string;
     tags: string[];
     taggedAt: string;
-    postUpdatedAt: string;
   };
 }
 
@@ -21,11 +21,12 @@ export default class PostTaggedEventHandler implements EventHandler<PostTaggedMe
   constructor(
     private readonly updatePostTagsHandler: UpdatePostTagsHandler,
     private readonly postRepository: PostRepository,
+    private readonly postLockRepository: PostLockRepository,
     private readonly logger: Logger,
   ) {}
 
   async handle(event: PostTaggedMessage): Promise<void> {
-    const { postId, tags, postUpdatedAt } = event.payload;
+    const { postId, tags } = event.payload;
 
     this.logger.info('Received post tagged event, applying tags', {
       postId,
@@ -36,19 +37,12 @@ export default class PostTaggedEventHandler implements EventHandler<PostTaggedMe
 
     if (!post) {
       this.logger.warn('Dropping PostTagged event: post no longer exists', { postId });
-      return;
-    }
-
-    if (post.updatedAt.toISOString() !== postUpdatedAt) {
-      this.logger.warn('Dropping stale PostTagged event: post content has changed since tagging', {
-        postId,
-        eventPostUpdatedAt: postUpdatedAt,
-        currentPostUpdatedAt: post.updatedAt.toISOString(),
-      });
+      await this.postLockRepository.unlock(postId, 'tagging');
       return;
     }
 
     const command = new UpdatePostTagsCommand(postId, tags);
     await this.updatePostTagsHandler.execute(command);
+    await this.postLockRepository.unlock(postId, 'tagging');
   }
 }

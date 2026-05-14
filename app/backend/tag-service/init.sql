@@ -11,7 +11,6 @@ CREATE TABLE tagging_process (
 	,status TEXT NOT NULL
 	,reason TEXT NULL
 	,tags TEXT [] NOT NULL DEFAULT '{}'
-	,post_updated_at TIMESTAMPTZ NOT NULL
 	,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 	,updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 	);

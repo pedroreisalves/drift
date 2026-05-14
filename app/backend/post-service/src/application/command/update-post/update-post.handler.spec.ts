@@ -5,11 +5,13 @@ import Post from '../../../domain/post/entity/post.aggregate';
 import PostId from '../../../domain/post/value-object/post-id.value-object';
 import ClientId from '../../../domain/post/value-object/client-id.value-object';
 import type PostRepository from '../../../domain/post/repository/post.repository';
+import type PostLockRepository from '../../@shared/interface/post-lock.repository';
 import type EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
 import type Logger from '../../@shared/interface/logger.interface';
 import PostUpdatedEvent from '../../../domain/post/event/post-updated.event';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 import ForbiddenPostUpdateError from '../../@shared/error/forbidden-post-update.error';
+import TaggingInProgressError from '../../@shared/error/tagging-in-progress.error';
 
 describe('UpdatePostHandler', () => {
   const makeRepository = (): PostRepository => ({
@@ -17,6 +19,12 @@ describe('UpdatePostHandler', () => {
     delete: vi.fn().mockResolvedValue(undefined),
     findById: vi.fn().mockResolvedValue(null),
     findAll: vi.fn().mockResolvedValue([]),
+  });
+
+  const makePostLockRepository = (locked = false): PostLockRepository => ({
+    lock: vi.fn().mockResolvedValue(undefined),
+    unlock: vi.fn().mockResolvedValue(undefined),
+    isLocked: vi.fn().mockResolvedValue(locked),
   });
 
   const makeDispatcher = (): EventDispatcher => ({
@@ -44,14 +52,21 @@ describe('UpdatePostHandler', () => {
   it('should fetch the post, persist the update, dispatch the PostUpdatedEvent and clear events', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
-    const handler = new UpdatePostHandler(repository, dispatcher, makeLogger());
+    const handler = new UpdatePostHandler(
+      repository,
+      makePostLockRepository(),
+      dispatcher,
+      makeLogger(),
+    );
 
     const postId = uuidv7();
     const clientId = uuidv7();
     const existing = makeExistingPost(postId, clientId);
     (repository.findById as ReturnType<typeof vi.fn>).mockResolvedValue(existing);
 
-    await handler.execute(new UpdatePostCommand(postId, clientId, 'Updated Title', 'Updated body.'));
+    await handler.execute(
+      new UpdatePostCommand(postId, clientId, 'Updated Title', 'Updated body.'),
+    );
 
     const findByIdMock = repository.findById as ReturnType<typeof vi.fn>;
     const saveMock = repository.save as ReturnType<typeof vi.fn>;
@@ -71,7 +86,12 @@ describe('UpdatePostHandler', () => {
   it('should call findById, then repository.save, then dispatcher.dispatch in order', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
-    const handler = new UpdatePostHandler(repository, dispatcher, makeLogger());
+    const handler = new UpdatePostHandler(
+      repository,
+      makePostLockRepository(),
+      dispatcher,
+      makeLogger(),
+    );
 
     const postId = uuidv7();
     const clientId = uuidv7();
@@ -97,7 +117,12 @@ describe('UpdatePostHandler', () => {
   it('should throw PostNotFoundError when the post does not exist', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
-    const handler = new UpdatePostHandler(repository, dispatcher, makeLogger());
+    const handler = new UpdatePostHandler(
+      repository,
+      makePostLockRepository(),
+      dispatcher,
+      makeLogger(),
+    );
 
     const command = new UpdatePostCommand(uuidv7(), uuidv7(), 'Title', 'Body.');
 
@@ -111,7 +136,12 @@ describe('UpdatePostHandler', () => {
   it('should throw ForbiddenPostUpdateError when the post belongs to a different client', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
-    const handler = new UpdatePostHandler(repository, dispatcher, makeLogger());
+    const handler = new UpdatePostHandler(
+      repository,
+      makePostLockRepository(),
+      dispatcher,
+      makeLogger(),
+    );
 
     const postId = uuidv7();
     const ownerClientId = uuidv7();
@@ -122,6 +152,30 @@ describe('UpdatePostHandler', () => {
     const command = new UpdatePostCommand(postId, otherClientId, 'Title', 'Body.');
 
     await expect(handler.execute(command)).rejects.toThrow(ForbiddenPostUpdateError);
+    const saveMock = repository.save as ReturnType<typeof vi.fn>;
+    const dispatchMock = dispatcher.dispatch as ReturnType<typeof vi.fn>;
+    expect(saveMock).not.toHaveBeenCalled();
+    expect(dispatchMock).not.toHaveBeenCalled();
+  });
+
+  it('should throw TaggingInProgressError when a tagging lock is active', async () => {
+    const repository = makeRepository();
+    const dispatcher = makeDispatcher();
+    const handler = new UpdatePostHandler(
+      repository,
+      makePostLockRepository(true),
+      dispatcher,
+      makeLogger(),
+    );
+
+    const postId = uuidv7();
+    const clientId = uuidv7();
+    const existing = makeExistingPost(postId, clientId);
+    (repository.findById as ReturnType<typeof vi.fn>).mockResolvedValue(existing);
+
+    const command = new UpdatePostCommand(postId, clientId, 'Title', 'Body.');
+
+    await expect(handler.execute(command)).rejects.toThrow(TaggingInProgressError);
     const saveMock = repository.save as ReturnType<typeof vi.fn>;
     const dispatchMock = dispatcher.dispatch as ReturnType<typeof vi.fn>;
     expect(saveMock).not.toHaveBeenCalled();

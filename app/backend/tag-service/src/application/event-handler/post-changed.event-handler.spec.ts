@@ -49,6 +49,5 @@ describe('PostChangedEventHandler', () => {
     expect(command.postId).toBe(postId);
     expect(command.title).toBe(title);
     expect(command.body).toBe(body);
-    expect(command.postUpdatedAt).toBe('2026-01-01T00:00:00.000Z');
   });
 });

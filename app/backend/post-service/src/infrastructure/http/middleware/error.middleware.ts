@@ -4,6 +4,7 @@ import InvalidPostTagsError from '../../../domain/post/error/invalid-post-tags.e
 import InvalidValueObjectError from '../../../domain/@shared/error/invalid-value-object.error';
 import PostNotFoundError from '../../../application/@shared/error/post-not-found.error';
 import ForbiddenPostUpdateError from '../../../application/@shared/error/forbidden-post-update.error';
+import TaggingInProgressError from '../../../application/@shared/error/tagging-in-progress.error';
 import type Logger from '../../../application/@shared/interface/logger.interface';
 
 export default function createErrorMiddleware(logger: Logger) {
@@ -29,6 +30,11 @@ export default function createErrorMiddleware(logger: Logger) {
 
     if (error instanceof ForbiddenPostUpdateError) {
       res.status(403).json({ error: error.message });
+      return;
+    }
+
+    if (error instanceof TaggingInProgressError) {
+      res.status(409).json({ error: error.message });
       return;
     }
 

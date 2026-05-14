@@ -4,15 +4,12 @@ import type UpdatePostTagsHandler from '../command/update-post-tags/update-post-
 import UpdatePostTagsCommand from '../command/update-post-tags/update-post-tags.command';
 import type Logger from '../@shared/interface/logger.interface';
 import type PostRepository from '../../domain/post/repository/post.repository';
+import type PostLockRepository from '../@shared/interface/post-lock.repository';
 import type Post from '../../domain/post/entity/post.aggregate';
 
-type MessageOverrides = Partial<
-  Pick<PostTaggedMessage['payload'], 'postId' | 'tags' | 'postUpdatedAt'>
->;
+type MessageOverrides = Partial<Pick<PostTaggedMessage['payload'], 'postId' | 'tags'>>;
 
 describe('PostTaggedEventHandler', () => {
-  const postUpdatedAt = '2026-01-01T00:00:00.000Z';
-
   const makeUpdatePostTagsHandler = (): UpdatePostTagsHandler =>
     ({
       execute: vi.fn().mockResolvedValue(undefined),
@@ -24,15 +21,18 @@ describe('PostTaggedEventHandler', () => {
     error: vi.fn(),
   });
 
-  const makePost = (updatedAt: string): Post =>
-    ({
-      updatedAt: new Date(updatedAt),
-    }) as unknown as Post;
+  const makePost = (): Post => ({}) as unknown as Post;
 
   const makePostRepository = (post: Post | null): PostRepository =>
     ({
       findById: vi.fn().mockResolvedValue(post),
     }) as unknown as PostRepository;
+
+  const makePostLockRepository = (): PostLockRepository => ({
+    lock: vi.fn().mockResolvedValue(undefined),
+    unlock: vi.fn().mockResolvedValue(undefined),
+    isLocked: vi.fn().mockResolvedValue(false),
+  });
 
   const makeMessage = (overrides: MessageOverrides = {}): PostTaggedMessage => ({
     eventName: 'PostTagged',
@@ -42,16 +42,16 @@ describe('PostTaggedEventHandler', () => {
       postId: overrides.postId ?? uuidv7(),
       tags: overrides.tags ?? ['tech', 'news'],
       taggedAt: '2026-01-01T00:00:00.000Z',
-      postUpdatedAt: overrides.postUpdatedAt ?? postUpdatedAt,
     },
   });
 
   it('should invoke UpdatePostTagsHandler.execute with a command built from the message payload', async () => {
     const updatePostTagsHandler = makeUpdatePostTagsHandler();
-    const postRepository = makePostRepository(makePost(postUpdatedAt));
+    const postLockRepository = makePostLockRepository();
     const eventHandler = new PostTaggedEventHandler(
       updatePostTagsHandler,
-      postRepository,
+      makePostRepository(makePost()),
+      postLockRepository,
       makeLogger(),
     );
     const postId = uuidv7();
@@ -68,30 +68,37 @@ describe('PostTaggedEventHandler', () => {
     expect(command.tags).toEqual(tags);
   });
 
-  it('should skip applying tags when postUpdatedAt does not match the post current updatedAt', async () => {
-    const updatePostTagsHandler = makeUpdatePostTagsHandler();
-    const logger = makeLogger();
-    const postRepository = makePostRepository(makePost('2026-05-08T12:00:00.000Z'));
-    const eventHandler = new PostTaggedEventHandler(updatePostTagsHandler, postRepository, logger);
+  it('should unlock the post after successfully applying tags', async () => {
+    const postLockRepository = makePostLockRepository();
     const postId = uuidv7();
+    const eventHandler = new PostTaggedEventHandler(
+      makeUpdatePostTagsHandler(),
+      makePostRepository(makePost()),
+      postLockRepository,
+      makeLogger(),
+    );
 
-    const executeSpy = vi.spyOn(updatePostTagsHandler, 'execute');
+    await eventHandler.handle(makeMessage({ postId }));
 
-    await eventHandler.handle(makeMessage({ postId, postUpdatedAt }));
-
-    expect(executeSpy).not.toHaveBeenCalled();
+    expect(postLockRepository.unlock).toHaveBeenCalledWith(postId, 'tagging');
   });
 
-  it('should skip applying tags when the post no longer exists', async () => {
+  it('should unlock the post and skip applying tags when the post no longer exists', async () => {
     const updatePostTagsHandler = makeUpdatePostTagsHandler();
-    const logger = makeLogger();
-    const postRepository = makePostRepository(null);
-    const eventHandler = new PostTaggedEventHandler(updatePostTagsHandler, postRepository, logger);
+    const postLockRepository = makePostLockRepository();
+    const postId = uuidv7();
+    const eventHandler = new PostTaggedEventHandler(
+      updatePostTagsHandler,
+      makePostRepository(null),
+      postLockRepository,
+      makeLogger(),
+    );
 
     const executeSpy = vi.spyOn(updatePostTagsHandler, 'execute');
 
-    await eventHandler.handle(makeMessage());
+    await eventHandler.handle(makeMessage({ postId }));
 
     expect(executeSpy).not.toHaveBeenCalled();
+    expect(postLockRepository.unlock).toHaveBeenCalledWith(postId, 'tagging');
   });
 });

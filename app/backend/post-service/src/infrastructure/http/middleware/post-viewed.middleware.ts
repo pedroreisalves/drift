@@ -15,8 +15,8 @@ export default class PostViewedMiddleware {
 
     if (!id || !clientId) {
       this.logger.warn('PostViewed skipped: missing required fields', {
-        postId: id ?? null,
-        clientId: clientId ?? null,
+        postId: id,
+        clientId: clientId,
       });
       next();
       return;

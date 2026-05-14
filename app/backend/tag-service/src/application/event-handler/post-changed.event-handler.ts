@@ -24,15 +24,14 @@ export default class PostChangedEventHandler implements EventHandler<PostChanged
   ) {}
 
   async handle(event: PostChangedMessage): Promise<void> {
-    const { postId, title, body, createdAt, updatedAt } = event.payload;
-    const postUpdatedAt = (updatedAt ?? createdAt) as string;
+    const { postId, title, body } = event.payload;
 
     this.logger.info('Received post changed event', {
       eventName: event.eventName,
       postId,
     });
 
-    const command = new TagPostCommand(postId, title, body, postUpdatedAt);
+    const command = new TagPostCommand(postId, title, body);
     await this.tagPostHandler.execute(command);
   }
 }

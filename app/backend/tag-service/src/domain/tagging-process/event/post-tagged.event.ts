@@ -5,7 +5,6 @@ interface PostTaggedEventPayload extends Record<string, unknown> {
   postId: string;
   tags: string[];
   taggedAt: string;
-  postUpdatedAt: string;
 }
 
 export default class PostTaggedEvent implements DomainEvent {

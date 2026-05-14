@@ -2,14 +2,17 @@ import type UpdatePostCommand from './update-post.command';
 import PostId from '../../../domain/post/value-object/post-id.value-object';
 import ClientId from '../../../domain/post/value-object/client-id.value-object';
 import type PostRepository from '../../../domain/post/repository/post.repository';
+import type PostLockRepository from '../../@shared/interface/post-lock.repository';
 import type EventDispatcher from '../../@shared/interface/event-dispatcher.interface';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 import ForbiddenPostUpdateError from '../../@shared/error/forbidden-post-update.error';
+import TaggingInProgressError from '../../@shared/error/tagging-in-progress.error';
 import type Logger from '../../@shared/interface/logger.interface';
 
 export default class UpdatePostHandler {
   constructor(
     private readonly postRepository: PostRepository,
+    private readonly postLockRepository: PostLockRepository,
     private readonly eventDispatcher: EventDispatcher,
     private readonly logger: Logger,
   ) {}
@@ -31,6 +34,13 @@ export default class UpdatePostHandler {
         clientId: clientId.toString(),
       });
       throw new ForbiddenPostUpdateError(postId.toString(), clientId.toString());
+    }
+
+    const isLockedByTagging = await this.postLockRepository.isLocked(postId.toString(), 'tagging');
+
+    if (isLockedByTagging) {
+      this.logger.warn('Post update rejected: tagging in progress', { postId: postId.toString() });
+      throw new TaggingInProgressError(postId.toString());
     }
 
     post.update({ title: command.title, body: command.body });

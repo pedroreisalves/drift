@@ -53,7 +53,7 @@ export default class PostController {
   async update(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { id } = req.params;
-      const { clientId, clientName, title, body } = req.body as UpdatePostBody;
+      const { clientId, title, body } = req.body as UpdatePostBody;
 
       const command = new UpdatePostCommand(id as string, clientId, title, body);
       await this.updatePostHandler.execute(command);
