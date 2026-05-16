@@ -2,7 +2,7 @@ import { uuidv7 } from 'uuidv7';
 import TaggingProcess from './tagging-process.aggregate';
 import { PostId } from '@drift/shared';
 import TaggingProcessId from '../value-object/tagging-process-id.value-object';
-import TaggingStatus from '../value-object/tagging-status.value-object';
+import TaggingStatus, { TaggingStatusEnum } from '../value-object/tagging-status.value-object';
 import InvalidTaggingProcessError from '../error/invalid-tagging-process.error';
 import TaggingInitializedEvent from '../event/tagging-initialized.event';
 import PostTaggedEvent from '../event/post-tagged.event';
@@ -92,7 +92,7 @@ describe('TaggingProcess', () => {
       body: 'This is the body of my first post.',
       reason: 'AI service unavailable',
       retryCount: 2,
-      status: new TaggingStatus('failed'),
+      status: new TaggingStatus(TaggingStatusEnum.failed),
       tags: [],
       createdAt,
       updatedAt,
@@ -120,7 +120,7 @@ describe('TaggingProcess', () => {
       body: 'This is the body of my first post.',
       reason: null,
       retryCount: 0,
-      status: new TaggingStatus('initialized'),
+      status: new TaggingStatus(TaggingStatusEnum.initialized),
       tags: [],
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -231,7 +231,7 @@ describe('TaggingProcess', () => {
       body: 'This is the body of my first post.',
       reason: null,
       retryCount: 3,
-      status: new TaggingStatus('failed'),
+      status: new TaggingStatus(TaggingStatusEnum.failed),
       tags: [],
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -322,7 +322,7 @@ describe('TaggingProcess', () => {
       body: props.body,
       reason: null,
       retryCount: 3,
-      status: new TaggingStatus('failed'),
+      status: new TaggingStatus(TaggingStatusEnum.failed),
       tags: [],
       createdAt: new Date(),
       updatedAt: new Date(),

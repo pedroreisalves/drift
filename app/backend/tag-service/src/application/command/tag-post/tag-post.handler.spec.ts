@@ -4,11 +4,12 @@ import TagPostCommand from './tag-post.command';
 import TaggingProcess from '../../../domain/tagging-process/entity/tagging-process.aggregate';
 import { PostId } from '@drift/shared';
 import TaggingProcessId from '../../../domain/tagging-process/value-object/tagging-process-id.value-object';
-import TaggingStatus from '../../../domain/tagging-process/value-object/tagging-status.value-object';
+import { TaggingStatusEnum } from '../../../domain/tagging-process/value-object/tagging-status.value-object';
 import type TaggingProcessRepository from '../../../domain/tagging-process/repository/tagging-process.repository';
 import { type EventDispatcher } from '@drift/shared';
 import { type Logger } from '@drift/shared';
 import TaggingInitializedEvent from '../../../domain/tagging-process/event/tagging-initialized.event';
+import TaggingStatus from '../../../domain/tagging-process/value-object/tagging-status.value-object';
 
 describe('TagPostHandler', () => {
   const makeRepository = (): TaggingProcessRepository => ({
@@ -30,9 +31,7 @@ describe('TagPostHandler', () => {
   const makeCommand = (postId = uuidv7()): TagPostCommand =>
     new TagPostCommand(postId, 'My Post Title', 'This is the post body content.');
 
-  const makeExistingProcess = (
-    status: 'initialized' | 'failed' | 'tagged' | 'abandoned',
-  ): TaggingProcess => {
+  const makeExistingProcess = (status: TaggingStatusEnum): TaggingProcess => {
     const process = TaggingProcess.reconstruct({
       id: new TaggingProcessId(uuidv7()),
       postId: new PostId(uuidv7()),
@@ -92,7 +91,7 @@ describe('TagPostHandler', () => {
     const handler = new TagPostHandler(repository, dispatcher, makeLogger());
 
     (repository.findByPostId as ReturnType<typeof vi.fn>).mockResolvedValue(
-      makeExistingProcess('initialized'),
+      makeExistingProcess(TaggingStatusEnum.initialized),
     );
 
     await handler.execute(makeCommand());
@@ -107,7 +106,7 @@ describe('TagPostHandler', () => {
     const handler = new TagPostHandler(repository, dispatcher, makeLogger());
 
     (repository.findByPostId as ReturnType<typeof vi.fn>).mockResolvedValue(
-      makeExistingProcess('failed'),
+      makeExistingProcess(TaggingStatusEnum.failed),
     );
 
     await handler.execute(makeCommand());
@@ -122,7 +121,7 @@ describe('TagPostHandler', () => {
     const handler = new TagPostHandler(repository, dispatcher, makeLogger());
 
     (repository.findByPostId as ReturnType<typeof vi.fn>).mockResolvedValue(
-      makeExistingProcess('tagged'),
+      makeExistingProcess(TaggingStatusEnum.tagged),
     );
 
     await handler.execute(makeCommand());
@@ -136,7 +135,7 @@ describe('TagPostHandler', () => {
     const handler = new TagPostHandler(repository, dispatcher, makeLogger());
 
     (repository.findByPostId as ReturnType<typeof vi.fn>).mockResolvedValue(
-      makeExistingProcess('abandoned'),
+      makeExistingProcess(TaggingStatusEnum.abandoned),
     );
 
     await handler.execute(makeCommand());

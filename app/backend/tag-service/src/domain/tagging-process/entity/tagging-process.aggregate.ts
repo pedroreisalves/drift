@@ -6,7 +6,7 @@ import TaggingFailedEvent from '../event/tagging-failed.event';
 import TaggingInitializedEvent from '../event/tagging-initialized.event';
 import { type PostId } from '@drift/shared';
 import type TaggingProcessId from '../value-object/tagging-process-id.value-object';
-import TaggingStatus from '../value-object/tagging-status.value-object';
+import TaggingStatus, { TaggingStatusEnum } from '../value-object/tagging-status.value-object';
 
 import { z } from 'zod';
 
@@ -98,7 +98,7 @@ export default class TaggingProcess extends AggregateRoot {
       ...props,
       reason: null,
       retryCount: 0,
-      status: new TaggingStatus('initialized'),
+      status: new TaggingStatus(TaggingStatusEnum.initialized),
       tags: [],
       createdAt,
       updatedAt,
@@ -129,7 +129,7 @@ export default class TaggingProcess extends AggregateRoot {
     const taggedAt = new Date();
 
     this.props.updatedAt = updatedAt;
-    this.props.status = new TaggingStatus('tagged');
+    this.props.status = new TaggingStatus(TaggingStatusEnum.tagged);
     this.props.reason = null;
     this.props.tags = props.tags;
 
@@ -158,7 +158,7 @@ export default class TaggingProcess extends AggregateRoot {
     this.props.reason = props.reason;
 
     if (!this.hasRetryAttemptsLeft) {
-      this.props.status = new TaggingStatus('abandoned');
+      this.props.status = new TaggingStatus(TaggingStatusEnum.abandoned);
 
       const taggingAbandonedEvent = new TaggingAbandonedEvent({
         taggingProcessId: this.props.id.toString(),
@@ -175,7 +175,7 @@ export default class TaggingProcess extends AggregateRoot {
 
     this.increaseRetryCounter();
 
-    this.props.status = new TaggingStatus('failed');
+    this.props.status = new TaggingStatus(TaggingStatusEnum.failed);
 
     const taggingFailedEvent = new TaggingFailedEvent({
       taggingProcessId: this.props.id.toString(),
