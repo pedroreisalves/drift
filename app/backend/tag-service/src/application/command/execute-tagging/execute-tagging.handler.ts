@@ -5,6 +5,7 @@ import type TagGenerator from '../../@shared/interface/tag-generator.interface';
 import TaggingProcessNotFoundError from '../../@shared/error/tagging-process-not-found.error';
 import TaggingProcessId from '../../../domain/tagging-process/value-object/tagging-process-id.value-object';
 import { type Logger } from '@drift/shared';
+import { TaggingStatusEnum } from '../../../domain/tagging-process/value-object/tagging-status.value-object';
 
 export default class ExecuteTaggingHandler {
   constructor(
@@ -43,7 +44,7 @@ export default class ExecuteTaggingHandler {
       const reason = error instanceof Error ? error.message : String(error);
       taggingProcess.fail({ reason });
 
-      if (taggingProcess.status.toString() === 'abandoned') {
+      if (taggingProcess.status.toString() === TaggingStatusEnum.abandoned) {
         this.logger.warn('Tagging abandoned after max retries', {
           taggingProcessId: taggingProcessId.toString(),
           postId: taggingProcess.postId.toString(),

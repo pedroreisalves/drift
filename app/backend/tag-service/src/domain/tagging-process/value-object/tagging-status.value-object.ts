@@ -1,11 +1,17 @@
 import { z } from 'zod';
 import { InvalidValueObjectError } from '@drift/shared';
 
-export const statusSchema = z.enum(['initialized', 'tagged', 'failed', 'abandoned'], {
-  message: 'Status must be one of: initialized, tagged, failed, abandoned',
-});
+export enum TaggingStatusEnum {
+  initialized = 'initialized',
+  tagged = 'tagged',
+  failed = 'failed',
+  abandoned = 'abandoned',
+}
 
-export type TaggingStatusEnum = z.infer<typeof statusSchema>;
+export const statusSchema = z.enum(
+  TaggingStatusEnum,
+  `Status must be one of: ${Object.values(TaggingStatusEnum).join(', ')}`,
+);
 
 export default class TaggingStatus {
   constructor(private readonly value: TaggingStatusEnum) {

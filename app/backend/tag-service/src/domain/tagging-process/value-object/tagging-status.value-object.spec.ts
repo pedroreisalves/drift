@@ -1,8 +1,8 @@
 import { InvalidValueObjectError } from '@drift/shared';
-import TaggingStatus from './tagging-status.value-object';
+import TaggingStatus, { TaggingStatusEnum } from './tagging-status.value-object';
 
 describe('TaggingStatus', () => {
-  it.each(['initialized', 'tagged', 'failed', 'abandoned'] as const)(
+  it.each(Object.values(TaggingStatusEnum))(
     'should create a TaggingStatus with the valid value "%s"',
     (value) => {
       const status = new TaggingStatus(value);
@@ -23,15 +23,15 @@ describe('TaggingStatus', () => {
   });
 
   it('should return true when comparing two TaggingStatuses with the same value', () => {
-    const a = new TaggingStatus('initialized');
-    const b = new TaggingStatus('initialized');
+    const a = new TaggingStatus(TaggingStatusEnum.initialized);
+    const b = new TaggingStatus(TaggingStatusEnum.initialized);
 
     expect(a.equals(b)).toBe(true);
   });
 
   it('should return false when comparing two TaggingStatuses with different values', () => {
-    const a = new TaggingStatus('initialized');
-    const b = new TaggingStatus('tagged');
+    const a = new TaggingStatus(TaggingStatusEnum.initialized);
+    const b = new TaggingStatus(TaggingStatusEnum.tagged);
 
     expect(a.equals(b)).toBe(false);
   });
