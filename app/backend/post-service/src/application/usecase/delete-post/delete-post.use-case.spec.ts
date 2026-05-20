@@ -101,7 +101,9 @@ describe('DeletePostUseCase', () => {
     const dispatcher = makeDispatcher();
     const useCase = new DeletePostUseCase(repository, dispatcher, makeLogger());
 
-    await expect(useCase.execute({ postId: uuidv7(), clientId: uuidv7() })).rejects.toThrow(PostNotFoundError);
+    await expect(useCase.execute({ postId: uuidv7(), clientId: uuidv7() })).rejects.toThrow(
+      PostNotFoundError,
+    );
     const deleteMock = repository.delete as ReturnType<typeof vi.fn>;
     const dispatchMock = dispatcher.dispatch as ReturnType<typeof vi.fn>;
     expect(deleteMock).not.toHaveBeenCalled();
@@ -120,7 +122,9 @@ describe('DeletePostUseCase', () => {
       makeExistingPost(postId, ownerClientId),
     );
 
-    await expect(useCase.execute({ postId, clientId: otherClientId })).rejects.toThrow(ForbiddenPostUpdateError);
+    await expect(useCase.execute({ postId, clientId: otherClientId })).rejects.toThrow(
+      ForbiddenPostUpdateError,
+    );
     const deleteMock = repository.delete as ReturnType<typeof vi.fn>;
     const dispatchMock = dispatcher.dispatch as ReturnType<typeof vi.fn>;
     expect(deleteMock).not.toHaveBeenCalled();

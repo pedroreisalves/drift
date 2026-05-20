@@ -96,7 +96,9 @@ describe('UpdatePostTagsUseCase', () => {
     const dispatcher = makeDispatcher();
     const useCase = new UpdatePostTagsUseCase(repository, dispatcher, makeLogger());
 
-    await expect(useCase.execute({ postId: uuidv7(), tags: ['tag1'] })).rejects.toThrow(PostNotFoundError);
+    await expect(useCase.execute({ postId: uuidv7(), tags: ['tag1'] })).rejects.toThrow(
+      PostNotFoundError,
+    );
     const saveMock = repository.save as ReturnType<typeof vi.fn>;
     const dispatchMock = dispatcher.dispatch as ReturnType<typeof vi.fn>;
     expect(saveMock).not.toHaveBeenCalled();

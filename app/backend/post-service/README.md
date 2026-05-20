@@ -12,31 +12,31 @@ Manages post lifecycle (create, update, delete, read) and exposes a REST API for
 
 ## HTTP endpoints
 
-| Method | Path | Description |
-|---|---|---|
-| `POST` | `/posts` | Create a post |
-| `PUT` | `/posts/:id` | Update a post (rejected with 409 while tagging lock is held) |
-| `DELETE` | `/posts/:id` | Delete a post |
-| `GET` | `/posts/:id` | Get a single post (emits `PostViewed` as side effect) |
-| `GET` | `/posts` | List posts |
+| Method   | Path         | Description                                                  |
+| -------- | ------------ | ------------------------------------------------------------ |
+| `POST`   | `/posts`     | Create a post                                                |
+| `PUT`    | `/posts/:id` | Update a post (rejected with 409 while tagging lock is held) |
+| `DELETE` | `/posts/:id` | Delete a post                                                |
+| `GET`    | `/posts/:id` | Get a single post (emits `PostViewed` as side effect)        |
+| `GET`    | `/posts`     | List posts                                                   |
 
 ## Events consumed
 
-| Event | Source service |
-|---|---|
-| `PostTagged` | tag-service |
-| `TaggingInitialized` | tag-service (sets tagging lock) |
-| `TaggingAbandoned` | tag-service (clears tagging lock) |
+| Event                | Source service                    |
+| -------------------- | --------------------------------- |
+| `PostTagged`         | tag-service                       |
+| `TaggingInitialized` | tag-service (sets tagging lock)   |
+| `TaggingAbandoned`   | tag-service (clears tagging lock) |
 
 ## Events produced
 
-| Event | Consumed by |
-|---|---|
-| `PostCreated` | tag-service, search-service, analytics-service |
-| `PostUpdated` | tag-service, search-service, analytics-service |
-| `PostTagsUpdated` | search-service |
-| `PostDeleted` | search-service, analytics-service, featured-service |
-| `PostViewed` | analytics-service |
+| Event             | Consumed by                                         |
+| ----------------- | --------------------------------------------------- |
+| `PostCreated`     | tag-service, search-service, analytics-service      |
+| `PostUpdated`     | tag-service, search-service, analytics-service      |
+| `PostTagsUpdated` | search-service                                      |
+| `PostDeleted`     | search-service, analytics-service, featured-service |
+| `PostViewed`      | analytics-service                                   |
 
 ## Tech
 
@@ -48,15 +48,15 @@ Manages post lifecycle (create, update, delete, read) and exposes a REST API for
 
 ## Environment variables
 
-| Variable | Description | Example |
-|---|---|---|
-| `DB_URL` | PostgreSQL connection string | `postgresql://user:pass@localhost:5432/drift` |
-| `RABBITMQ_URL` | RabbitMQ connection string | `amqp://user:pass@localhost:5672` |
-| `RABBITMQ_EXCHANGE` | RabbitMQ topic exchange name | `drift.events` |
-| `PORT` | HTTP port to listen on | `3001` |
-| `SERVICE_NAME` | Identifies this service in logs and queues | `post-service` |
-| `NODE_ENV` | Runtime environment | `production` |
-| `LOG_LEVEL` | Pino log level | `info` |
+| Variable            | Description                                | Example                                       |
+| ------------------- | ------------------------------------------ | --------------------------------------------- |
+| `DB_URL`            | PostgreSQL connection string               | `postgresql://user:pass@localhost:5432/drift` |
+| `RABBITMQ_URL`      | RabbitMQ connection string                 | `amqp://user:pass@localhost:5672`             |
+| `RABBITMQ_EXCHANGE` | RabbitMQ topic exchange name               | `drift.events`                                |
+| `PORT`              | HTTP port to listen on                     | `3001`                                        |
+| `SERVICE_NAME`      | Identifies this service in logs and queues | `post-service`                                |
+| `NODE_ENV`          | Runtime environment                        | `production`                                  |
+| `LOG_LEVEL`         | Pino log level                             | `info`                                        |
 
 ## How to run
 

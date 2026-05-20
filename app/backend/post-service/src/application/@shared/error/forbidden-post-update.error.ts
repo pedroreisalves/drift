@@ -4,6 +4,6 @@ export default class ForbiddenPostUpdateError extends Error {
     public readonly clientId: string,
   ) {
     super(`Client ${clientId} is not allowed to update post ${postId}`);
-    this.name = "ForbiddenPostUpdateError";
+    this.name = 'ForbiddenPostUpdateError';
   }
 }
