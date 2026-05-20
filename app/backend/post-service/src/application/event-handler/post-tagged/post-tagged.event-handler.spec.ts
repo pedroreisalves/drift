@@ -1,4 +1,3 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest';
 import type { Logger } from '@drift/shared';
 import PostTaggedEventHandler, { type PostTaggedMessage } from './post-tagged.event-handler';
 import type UpdatePostTagsUseCase from '../../usecase/update-post-tags/update-post-tags.use-case';
@@ -77,16 +76,18 @@ describe('PostTaggedEventHandler', () => {
   });
 
   it('should unlock the post and drop the event when the post no longer exists', async () => {
-    const updateSpy = vi.spyOn(updatePostTagsUseCase, 'execute').mockRejectedValue(
-      new PostNotFoundError('019682a0-1234-7000-8000-abcdef012346'),
-    );
+    const updateSpy = vi
+      .spyOn(updatePostTagsUseCase, 'execute')
+      .mockRejectedValue(new PostNotFoundError('019682a0-1234-7000-8000-abcdef012346'));
     const unlockSpy = vi.spyOn(unlockPostForTaggingUseCase, 'execute');
 
     await handler.handle(makeValidMessage());
 
     expect(updateSpy).toHaveBeenCalledTimes(1);
     expect(unlockSpy).toHaveBeenCalledTimes(1);
-    expect(unlockSpy.mock.calls[0][0]).toMatchObject({ postId: '019682a0-1234-7000-8000-abcdef012346' });
+    expect(unlockSpy.mock.calls[0][0]).toMatchObject({
+      postId: '019682a0-1234-7000-8000-abcdef012346',
+    });
   });
 
   it('should rethrow unexpected errors without unlocking', async () => {

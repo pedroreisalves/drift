@@ -1,4 +1,3 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest';
 import type { Logger } from '@drift/shared';
 import TaggingAbandonedEventHandler, {
   type TaggingAbandonedMessage,
@@ -11,7 +10,9 @@ const makeLogger = (): Logger => ({
   error: vi.fn(),
 });
 
-const makeValidMessage = (overrides: Partial<TaggingAbandonedMessage> = {}): TaggingAbandonedMessage => ({
+const makeValidMessage = (
+  overrides: Partial<TaggingAbandonedMessage> = {},
+): TaggingAbandonedMessage => ({
   eventName: 'TaggingAbandoned',
   occurredAt: '2026-01-01T00:00:00.000Z',
   payload: {
