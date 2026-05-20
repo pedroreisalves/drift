@@ -46,9 +46,10 @@ export default class PostgresPostRepository implements PostRepository {
   }
 
   async findById(postId: PostId): Promise<Post | null> {
-    const result = await this.pool.query<PostRow>('SELECT * FROM posts WHERE id = $1', [
-      postId.toString(),
-    ]);
+    const result = await this.pool.query<PostRow>(
+      'SELECT id, client_id, client_name, title, body, tags, created_at, updated_at FROM posts WHERE id = $1',
+      [postId.toString()],
+    );
 
     if (result.rows.length === 0) return null;
 
@@ -56,7 +57,8 @@ export default class PostgresPostRepository implements PostRepository {
   }
 
   async findAll(options?: { limit: number; offset: number }): Promise<Post[]> {
-    let query = 'SELECT * FROM posts ORDER BY created_at DESC';
+    let query =
+      'SELECT id, client_id, client_name, title, body, tags, created_at, updated_at FROM posts ORDER BY created_at DESC';
     const params: unknown[] = [];
 
     if (options) {
