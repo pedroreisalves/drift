@@ -1,8 +1,8 @@
 import type Post from '../../../domain/post/entity/post.aggregate';
-import type PostDTO from './post.dto';
+import type GetPostOutputDto from './get-post.output-dto';
 
-export default class PostMapper {
-  static toDTO(post: Post): PostDTO {
+export default class GetPostMapper {
+  static toOutputDto(post: Post): GetPostOutputDto {
     return {
       id: post.id.toString(),
       clientId: post.clientId.toString(),

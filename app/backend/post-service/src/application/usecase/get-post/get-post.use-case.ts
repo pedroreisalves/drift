@@ -2,8 +2,8 @@ import type { GetPostInputDto } from './get-post.input-dto';
 import { PostId } from '@drift/shared';
 import type PostRepository from '../../../domain/post/repository/post.repository';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
-import type PostDTO from '../../@shared/dto/post.dto';
-import PostMapper from '../../@shared/dto/post.mapper';
+import type GetPostOutputDto from './get-post.output-dto';
+import GetPostMapper from './get-post.mapper';
 import { type Logger } from '@drift/shared';
 
 export default class GetPostUseCase {
@@ -12,7 +12,7 @@ export default class GetPostUseCase {
     private readonly logger: Logger,
   ) {}
 
-  async execute(input: GetPostInputDto): Promise<PostDTO> {
+  async execute(input: GetPostInputDto): Promise<GetPostOutputDto> {
     const postId = new PostId(input.id);
     const post = await this.postRepository.findById(postId);
 
@@ -21,6 +21,6 @@ export default class GetPostUseCase {
       throw new PostNotFoundError(input.id);
     }
 
-    return PostMapper.toDTO(post);
+    return GetPostMapper.toOutputDto(post);
   }
 }

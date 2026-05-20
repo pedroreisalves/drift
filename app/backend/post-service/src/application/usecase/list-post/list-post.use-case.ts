@@ -1,6 +1,6 @@
 import type PostRepository from '../../../domain/post/repository/post.repository';
-import type PostDTO from '../../@shared/dto/post.dto';
-import PostMapper from '../../@shared/dto/post.mapper';
+import type ListPostOutputDto from './list-post.output-dto';
+import ListPostMapper from './list-post.mapper';
 import type { ListPostInputDto } from './list-post.input-dto';
 import { type Logger } from '@drift/shared';
 
@@ -10,7 +10,7 @@ export default class ListPostUseCase {
     private readonly logger: Logger,
   ) {}
 
-  async execute(input: ListPostInputDto): Promise<PostDTO[]> {
+  async execute(input: ListPostInputDto): Promise<ListPostOutputDto[]> {
     const limit = input.limit ?? 10;
     const offset = input.offset ?? 0;
 
@@ -18,6 +18,6 @@ export default class ListPostUseCase {
 
     this.logger.info('Posts listed', { count: posts.length, limit, offset });
 
-    return posts.map((post) => PostMapper.toDTO(post));
+    return posts.map((post) => ListPostMapper.toOutputDto(post));
   }
 }

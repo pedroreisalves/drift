@@ -1,4 +1,4 @@
-export default interface PostDTO {
+export default interface ListPostOutputDto {
   id: string;
   clientId: string;
   clientName: string;
