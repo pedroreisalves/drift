@@ -24,7 +24,7 @@ export default class PostgresTaggingProcessRepository implements TaggingProcessR
 
   async findByPostId(postId: PostId): Promise<TaggingProcess | null> {
     const result = await this.pool.query<TaggingProcessRow>(
-      'SELECT * FROM tagging_process WHERE post_id = $1 ORDER BY created_at DESC',
+      'SELECT id, post_id, retry_count, title, body, status, reason, tags, created_at, updated_at FROM tagging_process WHERE post_id = $1 ORDER BY created_at DESC',
       [postId.toString()],
     );
 
@@ -35,7 +35,7 @@ export default class PostgresTaggingProcessRepository implements TaggingProcessR
 
   async findById(taggingPostId: TaggingProcessId): Promise<TaggingProcess | null> {
     const result = await this.pool.query<TaggingProcessRow>(
-      'SELECT * FROM tagging_process WHERE id = $1',
+      'SELECT id, post_id, retry_count, title, body, status, reason, tags, created_at, updated_at FROM tagging_process WHERE id = $1',
       [taggingPostId.toString()],
     );
 
