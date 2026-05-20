@@ -1,10 +1,8 @@
 import { z } from 'zod';
 import { type EventHandler } from '@drift/shared';
 import { type Logger } from '@drift/shared';
-import UpdatePostTagsCommand from '../../command/update-post-tags/update-post-tags.command';
-import type UpdatePostTagsHandler from '../../command/update-post-tags/update-post-tags.handler';
-import UnlockPostForTaggingCommand from '../../command/unlock-post-for-tagging/unlock-post-for-tagging.command';
-import type UnlockPostForTaggingHandler from '../../command/unlock-post-for-tagging/unlock-post-for-tagging.handler';
+import type UpdatePostTagsUseCase from '../../usecase/update-post-tags/update-post-tags.use-case';
+import type UnlockPostForTaggingUseCase from '../../usecase/unlock-post-for-tagging/unlock-post-for-tagging.use-case';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 
 export const postTaggedMessageSchema = z.object({
@@ -22,8 +20,8 @@ export type PostTaggedMessage = z.infer<typeof postTaggedMessageSchema>;
 
 export default class PostTaggedEventHandler implements EventHandler {
   constructor(
-    private readonly updatePostTagsHandler: UpdatePostTagsHandler,
-    private readonly unlockPostForTaggingHandler: UnlockPostForTaggingHandler,
+    private readonly updatePostTagsUseCase: UpdatePostTagsUseCase,
+    private readonly unlockPostForTaggingUseCase: UnlockPostForTaggingUseCase,
     private readonly logger: Logger,
   ) {}
 
@@ -37,16 +35,16 @@ export default class PostTaggedEventHandler implements EventHandler {
     });
 
     try {
-      await this.updatePostTagsHandler.execute(new UpdatePostTagsCommand(postId, tags));
+      await this.updatePostTagsUseCase.execute({ postId, tags });
     } catch (error) {
       if (error instanceof PostNotFoundError) {
         this.logger.warn('Dropping PostTagged event: post no longer exists', { postId });
-        await this.unlockPostForTaggingHandler.execute(new UnlockPostForTaggingCommand(postId));
+        await this.unlockPostForTaggingUseCase.execute({ postId });
         return;
       }
       throw error;
     }
 
-    await this.unlockPostForTaggingHandler.execute(new UnlockPostForTaggingCommand(postId));
+    await this.unlockPostForTaggingUseCase.execute({ postId });
   }
 }

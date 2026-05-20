@@ -3,8 +3,7 @@ import type { Logger } from '@drift/shared';
 import TaggingAbandonedEventHandler, {
   type TaggingAbandonedMessage,
 } from './tagging-abandoned.event-handler';
-import type UnlockPostForTaggingHandler from '../../command/unlock-post-for-tagging/unlock-post-for-tagging.handler';
-import UnlockPostForTaggingCommand from '../../command/unlock-post-for-tagging/unlock-post-for-tagging.command';
+import type UnlockPostForTaggingUseCase from '../../usecase/unlock-post-for-tagging/unlock-post-for-tagging.use-case';
 
 const makeLogger = (): Logger => ({
   info: vi.fn(),
@@ -27,18 +26,18 @@ const makeValidMessage = (overrides: Partial<TaggingAbandonedMessage> = {}): Tag
 
 describe('TaggingAbandonedEventHandler', () => {
   let handler: TaggingAbandonedEventHandler;
-  let unlockPostForTaggingHandler: UnlockPostForTaggingHandler;
+  let unlockPostForTaggingUseCase: UnlockPostForTaggingUseCase;
 
   beforeEach(() => {
-    unlockPostForTaggingHandler = {
+    unlockPostForTaggingUseCase = {
       execute: vi.fn().mockResolvedValue(undefined),
-    } as unknown as UnlockPostForTaggingHandler;
+    } as unknown as UnlockPostForTaggingUseCase;
 
-    handler = new TaggingAbandonedEventHandler(unlockPostForTaggingHandler, makeLogger());
+    handler = new TaggingAbandonedEventHandler(unlockPostForTaggingUseCase, makeLogger());
   });
 
   it('should call use case with correct input when message is valid', async () => {
-    const executeSpy = vi.spyOn(unlockPostForTaggingHandler, 'execute');
+    const executeSpy = vi.spyOn(unlockPostForTaggingUseCase, 'execute');
 
     await handler.handle(makeValidMessage());
 
@@ -47,11 +46,10 @@ describe('TaggingAbandonedEventHandler', () => {
         postId: '019682a0-1234-7000-8000-abcdef012346',
       }),
     );
-    expect(executeSpy.mock.calls[0][0]).toBeInstanceOf(UnlockPostForTaggingCommand);
   });
 
   it('should throw when message is invalid', async () => {
-    const executeSpy = vi.spyOn(unlockPostForTaggingHandler, 'execute');
+    const executeSpy = vi.spyOn(unlockPostForTaggingUseCase, 'execute');
 
     await expect(
       handler.handle(

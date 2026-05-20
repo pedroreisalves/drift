@@ -1,8 +1,7 @@
 import { z } from 'zod';
 import { type EventHandler } from '@drift/shared';
 import { type Logger } from '@drift/shared';
-import UnlockPostForTaggingCommand from '../../command/unlock-post-for-tagging/unlock-post-for-tagging.command';
-import type UnlockPostForTaggingHandler from '../../command/unlock-post-for-tagging/unlock-post-for-tagging.handler';
+import type UnlockPostForTaggingUseCase from '../../usecase/unlock-post-for-tagging/unlock-post-for-tagging.use-case';
 
 export const taggingAbandonedMessageSchema = z.object({
   eventName: z.literal('TaggingAbandoned'),
@@ -20,7 +19,7 @@ export type TaggingAbandonedMessage = z.infer<typeof taggingAbandonedMessageSche
 
 export default class TaggingAbandonedEventHandler implements EventHandler {
   constructor(
-    private readonly unlockPostForTaggingHandler: UnlockPostForTaggingHandler,
+    private readonly unlockPostForTaggingUseCase: UnlockPostForTaggingUseCase,
     private readonly logger: Logger,
   ) {}
 
@@ -28,7 +27,7 @@ export default class TaggingAbandonedEventHandler implements EventHandler {
     const event = taggingAbandonedMessageSchema.parse(raw);
     const { postId } = event.payload;
 
-    await this.unlockPostForTaggingHandler.execute(new UnlockPostForTaggingCommand(postId));
+    await this.unlockPostForTaggingUseCase.execute({ postId });
 
     this.logger.info('TaggingAbandoned handled', { postId });
   }

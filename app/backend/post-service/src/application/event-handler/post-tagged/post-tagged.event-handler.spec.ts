@@ -1,9 +1,8 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import type { Logger } from '@drift/shared';
 import PostTaggedEventHandler, { type PostTaggedMessage } from './post-tagged.event-handler';
-import type UpdatePostTagsHandler from '../../command/update-post-tags/update-post-tags.handler';
-import type UnlockPostForTaggingHandler from '../../command/unlock-post-for-tagging/unlock-post-for-tagging.handler';
-import UpdatePostTagsCommand from '../../command/update-post-tags/update-post-tags.command';
+import type UpdatePostTagsUseCase from '../../usecase/update-post-tags/update-post-tags.use-case';
+import type UnlockPostForTaggingUseCase from '../../usecase/unlock-post-for-tagging/unlock-post-for-tagging.use-case';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 
 const makeLogger = (): Logger => ({
@@ -26,27 +25,27 @@ const makeValidMessage = (overrides: Partial<PostTaggedMessage> = {}): PostTagge
 
 describe('PostTaggedEventHandler', () => {
   let handler: PostTaggedEventHandler;
-  let updatePostTagsHandler: UpdatePostTagsHandler;
-  let unlockPostForTaggingHandler: UnlockPostForTaggingHandler;
+  let updatePostTagsUseCase: UpdatePostTagsUseCase;
+  let unlockPostForTaggingUseCase: UnlockPostForTaggingUseCase;
 
   beforeEach(() => {
-    updatePostTagsHandler = {
+    updatePostTagsUseCase = {
       execute: vi.fn().mockResolvedValue(undefined),
-    } as unknown as UpdatePostTagsHandler;
+    } as unknown as UpdatePostTagsUseCase;
 
-    unlockPostForTaggingHandler = {
+    unlockPostForTaggingUseCase = {
       execute: vi.fn().mockResolvedValue(undefined),
-    } as unknown as UnlockPostForTaggingHandler;
+    } as unknown as UnlockPostForTaggingUseCase;
 
     handler = new PostTaggedEventHandler(
-      updatePostTagsHandler,
-      unlockPostForTaggingHandler,
+      updatePostTagsUseCase,
+      unlockPostForTaggingUseCase,
       makeLogger(),
     );
   });
 
   it('should call use case with correct input when message is valid', async () => {
-    const executeSpy = vi.spyOn(updatePostTagsHandler, 'execute');
+    const executeSpy = vi.spyOn(updatePostTagsUseCase, 'execute');
 
     await handler.handle(makeValidMessage());
 
@@ -56,11 +55,10 @@ describe('PostTaggedEventHandler', () => {
         tags: ['tech', 'news'],
       }),
     );
-    expect(executeSpy.mock.calls[0][0]).toBeInstanceOf(UpdatePostTagsCommand);
   });
 
   it('should throw when message is invalid', async () => {
-    const executeSpy = vi.spyOn(updatePostTagsHandler, 'execute');
+    const executeSpy = vi.spyOn(updatePostTagsUseCase, 'execute');
 
     await expect(
       handler.handle(
@@ -79,10 +77,10 @@ describe('PostTaggedEventHandler', () => {
   });
 
   it('should unlock the post and drop the event when the post no longer exists', async () => {
-    const updateSpy = vi.spyOn(updatePostTagsHandler, 'execute').mockRejectedValue(
+    const updateSpy = vi.spyOn(updatePostTagsUseCase, 'execute').mockRejectedValue(
       new PostNotFoundError('019682a0-1234-7000-8000-abcdef012346'),
     );
-    const unlockSpy = vi.spyOn(unlockPostForTaggingHandler, 'execute');
+    const unlockSpy = vi.spyOn(unlockPostForTaggingUseCase, 'execute');
 
     await handler.handle(makeValidMessage());
 
@@ -93,8 +91,8 @@ describe('PostTaggedEventHandler', () => {
 
   it('should rethrow unexpected errors without unlocking', async () => {
     const unexpectedError = new Error('db connection lost');
-    vi.spyOn(updatePostTagsHandler, 'execute').mockRejectedValue(unexpectedError);
-    const unlockSpy = vi.spyOn(unlockPostForTaggingHandler, 'execute');
+    vi.spyOn(updatePostTagsUseCase, 'execute').mockRejectedValue(unexpectedError);
+    const unlockSpy = vi.spyOn(unlockPostForTaggingUseCase, 'execute');
 
     await expect(handler.handle(makeValidMessage())).rejects.toThrow(unexpectedError);
 

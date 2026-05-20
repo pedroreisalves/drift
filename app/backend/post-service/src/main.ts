@@ -6,12 +6,12 @@ import { RabbitMQEventDispatcher } from '@drift/shared';
 import { RabbitMQEventConsumer } from '@drift/shared';
 import { PinoLogger } from '@drift/shared';
 
-import CreatePostHandler from './application/command/create-post/create-post.handler';
-import UpdatePostHandler from './application/command/update-post/update-post.handler';
-import DeletePostHandler from './application/command/delete-post/delete-post.handler';
-import UpdatePostTagsHandler from './application/command/update-post-tags/update-post-tags.handler';
-import LockPostForTaggingHandler from './application/command/lock-post-for-tagging/lock-post-for-tagging.handler';
-import UnlockPostForTaggingHandler from './application/command/unlock-post-for-tagging/unlock-post-for-tagging.handler';
+import CreatePostUseCase from './application/usecase/create-post/create-post.use-case';
+import UpdatePostUseCase from './application/usecase/update-post/update-post.use-case';
+import DeletePostUseCase from './application/usecase/delete-post/delete-post.use-case';
+import UpdatePostTagsUseCase from './application/usecase/update-post-tags/update-post-tags.use-case';
+import LockPostForTaggingUseCase from './application/usecase/lock-post-for-tagging/lock-post-for-tagging.use-case';
+import UnlockPostForTaggingUseCase from './application/usecase/unlock-post-for-tagging/unlock-post-for-tagging.use-case';
 
 import PostTaggedEventHandler from './application/event-handler/post-tagged/post-tagged.event-handler';
 import TaggingInitializedEventHandler from './application/event-handler/tagging-initialized/tagging-initialized.event-handler';
@@ -21,8 +21,8 @@ import PostgresPostLockRepository from './infrastructure/persistence/postgres-po
 
 import PostViewedMiddleware from './infrastructure/http/middleware/post-viewed.middleware';
 import PostgresPostRepository from './infrastructure/persistence/postgres-post.repository';
-import GetPostHandler from './application/query/get-post/get-post.handler';
-import ListPostHandler from './application/query/list-post/list-post.handler';
+import GetPostUseCase from './application/usecase/get-post/get-post.use-case';
+import ListPostUseCase from './application/usecase/list-post/list-post.use-case';
 import PostController from './infrastructure/http/controllers/post.controller';
 import createPostRoutes from './infrastructure/http/routes/post.routes';
 import createErrorMiddleware from './infrastructure/http/middleware/error.middleware';
@@ -44,32 +44,32 @@ async function main(): Promise<void> {
     logger,
   );
 
-  const createPostHandler = new CreatePostHandler(repository, dispatcher, logger);
-  const updatePostHandler = new UpdatePostHandler(
+  const createPostUseCase = new CreatePostUseCase(repository, dispatcher, logger);
+  const updatePostUseCase = new UpdatePostUseCase(
     repository,
     postLockRepository,
     dispatcher,
     logger,
   );
-  const deletePostHandler = new DeletePostHandler(repository, dispatcher, logger);
-  const updatePostTagsHandler = new UpdatePostTagsHandler(repository, dispatcher, logger);
-  const lockPostForTaggingHandler = new LockPostForTaggingHandler(postLockRepository, logger);
-  const unlockPostForTaggingHandler = new UnlockPostForTaggingHandler(postLockRepository, logger);
+  const deletePostUseCase = new DeletePostUseCase(repository, dispatcher, logger);
+  const updatePostTagsUseCase = new UpdatePostTagsUseCase(repository, dispatcher, logger);
+  const lockPostForTaggingUseCase = new LockPostForTaggingUseCase(postLockRepository, logger);
+  const unlockPostForTaggingUseCase = new UnlockPostForTaggingUseCase(postLockRepository, logger);
 
-  const getPostHandler = new GetPostHandler(repository, logger);
-  const listPostHandler = new ListPostHandler(repository, logger);
+  const getPostUseCase = new GetPostUseCase(repository, logger);
+  const listPostUseCase = new ListPostUseCase(repository, logger);
 
   const postTaggedEventHandler = new PostTaggedEventHandler(
-    updatePostTagsHandler,
-    unlockPostForTaggingHandler,
+    updatePostTagsUseCase,
+    unlockPostForTaggingUseCase,
     logger,
   );
   const taggingInitializedEventHandler = new TaggingInitializedEventHandler(
-    lockPostForTaggingHandler,
+    lockPostForTaggingUseCase,
     logger,
   );
   const taggingAbandonedEventHandler = new TaggingAbandonedEventHandler(
-    unlockPostForTaggingHandler,
+    unlockPostForTaggingUseCase,
     logger,
   );
 
@@ -78,11 +78,11 @@ async function main(): Promise<void> {
   await consumer.subscribe('TaggingAbandoned', taggingAbandonedEventHandler);
 
   const controller = new PostController(
-    createPostHandler,
-    updatePostHandler,
-    deletePostHandler,
-    getPostHandler,
-    listPostHandler,
+    createPostUseCase,
+    updatePostUseCase,
+    deletePostUseCase,
+    getPostUseCase,
+    listPostUseCase,
   );
   const postViewedMiddleware = new PostViewedMiddleware(dispatcher, logger);
   const routes = createPostRoutes(controller, postViewedMiddleware);

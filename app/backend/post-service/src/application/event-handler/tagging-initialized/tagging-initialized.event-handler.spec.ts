@@ -3,8 +3,7 @@ import type { Logger } from '@drift/shared';
 import TaggingInitializedEventHandler, {
   type TaggingInitializedMessage,
 } from './tagging-initialized.event-handler';
-import type LockPostForTaggingHandler from '../../command/lock-post-for-tagging/lock-post-for-tagging.handler';
-import LockPostForTaggingCommand from '../../command/lock-post-for-tagging/lock-post-for-tagging.command';
+import type LockPostForTaggingUseCase from '../../usecase/lock-post-for-tagging/lock-post-for-tagging.use-case';
 
 const makeLogger = (): Logger => ({
   info: vi.fn(),
@@ -26,18 +25,18 @@ const makeValidMessage = (overrides: Partial<TaggingInitializedMessage> = {}): T
 
 describe('TaggingInitializedEventHandler', () => {
   let handler: TaggingInitializedEventHandler;
-  let lockPostForTaggingHandler: LockPostForTaggingHandler;
+  let lockPostForTaggingUseCase: LockPostForTaggingUseCase;
 
   beforeEach(() => {
-    lockPostForTaggingHandler = {
+    lockPostForTaggingUseCase = {
       execute: vi.fn().mockResolvedValue(undefined),
-    } as unknown as LockPostForTaggingHandler;
+    } as unknown as LockPostForTaggingUseCase;
 
-    handler = new TaggingInitializedEventHandler(lockPostForTaggingHandler, makeLogger());
+    handler = new TaggingInitializedEventHandler(lockPostForTaggingUseCase, makeLogger());
   });
 
   it('should call use case with correct input when message is valid', async () => {
-    const executeSpy = vi.spyOn(lockPostForTaggingHandler, 'execute');
+    const executeSpy = vi.spyOn(lockPostForTaggingUseCase, 'execute');
 
     await handler.handle(makeValidMessage());
 
@@ -46,11 +45,10 @@ describe('TaggingInitializedEventHandler', () => {
         postId: '019682a0-1234-7000-8000-abcdef012346',
       }),
     );
-    expect(executeSpy.mock.calls[0][0]).toBeInstanceOf(LockPostForTaggingCommand);
   });
 
   it('should throw when message is invalid', async () => {
-    const executeSpy = vi.spyOn(lockPostForTaggingHandler, 'execute');
+    const executeSpy = vi.spyOn(lockPostForTaggingUseCase, 'execute');
 
     await expect(
       handler.handle(

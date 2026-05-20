@@ -1,8 +1,7 @@
 import { z } from 'zod';
 import { type EventHandler } from '@drift/shared';
 import { type Logger } from '@drift/shared';
-import LockPostForTaggingCommand from '../../command/lock-post-for-tagging/lock-post-for-tagging.command';
-import type LockPostForTaggingHandler from '../../command/lock-post-for-tagging/lock-post-for-tagging.handler';
+import type LockPostForTaggingUseCase from '../../usecase/lock-post-for-tagging/lock-post-for-tagging.use-case';
 
 export const taggingInitializedMessageSchema = z.object({
   eventName: z.literal('TaggingInitialized'),
@@ -19,7 +18,7 @@ export type TaggingInitializedMessage = z.infer<typeof taggingInitializedMessage
 
 export default class TaggingInitializedEventHandler implements EventHandler {
   constructor(
-    private readonly lockPostForTaggingHandler: LockPostForTaggingHandler,
+    private readonly lockPostForTaggingUseCase: LockPostForTaggingUseCase,
     private readonly logger: Logger,
   ) {}
 
@@ -27,7 +26,7 @@ export default class TaggingInitializedEventHandler implements EventHandler {
     const event = taggingInitializedMessageSchema.parse(raw);
     const { postId } = event.payload;
 
-    await this.lockPostForTaggingHandler.execute(new LockPostForTaggingCommand(postId));
+    await this.lockPostForTaggingUseCase.execute({ postId });
 
     this.logger.info('TaggingInitialized handled', { postId });
   }
