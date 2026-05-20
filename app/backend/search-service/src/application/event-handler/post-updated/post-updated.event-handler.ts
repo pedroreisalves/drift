@@ -1,27 +1,30 @@
+import { z } from 'zod';
 import { type EventHandler, type Logger } from '@drift/shared';
 import type UpdatePostIndexUseCase from '../../usecase/update-post-index/update-post-index.use-case';
 import DocumentNotFoundError from '../../@shared/error/document-not-found.error';
 
-export interface PostUpdatedMessage {
-  eventName: string;
-  occurredAt: string;
-  payload: {
-    postId: string;
-    clientId: string;
-    clientName: string;
-    title: string;
-    body: string;
-    updatedAt: string;
-  };
-}
+export const postUpdatedMessageSchema = z.object({
+  eventName: z.literal('PostUpdated'),
+  occurredAt: z.iso.datetime(),
+  payload: z.object({
+    postId: z.uuidv7(),
+    clientId: z.uuidv7(),
+    title: z.string(),
+    body: z.string(),
+    updatedAt: z.iso.datetime(),
+  }),
+});
 
-export default class PostUpdatedEventHandler implements EventHandler<PostUpdatedMessage> {
+export type PostUpdatedMessage = z.infer<typeof postUpdatedMessageSchema>;
+
+export default class PostUpdatedEventHandler implements EventHandler {
   constructor(
     private readonly updatePostIndexUseCase: UpdatePostIndexUseCase,
     private readonly logger: Logger,
   ) {}
 
-  async handle(event: PostUpdatedMessage): Promise<void> {
+  async handle(raw: unknown): Promise<void> {
+    const event = postUpdatedMessageSchema.parse(raw);
     const { postId, title, body } = event.payload;
 
     this.logger.info('Received PostUpdated event, updating index', { postId });
