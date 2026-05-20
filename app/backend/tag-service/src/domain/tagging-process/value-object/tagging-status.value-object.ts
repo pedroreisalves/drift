@@ -18,7 +18,7 @@ export default class TaggingStatus {
     this.validate();
   }
 
-  validate(): void {
+  private validate(): void {
     const result = statusSchema.safeParse(this.value);
     if (!result.success) {
       throw new InvalidValueObjectError('Status', this.value);

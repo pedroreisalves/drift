@@ -8,7 +8,7 @@ export default class TaggingProcessId {
     this.validate();
   }
 
-  validate(): void {
+  private validate(): void {
     const result = taggingProcessIdSchema.safeParse(this.value);
     if (!result.success) {
       throw new InvalidValueObjectError('TaggingProcessId', this.value);
