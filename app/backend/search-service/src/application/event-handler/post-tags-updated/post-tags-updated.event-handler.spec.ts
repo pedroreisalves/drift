@@ -2,13 +2,13 @@ import { uuidv7 } from 'uuidv7';
 import PostTagsUpdatedEventHandler, {
   type PostTagsUpdatedMessage,
 } from './post-tags-updated.event-handler';
-import type IndexPostTagsHandler from '../../command/index-post-tags/index-post-tags.handler';
+import type IndexPostTagsUseCase from '../../usecase/index-post-tags/index-post-tags.use-case';
 import type { Logger } from '@drift/shared';
 import DocumentNotFoundError from '../../@shared/error/document-not-found.error';
 
 describe('PostTagsUpdatedEventHandler', () => {
-  const makeHandler = (): IndexPostTagsHandler =>
-    ({ execute: vi.fn().mockResolvedValue(undefined) }) as unknown as IndexPostTagsHandler;
+  const makeUseCase = (): IndexPostTagsUseCase =>
+    ({ execute: vi.fn().mockResolvedValue(undefined) }) as unknown as IndexPostTagsUseCase;
 
   const makeLogger = (): Logger => ({
     info: vi.fn(),
@@ -28,24 +28,24 @@ describe('PostTagsUpdatedEventHandler', () => {
     },
   });
 
-  it('should delegate to IndexPostTagsHandler with correct command', async () => {
-    const indexPostTagsHandler = makeHandler();
-    const eventHandler = new PostTagsUpdatedEventHandler(indexPostTagsHandler, makeLogger());
-    const executeSpy = vi.spyOn(indexPostTagsHandler, 'execute');
+  it('should delegate to IndexPostTagsUseCase with correct input', async () => {
+    const indexPostTagsUseCase = makeUseCase();
+    const eventHandler = new PostTagsUpdatedEventHandler(indexPostTagsUseCase, makeLogger());
+    const executeSpy = vi.spyOn(indexPostTagsUseCase, 'execute');
 
     const message = makeMessage({ postId: uuidv7(), tags: ['rust', 'systems'] });
     await eventHandler.handle(message);
 
     expect(executeSpy).toHaveBeenCalledTimes(1);
-    const command = executeSpy.mock.calls[0][0];
-    expect(command.postId).toBe(message.payload.postId);
-    expect(command.tags).toEqual(message.payload.tags);
+    const input = executeSpy.mock.calls[0][0];
+    expect(input.postId).toBe(message.payload.postId);
+    expect(input.tags).toEqual(message.payload.tags);
   });
 
   it('should swallow DocumentNotFoundError without rethrowing', async () => {
-    const indexPostTagsHandler = makeHandler();
-    const eventHandler = new PostTagsUpdatedEventHandler(indexPostTagsHandler, makeLogger());
-    vi.spyOn(indexPostTagsHandler, 'execute').mockRejectedValue(
+    const indexPostTagsUseCase = makeUseCase();
+    const eventHandler = new PostTagsUpdatedEventHandler(indexPostTagsUseCase, makeLogger());
+    vi.spyOn(indexPostTagsUseCase, 'execute').mockRejectedValue(
       new DocumentNotFoundError(uuidv7()),
     );
 
@@ -53,9 +53,9 @@ describe('PostTagsUpdatedEventHandler', () => {
   });
 
   it('should rethrow unexpected errors', async () => {
-    const indexPostTagsHandler = makeHandler();
-    const eventHandler = new PostTagsUpdatedEventHandler(indexPostTagsHandler, makeLogger());
-    vi.spyOn(indexPostTagsHandler, 'execute').mockRejectedValue(new Error('Unexpected'));
+    const indexPostTagsUseCase = makeUseCase();
+    const eventHandler = new PostTagsUpdatedEventHandler(indexPostTagsUseCase, makeLogger());
+    vi.spyOn(indexPostTagsUseCase, 'execute').mockRejectedValue(new Error('Unexpected'));
 
     await expect(eventHandler.handle(makeMessage())).rejects.toThrow('Unexpected');
   });

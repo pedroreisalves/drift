@@ -1,13 +1,12 @@
 import { uuidv7 } from 'uuidv7';
-import IndexPostHandler from './index-post.handler';
-import IndexPostCommand from './index-post.command';
+import IndexPostUseCase from './index-post.use-case';
 import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository.interface';
 import type { EventDispatcher, Logger } from '@drift/shared';
 import SearchEntry from '../../../domain/search-entry/entity/search-entry.entity';
 import PostIndexedEvent from '../../../domain/search-entry/event/post-indexed.event';
 import IndexingFailedError from '../../@shared/error/indexing-failed.error';
 
-describe('IndexPostHandler', () => {
+describe('IndexPostUseCase', () => {
   const makeRepository = (): SearchEntryRepository => ({
     index: vi.fn().mockResolvedValue(undefined),
     update: vi.fn().mockResolvedValue(undefined),
@@ -29,19 +28,19 @@ describe('IndexPostHandler', () => {
   it('should create a SearchEntry, persist it, and dispatch PostIndexedEvent', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
-    const handler = new IndexPostHandler(repository, dispatcher, makeLogger());
+    const useCase = new IndexPostUseCase(repository, dispatcher, makeLogger());
     const indexSpy = vi.spyOn(repository, 'index');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
-    const command = new IndexPostCommand(uuidv7(), 'My Post Title', 'Body content for the post.');
-    await handler.execute(command);
+    const postId = uuidv7();
+    await useCase.execute({ postId, title: 'My Post Title', body: 'Body content for the post.' });
 
     expect(indexSpy).toHaveBeenCalledTimes(1);
     const persisted = indexSpy.mock.calls[0][0];
     expect(persisted).toBeInstanceOf(SearchEntry);
-    expect(persisted.postId.toString()).toBe(command.postId);
-    expect(persisted.title).toBe(command.title);
-    expect(persisted.body).toBe(command.body);
+    expect(persisted.postId.toString()).toBe(postId);
+    expect(persisted.title).toBe('My Post Title');
+    expect(persisted.body).toBe('Body content for the post.');
     expect(persisted.tags).toEqual([]);
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
@@ -50,28 +49,28 @@ describe('IndexPostHandler', () => {
 
   it('should throw IndexingFailedError when the repository throws an Error', async () => {
     const repository = makeRepository();
-    const handler = new IndexPostHandler(repository, makeDispatcher(), makeLogger());
+    const useCase = new IndexPostUseCase(repository, makeDispatcher(), makeLogger());
     vi.spyOn(repository, 'index').mockRejectedValue(new Error('Meilisearch unreachable'));
 
     await expect(
-      handler.execute(new IndexPostCommand(uuidv7(), 'Title', 'Body content.')),
+      useCase.execute({ postId: uuidv7(), title: 'Title', body: 'Body content.' }),
     ).rejects.toThrow(IndexingFailedError);
   });
 
   it('should throw IndexingFailedError when the repository throws a non-Error value', async () => {
     const repository = makeRepository();
-    const handler = new IndexPostHandler(repository, makeDispatcher(), makeLogger());
+    const useCase = new IndexPostUseCase(repository, makeDispatcher(), makeLogger());
     vi.spyOn(repository, 'index').mockRejectedValue('raw string error');
 
     await expect(
-      handler.execute(new IndexPostCommand(uuidv7(), 'Title', 'Body content.')),
+      useCase.execute({ postId: uuidv7(), title: 'Title', body: 'Body content.' }),
     ).rejects.toThrow(IndexingFailedError);
   });
 
   it('should call repository.index before dispatcher.dispatch', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
-    const handler = new IndexPostHandler(repository, dispatcher, makeLogger());
+    const useCase = new IndexPostUseCase(repository, dispatcher, makeLogger());
 
     const callOrder: string[] = [];
     vi.spyOn(repository, 'index').mockImplementation(() => {
@@ -83,7 +82,7 @@ describe('IndexPostHandler', () => {
       return Promise.resolve();
     });
 
-    await handler.execute(new IndexPostCommand(uuidv7(), 'Title', 'Body content.'));
+    await useCase.execute({ postId: uuidv7(), title: 'Title', body: 'Body content.' });
 
     expect(callOrder).toEqual(['repository.index', 'dispatcher.dispatch']);
   });

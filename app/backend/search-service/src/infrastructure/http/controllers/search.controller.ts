@@ -1,9 +1,8 @@
 import type { Request, Response, NextFunction } from 'express';
-import SearchPostsQuery from '../../../application/query/search-posts/search-posts.command';
-import type SearchPostsHandler from '../../../application/query/search-posts/search-posts.handler';
+import type SearchPostsUseCase from '../../../application/usecase/search-posts/search-posts.use-case';
 
 export default class SearchController {
-  constructor(private readonly searchPostsHandler: SearchPostsHandler) {}
+  constructor(private readonly searchPostsUseCase: SearchPostsUseCase) {}
 
   async search(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -12,8 +11,7 @@ export default class SearchController {
       const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined;
       const offset = req.query.offset ? parseInt(req.query.offset as string, 10) : undefined;
 
-      const query = new SearchPostsQuery(q, clientId, limit, offset);
-      const results = await this.searchPostsHandler.execute(query);
+      const results = await this.searchPostsUseCase.execute({ q, clientId, limit, offset });
 
       res.status(200).json({ results });
     } catch (error) {

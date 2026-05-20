@@ -1,8 +1,8 @@
 import type SearchEntry from '../../../domain/search-entry/entity/search-entry.entity';
-import type SearchEntryDTO from './search-entry.dto';
+import type SearchPostsOutputDto from './search-posts.output-dto';
 
-export default class SearchEntryMapper {
-  static toDTO(entry: SearchEntry): SearchEntryDTO {
+export default class SearchPostsMapper {
+  static toOutputDto(entry: SearchEntry): SearchPostsOutputDto {
     return {
       postId: entry.postId.toString(),
       title: entry.title,

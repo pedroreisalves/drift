@@ -1,13 +1,12 @@
 import { uuidv7 } from 'uuidv7';
-import SearchPostsHandler from './search-posts.handler';
-import SearchPostsQuery from './search-posts.command';
+import SearchPostsUseCase from './search-posts.use-case';
 import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository.interface';
 import type { EventDispatcher, Logger } from '@drift/shared';
 import { PostId } from '@drift/shared';
 import SearchEntry from '../../../domain/search-entry/entity/search-entry.entity';
 import PostSearchedEvent from '../../../domain/search-entry/event/post-searched.event';
 
-describe('SearchPostsHandler', () => {
+describe('SearchPostsUseCase', () => {
   const makeRepository = (): SearchEntryRepository => ({
     index: vi.fn().mockResolvedValue(undefined),
     update: vi.fn().mockResolvedValue(undefined),
@@ -37,7 +36,7 @@ describe('SearchPostsHandler', () => {
   it('should return search results as DTOs and dispatch PostSearchedEvent', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
-    const handler = new SearchPostsHandler(repository, dispatcher, makeLogger());
+    const useCase = new SearchPostsUseCase(repository, dispatcher, makeLogger());
 
     const firstId = uuidv7();
     const secondId = uuidv7();
@@ -47,7 +46,7 @@ describe('SearchPostsHandler', () => {
     ]);
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
-    const result = await handler.execute(new SearchPostsQuery('drift', uuidv7()));
+    const result = await useCase.execute({ q: 'drift', clientId: uuidv7() });
 
     expect(result).toHaveLength(2);
     expect(result[0].postId).toBe(firstId);
@@ -62,20 +61,20 @@ describe('SearchPostsHandler', () => {
 
   it('should forward the provided limit and offset to the repository', async () => {
     const repository = makeRepository();
-    const handler = new SearchPostsHandler(repository, makeDispatcher(), makeLogger());
+    const useCase = new SearchPostsUseCase(repository, makeDispatcher(), makeLogger());
     const searchSpy = vi.spyOn(repository, 'search');
 
-    await handler.execute(new SearchPostsQuery('query', uuidv7(), 20, 5));
+    await useCase.execute({ q: 'query', clientId: uuidv7(), limit: 20, offset: 5 });
 
     expect(searchSpy).toHaveBeenCalledWith({ q: 'query', limit: 20, offset: 5 });
   });
 
   it('should default to limit 10 and offset 0 when both are omitted', async () => {
     const repository = makeRepository();
-    const handler = new SearchPostsHandler(repository, makeDispatcher(), makeLogger());
+    const useCase = new SearchPostsUseCase(repository, makeDispatcher(), makeLogger());
     const searchSpy = vi.spyOn(repository, 'search');
 
-    await handler.execute(new SearchPostsQuery('query', uuidv7()));
+    await useCase.execute({ q: 'query', clientId: uuidv7() });
 
     expect(searchSpy).toHaveBeenCalledWith({ q: 'query', limit: 10, offset: 0 });
   });

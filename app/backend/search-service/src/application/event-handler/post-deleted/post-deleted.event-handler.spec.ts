@@ -1,14 +1,13 @@
 import { uuidv7 } from 'uuidv7';
 import PostDeletedEventHandler, { type PostDeletedMessage } from './post-deleted.event-handler';
-import RemovePostFromIndexCommand from '../../command/remove-post-from-index/remove-post-from-index.command';
-import type RemovePostFromIndexHandler from '../../command/remove-post-from-index/remove-post-from-index.handler';
+import type RemovePostFromIndexUseCase from '../../usecase/remove-post-from-index/remove-post-from-index.use-case';
 import { type Logger } from '@drift/shared';
 
 describe('PostDeletedEventHandler', () => {
-  const makeRemovePostFromIndexHandler = (): RemovePostFromIndexHandler =>
+  const makeRemovePostFromIndexUseCase = (): RemovePostFromIndexUseCase =>
     ({
       execute: vi.fn().mockResolvedValue(undefined),
-    }) as unknown as RemovePostFromIndexHandler;
+    }) as unknown as RemovePostFromIndexUseCase;
 
   const makeLogger = (): Logger => ({
     info: vi.fn(),
@@ -28,18 +27,17 @@ describe('PostDeletedEventHandler', () => {
     },
   });
 
-  it('should invoke RemovePostFromIndexHandler.execute with a command built from the message payload', async () => {
-    const removePostFromIndexHandler = makeRemovePostFromIndexHandler();
-    const eventHandler = new PostDeletedEventHandler(removePostFromIndexHandler, makeLogger());
+  it('should invoke RemovePostFromIndexUseCase.execute with input built from the message payload', async () => {
+    const removePostFromIndexUseCase = makeRemovePostFromIndexUseCase();
+    const eventHandler = new PostDeletedEventHandler(removePostFromIndexUseCase, makeLogger());
 
     const postId = uuidv7();
-    const executeSpy = vi.spyOn(removePostFromIndexHandler, 'execute');
+    const executeSpy = vi.spyOn(removePostFromIndexUseCase, 'execute');
 
     await eventHandler.handle(makeMessage({ postId }));
 
     expect(executeSpy).toHaveBeenCalledTimes(1);
-    const command = executeSpy.mock.calls[0][0];
-    expect(command).toBeInstanceOf(RemovePostFromIndexCommand);
-    expect(command.postId).toBe(postId);
+    const input = executeSpy.mock.calls[0][0];
+    expect(input.postId).toBe(postId);
   });
 });

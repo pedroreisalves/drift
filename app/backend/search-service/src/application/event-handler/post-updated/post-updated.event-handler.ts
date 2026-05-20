@@ -1,6 +1,5 @@
 import { type EventHandler, type Logger } from '@drift/shared';
-import UpdatePostIndexCommand from '../../command/update-post-index/update-post-index.command';
-import type UpdatePostIndexHandler from '../../command/update-post-index/update-post-index.handler';
+import type UpdatePostIndexUseCase from '../../usecase/update-post-index/update-post-index.use-case';
 import DocumentNotFoundError from '../../@shared/error/document-not-found.error';
 
 export interface PostUpdatedMessage {
@@ -18,7 +17,7 @@ export interface PostUpdatedMessage {
 
 export default class PostUpdatedEventHandler implements EventHandler<PostUpdatedMessage> {
   constructor(
-    private readonly updatePostIndexHandler: UpdatePostIndexHandler,
+    private readonly updatePostIndexUseCase: UpdatePostIndexUseCase,
     private readonly logger: Logger,
   ) {}
 
@@ -28,8 +27,7 @@ export default class PostUpdatedEventHandler implements EventHandler<PostUpdated
     this.logger.info('Received PostUpdated event, updating index', { postId });
 
     try {
-      const command = new UpdatePostIndexCommand(postId, title, body);
-      await this.updatePostIndexHandler.execute(command);
+      await this.updatePostIndexUseCase.execute({ postId, title, body });
     } catch (error: unknown) {
       if (error instanceof DocumentNotFoundError) {
         this.logger.warn('Dropping PostUpdated event: entry no longer exists', { postId });

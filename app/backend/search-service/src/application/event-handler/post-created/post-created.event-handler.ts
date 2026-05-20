@@ -1,6 +1,5 @@
 import { type EventHandler, type Logger } from '@drift/shared';
-import IndexPostCommand from '../../command/index-post/index-post.command';
-import type IndexPostHandler from '../../command/index-post/index-post.handler';
+import type IndexPostUseCase from '../../usecase/index-post/index-post.use-case';
 
 export interface PostCreatedMessage {
   eventName: string;
@@ -17,7 +16,7 @@ export interface PostCreatedMessage {
 
 export default class PostCreatedEventHandler implements EventHandler<PostCreatedMessage> {
   constructor(
-    private readonly indexPostHandler: IndexPostHandler,
+    private readonly indexPostUseCase: IndexPostUseCase,
     private readonly logger: Logger,
   ) {}
 
@@ -26,7 +25,6 @@ export default class PostCreatedEventHandler implements EventHandler<PostCreated
 
     this.logger.info('Received PostCreated event, indexing post', { postId });
 
-    const command = new IndexPostCommand(postId, title, body);
-    await this.indexPostHandler.execute(command);
+    await this.indexPostUseCase.execute({ postId, title, body });
   }
 }

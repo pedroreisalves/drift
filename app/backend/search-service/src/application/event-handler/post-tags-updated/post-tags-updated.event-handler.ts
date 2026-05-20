@@ -1,6 +1,5 @@
 import { type EventHandler, type Logger } from '@drift/shared';
-import IndexPostTagsCommand from '../../command/index-post-tags/index-post-tags.command';
-import type IndexPostTagsHandler from '../../command/index-post-tags/index-post-tags.handler';
+import type IndexPostTagsUseCase from '../../usecase/index-post-tags/index-post-tags.use-case';
 import DocumentNotFoundError from '../../@shared/error/document-not-found.error';
 
 export interface PostTagsUpdatedMessage {
@@ -15,7 +14,7 @@ export interface PostTagsUpdatedMessage {
 
 export default class PostTagsUpdatedEventHandler implements EventHandler<PostTagsUpdatedMessage> {
   constructor(
-    private readonly indexPostTagsHandler: IndexPostTagsHandler,
+    private readonly indexPostTagsUseCase: IndexPostTagsUseCase,
     private readonly logger: Logger,
   ) {}
 
@@ -25,8 +24,7 @@ export default class PostTagsUpdatedEventHandler implements EventHandler<PostTag
     this.logger.info('Received PostTagsUpdated event, indexing tags', { postId });
 
     try {
-      const command = new IndexPostTagsCommand(postId, tags);
-      await this.indexPostTagsHandler.execute(command);
+      await this.indexPostTagsUseCase.execute({ postId, tags });
     } catch (error: unknown) {
       if (error instanceof DocumentNotFoundError) {
         this.logger.warn('Dropping PostTagsUpdated event: entry no longer exists', { postId });

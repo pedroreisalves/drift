@@ -1,4 +1,4 @@
-export default interface SearchEntryDTO {
+export default interface SearchPostsOutputDto {
   postId: string;
   title: string;
   body: string;

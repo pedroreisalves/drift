@@ -1,6 +1,5 @@
 import { uuidv7 } from 'uuidv7';
-import UpdatePostIndexHandler from './update-post-index.handler';
-import UpdatePostIndexCommand from './update-post-index.command';
+import UpdatePostIndexUseCase from './update-post-index.use-case';
 import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository.interface';
 import type { EventDispatcher, Logger } from '@drift/shared';
 import { PostId } from '@drift/shared';
@@ -8,7 +7,7 @@ import SearchEntry from '../../../domain/search-entry/entity/search-entry.entity
 import PostIndexedEvent from '../../../domain/search-entry/event/post-indexed.event';
 import DocumentNotFoundError from '../../@shared/error/document-not-found.error';
 
-describe('UpdatePostIndexHandler', () => {
+describe('UpdatePostIndexUseCase', () => {
   const makeRepository = (): SearchEntryRepository => ({
     index: vi.fn().mockResolvedValue(undefined),
     update: vi.fn().mockResolvedValue(undefined),
@@ -38,14 +37,14 @@ describe('UpdatePostIndexHandler', () => {
   it('should update the entry content, persist it, and dispatch PostIndexedEvent', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
-    const handler = new UpdatePostIndexHandler(repository, dispatcher, makeLogger());
+    const useCase = new UpdatePostIndexUseCase(repository, dispatcher, makeLogger());
 
     const postId = uuidv7();
     (repository.findByPostId as ReturnType<typeof vi.fn>).mockResolvedValue(makeEntry(postId));
     const updateSpy = vi.spyOn(repository, 'update');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
-    await handler.execute(new UpdatePostIndexCommand(postId, 'New Title', 'New body content.'));
+    await useCase.execute({ postId, title: 'New Title', body: 'New body content.' });
 
     expect(updateSpy).toHaveBeenCalledTimes(1);
     const updated = updateSpy.mock.calls[0][0];
@@ -58,10 +57,10 @@ describe('UpdatePostIndexHandler', () => {
   });
 
   it('should throw DocumentNotFoundError when entry does not exist', async () => {
-    const handler = new UpdatePostIndexHandler(makeRepository(), makeDispatcher(), makeLogger());
+    const useCase = new UpdatePostIndexUseCase(makeRepository(), makeDispatcher(), makeLogger());
 
     await expect(
-      handler.execute(new UpdatePostIndexCommand(uuidv7(), 'Title', 'Body content.')),
+      useCase.execute({ postId: uuidv7(), title: 'Title', body: 'Body content.' }),
     ).rejects.toThrow(DocumentNotFoundError);
   });
 });

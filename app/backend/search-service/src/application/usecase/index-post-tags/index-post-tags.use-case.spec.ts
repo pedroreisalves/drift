@@ -1,6 +1,5 @@
 import { uuidv7 } from 'uuidv7';
-import IndexPostTagsHandler from './index-post-tags.handler';
-import IndexPostTagsCommand from './index-post-tags.command';
+import IndexPostTagsUseCase from './index-post-tags.use-case';
 import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository.interface';
 import type { EventDispatcher, Logger } from '@drift/shared';
 import { PostId } from '@drift/shared';
@@ -8,7 +7,7 @@ import SearchEntry from '../../../domain/search-entry/entity/search-entry.entity
 import PostTagsIndexedEvent from '../../../domain/search-entry/event/post-tags-indexed.event';
 import DocumentNotFoundError from '../../@shared/error/document-not-found.error';
 
-describe('IndexPostTagsHandler', () => {
+describe('IndexPostTagsUseCase', () => {
   const makeRepository = (): SearchEntryRepository => ({
     index: vi.fn().mockResolvedValue(undefined),
     update: vi.fn().mockResolvedValue(undefined),
@@ -38,7 +37,7 @@ describe('IndexPostTagsHandler', () => {
   it('should update entry tags, persist it, and dispatch PostTagsIndexedEvent', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
-    const handler = new IndexPostTagsHandler(repository, dispatcher, makeLogger());
+    const useCase = new IndexPostTagsUseCase(repository, dispatcher, makeLogger());
 
     const postId = uuidv7();
     const tags = ['rust', 'systems'];
@@ -46,7 +45,7 @@ describe('IndexPostTagsHandler', () => {
     const updateSpy = vi.spyOn(repository, 'update');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
-    await handler.execute(new IndexPostTagsCommand(postId, tags));
+    await useCase.execute({ postId, tags });
 
     expect(updateSpy).toHaveBeenCalledTimes(1);
     const updated = updateSpy.mock.calls[0][0];
@@ -61,9 +60,9 @@ describe('IndexPostTagsHandler', () => {
 
   it('should throw DocumentNotFoundError when entry does not exist', async () => {
     const repository = makeRepository();
-    const handler = new IndexPostTagsHandler(repository, makeDispatcher(), makeLogger());
+    const useCase = new IndexPostTagsUseCase(repository, makeDispatcher(), makeLogger());
 
-    await expect(handler.execute(new IndexPostTagsCommand(uuidv7(), ['tag']))).rejects.toThrow(
+    await expect(useCase.execute({ postId: uuidv7(), tags: ['tag'] })).rejects.toThrow(
       DocumentNotFoundError,
     );
   });
@@ -71,7 +70,7 @@ describe('IndexPostTagsHandler', () => {
   it('should call repository.update before dispatcher.dispatch', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
-    const handler = new IndexPostTagsHandler(repository, dispatcher, makeLogger());
+    const useCase = new IndexPostTagsUseCase(repository, dispatcher, makeLogger());
 
     const postId = uuidv7();
     (repository.findByPostId as ReturnType<typeof vi.fn>).mockResolvedValue(makeEntry(postId));
@@ -86,7 +85,7 @@ describe('IndexPostTagsHandler', () => {
       return Promise.resolve();
     });
 
-    await handler.execute(new IndexPostTagsCommand(postId, ['tag']));
+    await useCase.execute({ postId, tags: ['tag'] });
 
     expect(callOrder).toEqual(['repository.update', 'dispatcher.dispatch']);
   });

@@ -1,6 +1,5 @@
 import { type EventHandler, type Logger } from '@drift/shared';
-import RemovePostFromIndexCommand from '../../command/remove-post-from-index/remove-post-from-index.command';
-import type RemovePostFromIndexHandler from '../../command/remove-post-from-index/remove-post-from-index.handler';
+import type RemovePostFromIndexUseCase from '../../usecase/remove-post-from-index/remove-post-from-index.use-case';
 
 export interface PostDeletedMessage {
   eventName: string;
@@ -14,7 +13,7 @@ export interface PostDeletedMessage {
 
 export default class PostDeletedEventHandler implements EventHandler<PostDeletedMessage> {
   constructor(
-    private readonly removePostFromIndexHandler: RemovePostFromIndexHandler,
+    private readonly removePostFromIndexUseCase: RemovePostFromIndexUseCase,
     private readonly logger: Logger,
   ) {}
 
@@ -23,7 +22,6 @@ export default class PostDeletedEventHandler implements EventHandler<PostDeleted
 
     this.logger.info('Received PostDeleted event, removing from index', { postId });
 
-    const command = new RemovePostFromIndexCommand(postId);
-    await this.removePostFromIndexHandler.execute(command);
+    await this.removePostFromIndexUseCase.execute({ postId });
   }
 }

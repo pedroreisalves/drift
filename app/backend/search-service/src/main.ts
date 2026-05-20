@@ -6,11 +6,11 @@ import { RabbitMQEventDispatcher } from '@drift/shared';
 import { RabbitMQEventConsumer } from '@drift/shared';
 import { PinoLogger } from '@drift/shared';
 
-import IndexPostHandler from './application/command/index-post/index-post.handler';
-import RemovePostFromIndexHandler from './application/command/remove-post-from-index/remove-post-from-index.handler';
-import UpdatePostIndexHandler from './application/command/update-post-index/update-post-index.handler';
-import IndexPostTagsHandler from './application/command/index-post-tags/index-post-tags.handler';
-import SearchPostsHandler from './application/query/search-posts/search-posts.handler';
+import IndexPostUseCase from './application/usecase/index-post/index-post.use-case';
+import RemovePostFromIndexUseCase from './application/usecase/remove-post-from-index/remove-post-from-index.use-case';
+import UpdatePostIndexUseCase from './application/usecase/update-post-index/update-post-index.use-case';
+import IndexPostTagsUseCase from './application/usecase/index-post-tags/index-post-tags.use-case';
+import SearchPostsUseCase from './application/usecase/search-posts/search-posts.use-case';
 
 import PostCreatedEventHandler from './application/event-handler/post-created/post-created.event-handler';
 import PostUpdatedEventHandler from './application/event-handler/post-updated/post-updated.event-handler';
@@ -39,23 +39,23 @@ async function main(): Promise<void> {
     logger,
   );
 
-  const indexPostHandler = new IndexPostHandler(repository, dispatcher, logger);
-  const removePostFromIndexHandler = new RemovePostFromIndexHandler(repository, dispatcher, logger);
-  const updatePostIndexHandler = new UpdatePostIndexHandler(repository, dispatcher, logger);
-  const indexPostTagsHandler = new IndexPostTagsHandler(repository, dispatcher, logger);
-  const searchPostsHandler = new SearchPostsHandler(repository, dispatcher, logger);
+  const indexPostUseCase = new IndexPostUseCase(repository, dispatcher, logger);
+  const removePostFromIndexUseCase = new RemovePostFromIndexUseCase(repository, dispatcher, logger);
+  const updatePostIndexUseCase = new UpdatePostIndexUseCase(repository, dispatcher, logger);
+  const indexPostTagsUseCase = new IndexPostTagsUseCase(repository, dispatcher, logger);
+  const searchPostsUseCase = new SearchPostsUseCase(repository, dispatcher, logger);
 
-  const postCreatedEventHandler = new PostCreatedEventHandler(indexPostHandler, logger);
-  const postUpdatedEventHandler = new PostUpdatedEventHandler(updatePostIndexHandler, logger);
-  const postDeletedEventHandler = new PostDeletedEventHandler(removePostFromIndexHandler, logger);
-  const postTagsUpdatedEventHandler = new PostTagsUpdatedEventHandler(indexPostTagsHandler, logger);
+  const postCreatedEventHandler = new PostCreatedEventHandler(indexPostUseCase, logger);
+  const postUpdatedEventHandler = new PostUpdatedEventHandler(updatePostIndexUseCase, logger);
+  const postDeletedEventHandler = new PostDeletedEventHandler(removePostFromIndexUseCase, logger);
+  const postTagsUpdatedEventHandler = new PostTagsUpdatedEventHandler(indexPostTagsUseCase, logger);
 
   await consumer.subscribe('PostCreated', postCreatedEventHandler);
   await consumer.subscribe('PostUpdated', postUpdatedEventHandler);
   await consumer.subscribe('PostDeleted', postDeletedEventHandler);
   await consumer.subscribe('PostTagsUpdated', postTagsUpdatedEventHandler);
 
-  const controller = new SearchController(searchPostsHandler);
+  const controller = new SearchController(searchPostsUseCase);
   const routes = createSearchRoutes(controller);
 
   const app = express();
