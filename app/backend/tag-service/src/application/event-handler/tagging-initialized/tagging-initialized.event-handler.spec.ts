@@ -2,15 +2,14 @@ import { uuidv7 } from 'uuidv7';
 import TaggingInitializedEventHandler, {
   type TaggingInitializedMessage,
 } from './tagging-initialized.event-handler';
-import ExecuteTaggingCommand from '../../command/execute-tagging/execute-tagging.command';
-import type ExecuteTaggingHandler from '../../command/execute-tagging/execute-tagging.handler';
+import type ExecuteTaggingUseCase from '../../usecase/execute-tagging/execute-tagging.use-case';
 import { type Logger } from '@drift/shared';
 
 describe('TaggingInitializedEventHandler', () => {
-  const makeExecuteTaggingHandler = (): ExecuteTaggingHandler =>
+  const makeExecuteTaggingUseCase = (): ExecuteTaggingUseCase =>
     ({
       execute: vi.fn().mockResolvedValue(undefined),
-    }) as unknown as ExecuteTaggingHandler;
+    }) as unknown as ExecuteTaggingUseCase;
 
   const makeLogger = (): Logger => ({
     info: vi.fn(),
@@ -29,18 +28,16 @@ describe('TaggingInitializedEventHandler', () => {
     },
   });
 
-  it('should invoke ExecuteTaggingHandler.execute with a command built from the message payload', async () => {
-    const executeTaggingHandler = makeExecuteTaggingHandler();
-    const eventHandler = new TaggingInitializedEventHandler(executeTaggingHandler, makeLogger());
+  it('should invoke ExecuteTaggingUseCase.execute with input built from the message payload', async () => {
+    const executeTaggingUseCase = makeExecuteTaggingUseCase();
+    const eventHandler = new TaggingInitializedEventHandler(executeTaggingUseCase, makeLogger());
 
     const taggingProcessId = uuidv7();
-    const executeSpy = vi.spyOn(executeTaggingHandler, 'execute');
+    const executeSpy = vi.spyOn(executeTaggingUseCase, 'execute');
 
     await eventHandler.handle(makeMessage(taggingProcessId));
 
     expect(executeSpy).toHaveBeenCalledTimes(1);
-    const command = executeSpy.mock.calls[0][0];
-    expect(command).toBeInstanceOf(ExecuteTaggingCommand);
-    expect(command.taggingProcessId).toBe(taggingProcessId);
+    expect(executeSpy).toHaveBeenCalledWith({ taggingProcessId });
   });
 });

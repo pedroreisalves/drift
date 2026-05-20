@@ -1,13 +1,13 @@
 import { type EventDispatcher } from '@drift/shared';
 import type TaggingProcessRepository from '../../../domain/tagging-process/repository/tagging-process.repository';
-import type ExecuteTaggingCommand from './execute-tagging.command';
+import type { ExecuteTaggingInputDto } from './execute-tagging.input-dto';
 import type TagGenerator from '../../@shared/interface/tag-generator.interface';
 import TaggingProcessNotFoundError from '../../@shared/error/tagging-process-not-found.error';
 import TaggingProcessId from '../../../domain/tagging-process/value-object/tagging-process-id.value-object';
 import { type Logger } from '@drift/shared';
 import { TaggingStatusEnum } from '../../../domain/tagging-process/value-object/tagging-status.value-object';
 
-export default class ExecuteTaggingHandler {
+export default class ExecuteTaggingUseCase {
   constructor(
     private readonly taggingProcessRepository: TaggingProcessRepository,
     private readonly eventDispatcher: EventDispatcher,
@@ -15,8 +15,8 @@ export default class ExecuteTaggingHandler {
     private readonly logger: Logger,
   ) {}
 
-  async execute(command: ExecuteTaggingCommand): Promise<void> {
-    const taggingProcessId = new TaggingProcessId(command.taggingProcessId);
+  async execute(input: ExecuteTaggingInputDto): Promise<void> {
+    const taggingProcessId = new TaggingProcessId(input.taggingProcessId);
 
     const taggingProcess = await this.taggingProcessRepository.findById(taggingProcessId);
 

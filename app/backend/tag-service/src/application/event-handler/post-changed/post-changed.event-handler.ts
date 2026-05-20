@@ -1,6 +1,5 @@
 import { type EventHandler } from '@drift/shared';
-import TagPostCommand from '../../command/tag-post/tag-post.command';
-import type TagPostHandler from '../../command/tag-post/tag-post.handler';
+import type TagPostUseCase from '../../usecase/tag-post/tag-post.use-case';
 import { type Logger } from '@drift/shared';
 
 export interface PostChangedMessage {
@@ -19,7 +18,7 @@ export interface PostChangedMessage {
 
 export default class PostChangedEventHandler implements EventHandler<PostChangedMessage> {
   constructor(
-    private readonly tagPostHandler: TagPostHandler,
+    private readonly tagPostUseCase: TagPostUseCase,
     private readonly logger: Logger,
   ) {}
 
@@ -31,7 +30,6 @@ export default class PostChangedEventHandler implements EventHandler<PostChanged
       postId,
     });
 
-    const command = new TagPostCommand(postId, title, body);
-    await this.tagPostHandler.execute(command);
+    await this.tagPostUseCase.execute({ postId, title, body });
   }
 }

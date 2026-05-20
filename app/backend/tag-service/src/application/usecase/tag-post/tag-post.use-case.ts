@@ -1,21 +1,21 @@
 import { type EventDispatcher } from '@drift/shared';
 import type TaggingProcessRepository from '../../../domain/tagging-process/repository/tagging-process.repository';
 import { PostId } from '@drift/shared';
-import type TagPostCommand from './tag-post.command';
+import type { TagPostInputDto } from './tag-post.input-dto';
 import TaggingProcess from '../../../domain/tagging-process/entity/tagging-process.aggregate';
 import TaggingProcessId from '../../../domain/tagging-process/value-object/tagging-process-id.value-object';
 import { uuidv7 } from 'uuidv7';
 import { type Logger } from '@drift/shared';
 
-export default class TagPostHandler {
+export default class TagPostUseCase {
   constructor(
     private readonly taggingProcessRepository: TaggingProcessRepository,
     private readonly eventDispatcher: EventDispatcher,
     private readonly logger: Logger,
   ) {}
 
-  async execute(command: TagPostCommand): Promise<void> {
-    const postId = new PostId(command.postId);
+  async execute(input: TagPostInputDto): Promise<void> {
+    const postId = new PostId(input.postId);
 
     const existing = await this.taggingProcessRepository.findByPostId(postId);
 
@@ -32,8 +32,8 @@ export default class TagPostHandler {
     const taggingProcess = TaggingProcess.create({
       id,
       postId,
-      title: command.title,
-      body: command.body,
+      title: input.title,
+      body: input.body,
     });
 
     await this.taggingProcessRepository.save(taggingProcess);

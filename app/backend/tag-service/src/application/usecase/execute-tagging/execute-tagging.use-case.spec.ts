@@ -1,6 +1,5 @@
 import { uuidv7 } from 'uuidv7';
-import ExecuteTaggingHandler from './execute-tagging.handler';
-import ExecuteTaggingCommand from './execute-tagging.command';
+import ExecuteTaggingUseCase from './execute-tagging.use-case';
 import TaggingProcess from '../../../domain/tagging-process/entity/tagging-process.aggregate';
 import { PostId } from '@drift/shared';
 import TaggingProcessId from '../../../domain/tagging-process/value-object/tagging-process-id.value-object';
@@ -14,7 +13,7 @@ import PostTaggedEvent from '../../../domain/tagging-process/event/post-tagged.e
 import TaggingFailedEvent from '../../../domain/tagging-process/event/tagging-failed.event';
 import TaggingAbandonedEvent from '../../../domain/tagging-process/event/tagging-abandoned.event';
 
-describe('ExecuteTaggingHandler', () => {
+describe('ExecuteTaggingUseCase', () => {
   const makeRepository = (): TaggingProcessRepository => ({
     save: vi.fn().mockResolvedValue(undefined),
     findById: vi.fn().mockResolvedValue(null),
@@ -55,13 +54,13 @@ describe('ExecuteTaggingHandler', () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
     const tagGenerator = makeTagGenerator(['tech', 'news']);
-    const handler = new ExecuteTaggingHandler(repository, dispatcher, tagGenerator, makeLogger());
+    const useCase = new ExecuteTaggingUseCase(repository, dispatcher, tagGenerator, makeLogger());
 
     const process = makeExistingProcess();
     const taggingProcessId = process.id.toString();
     (repository.findById as ReturnType<typeof vi.fn>).mockResolvedValue(process);
 
-    await handler.execute(new ExecuteTaggingCommand(taggingProcessId));
+    await useCase.execute({ taggingProcessId });
 
     const saveMock = repository.save as ReturnType<typeof vi.fn>;
     const dispatchMock = dispatcher.dispatch as ReturnType<typeof vi.fn>;
@@ -79,7 +78,7 @@ describe('ExecuteTaggingHandler', () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
     const tagGenerator = makeTagGenerator();
-    const handler = new ExecuteTaggingHandler(repository, dispatcher, tagGenerator, makeLogger());
+    const useCase = new ExecuteTaggingUseCase(repository, dispatcher, tagGenerator, makeLogger());
 
     const process = makeExistingProcess();
     const callOrder: string[] = [];
@@ -95,7 +94,7 @@ describe('ExecuteTaggingHandler', () => {
       callOrder.push('dispatcher.dispatch');
     });
 
-    await handler.execute(new ExecuteTaggingCommand(process.id.toString()));
+    await useCase.execute({ taggingProcessId: process.id.toString() });
 
     expect(callOrder).toEqual(['repository.findById', 'repository.save', 'dispatcher.dispatch']);
   });
@@ -104,9 +103,9 @@ describe('ExecuteTaggingHandler', () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
     const tagGenerator = makeTagGenerator();
-    const handler = new ExecuteTaggingHandler(repository, dispatcher, tagGenerator, makeLogger());
+    const useCase = new ExecuteTaggingUseCase(repository, dispatcher, tagGenerator, makeLogger());
 
-    await expect(handler.execute(new ExecuteTaggingCommand(uuidv7()))).rejects.toThrow(
+    await expect(useCase.execute({ taggingProcessId: uuidv7() })).rejects.toThrow(
       TaggingProcessNotFoundError,
     );
 
@@ -120,14 +119,14 @@ describe('ExecuteTaggingHandler', () => {
     const tagGenerator: TagGenerator = {
       generateTags: vi.fn().mockRejectedValue('raw string error'),
     };
-    const handler = new ExecuteTaggingHandler(repository, dispatcher, tagGenerator, makeLogger());
+    const useCase = new ExecuteTaggingUseCase(repository, dispatcher, tagGenerator, makeLogger());
 
     const process = makeExistingProcess();
     (repository.findById as ReturnType<typeof vi.fn>).mockResolvedValue(process);
 
     const failSpy = vi.spyOn(process, 'fail');
 
-    await handler.execute(new ExecuteTaggingCommand(process.id.toString()));
+    await useCase.execute({ taggingProcessId: process.id.toString() });
 
     expect(failSpy).toHaveBeenCalledWith({ reason: 'raw string error' });
   });
@@ -139,14 +138,14 @@ describe('ExecuteTaggingHandler', () => {
     const tagGenerator: TagGenerator = {
       generateTags: vi.fn().mockRejectedValue(new Error(errorMessage)),
     };
-    const handler = new ExecuteTaggingHandler(repository, dispatcher, tagGenerator, makeLogger());
+    const useCase = new ExecuteTaggingUseCase(repository, dispatcher, tagGenerator, makeLogger());
 
     const process = makeExistingProcess();
     (repository.findById as ReturnType<typeof vi.fn>).mockResolvedValue(process);
 
     const failSpy = vi.spyOn(process, 'fail');
 
-    await handler.execute(new ExecuteTaggingCommand(process.id.toString()));
+    await useCase.execute({ taggingProcessId: process.id.toString() });
 
     expect(failSpy).toHaveBeenCalledWith({ reason: errorMessage });
     expect(repository.save).toHaveBeenCalledTimes(1);
@@ -161,14 +160,14 @@ describe('ExecuteTaggingHandler', () => {
     const tagGenerator: TagGenerator = {
       generateTags: vi.fn().mockRejectedValue(new Error(errorMessage)),
     };
-    const handler = new ExecuteTaggingHandler(repository, dispatcher, tagGenerator, makeLogger());
+    const useCase = new ExecuteTaggingUseCase(repository, dispatcher, tagGenerator, makeLogger());
 
     const process = makeExistingProcess({ retryCount: 3 });
     (repository.findById as ReturnType<typeof vi.fn>).mockResolvedValue(process);
 
     const failSpy = vi.spyOn(process, 'fail');
 
-    await handler.execute(new ExecuteTaggingCommand(process.id.toString()));
+    await useCase.execute({ taggingProcessId: process.id.toString() });
 
     expect(failSpy).toHaveBeenCalledWith({ reason: errorMessage });
     expect(repository.save).toHaveBeenCalledTimes(1);

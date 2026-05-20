@@ -1,14 +1,13 @@
 import { uuidv7 } from 'uuidv7';
 import PostChangedEventHandler, { type PostChangedMessage } from './post-changed.event-handler';
-import TagPostCommand from '../../command/tag-post/tag-post.command';
-import type TagPostHandler from '../../command/tag-post/tag-post.handler';
+import type TagPostUseCase from '../../usecase/tag-post/tag-post.use-case';
 import { type Logger } from '@drift/shared';
 
 describe('PostChangedEventHandler', () => {
-  const makeTagPostHandler = (): TagPostHandler =>
+  const makeTagPostUseCase = (): TagPostUseCase =>
     ({
       execute: vi.fn().mockResolvedValue(undefined),
-    }) as unknown as TagPostHandler;
+    }) as unknown as TagPostUseCase;
 
   const makeLogger = (): Logger => ({
     info: vi.fn(),
@@ -31,23 +30,19 @@ describe('PostChangedEventHandler', () => {
     },
   });
 
-  it('should invoke TagPostHandler.execute with a command built from the message payload', async () => {
-    const tagPostHandler = makeTagPostHandler();
-    const eventHandler = new PostChangedEventHandler(tagPostHandler, makeLogger());
+  it('should invoke TagPostUseCase.execute with input built from the message payload', async () => {
+    const tagPostUseCase = makeTagPostUseCase();
+    const eventHandler = new PostChangedEventHandler(tagPostUseCase, makeLogger());
 
     const postId = uuidv7();
     const title = 'My Specific Title';
     const body = 'My specific body content.';
 
-    const executeSpy = vi.spyOn(tagPostHandler, 'execute');
+    const executeSpy = vi.spyOn(tagPostUseCase, 'execute');
 
     await eventHandler.handle(makeMessage({ postId, title, body }));
 
     expect(executeSpy).toHaveBeenCalledTimes(1);
-    const command = executeSpy.mock.calls[0][0];
-    expect(command).toBeInstanceOf(TagPostCommand);
-    expect(command.postId).toBe(postId);
-    expect(command.title).toBe(title);
-    expect(command.body).toBe(body);
+    expect(executeSpy).toHaveBeenCalledWith({ postId, title, body });
   });
 });

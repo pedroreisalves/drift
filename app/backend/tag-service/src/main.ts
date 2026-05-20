@@ -6,8 +6,8 @@ import { RabbitMQEventConsumer } from '@drift/shared';
 import PostgresTaggingProcessRepository from './infrastructure/persistence/postgres-tagging-process.repository';
 import OllamaTagGenerator from './infrastructure/llm/ollama-tag-generator';
 import { PinoLogger } from '@drift/shared';
-import ExecuteTaggingHandler from './application/command/execute-tagging/execute-tagging.handler';
-import TagPostHandler from './application/command/tag-post/tag-post.handler';
+import ExecuteTaggingUseCase from './application/usecase/execute-tagging/execute-tagging.use-case';
+import TagPostUseCase from './application/usecase/tag-post/tag-post.use-case';
 import PostChangedEventHandler from './application/event-handler/post-changed/post-changed.event-handler';
 import TaggingInitializedEventHandler from './application/event-handler/tagging-initialized/tagging-initialized.event-handler';
 import TaggingFailedEventHandler from './application/event-handler/tagging-failed/tagging-failed.event-handler';
@@ -33,20 +33,20 @@ async function main(): Promise<void> {
     logger,
   );
 
-  const executeTaggingHandler = new ExecuteTaggingHandler(
+  const executeTaggingUseCase = new ExecuteTaggingUseCase(
     repository,
     dispatcher,
     tagGenerator,
     logger,
   );
-  const tagPostHandler = new TagPostHandler(repository, dispatcher, logger);
+  const tagPostUseCase = new TagPostUseCase(repository, dispatcher, logger);
 
-  const postChangedEventHandler = new PostChangedEventHandler(tagPostHandler, logger);
+  const postChangedEventHandler = new PostChangedEventHandler(tagPostUseCase, logger);
   const taggingInitializedEventHandler = new TaggingInitializedEventHandler(
-    executeTaggingHandler,
+    executeTaggingUseCase,
     logger,
   );
-  const taggingFailedEventHandler = new TaggingFailedEventHandler(executeTaggingHandler, logger);
+  const taggingFailedEventHandler = new TaggingFailedEventHandler(executeTaggingUseCase, logger);
 
   await consumer.subscribe('PostCreated', postChangedEventHandler);
   await consumer.subscribe('PostUpdated', postChangedEventHandler);

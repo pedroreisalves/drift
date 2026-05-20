@@ -1,6 +1,5 @@
 import { uuidv7 } from 'uuidv7';
-import TagPostHandler from './tag-post.handler';
-import TagPostCommand from './tag-post.command';
+import TagPostUseCase from './tag-post.use-case';
 import TaggingProcess from '../../../domain/tagging-process/entity/tagging-process.aggregate';
 import { PostId } from '@drift/shared';
 import TaggingProcessId from '../../../domain/tagging-process/value-object/tagging-process-id.value-object';
@@ -10,8 +9,9 @@ import { type EventDispatcher } from '@drift/shared';
 import { type Logger } from '@drift/shared';
 import TaggingInitializedEvent from '../../../domain/tagging-process/event/tagging-initialized.event';
 import TaggingStatus from '../../../domain/tagging-process/value-object/tagging-status.value-object';
+import type { TagPostInputDto } from './tag-post.input-dto';
 
-describe('TagPostHandler', () => {
+describe('TagPostUseCase', () => {
   const makeRepository = (): TaggingProcessRepository => ({
     save: vi.fn().mockResolvedValue(undefined),
     findById: vi.fn().mockResolvedValue(null),
@@ -28,8 +28,11 @@ describe('TagPostHandler', () => {
     error: vi.fn(),
   });
 
-  const makeCommand = (postId = uuidv7()): TagPostCommand =>
-    new TagPostCommand(postId, 'My Post Title', 'This is the post body content.');
+  const makeInput = (postId = uuidv7()): TagPostInputDto => ({
+    postId,
+    title: 'My Post Title',
+    body: 'This is the post body content.',
+  });
 
   const makeExistingProcess = (status: TaggingStatusEnum): TaggingProcess => {
     const process = TaggingProcess.reconstruct({
@@ -50,9 +53,9 @@ describe('TagPostHandler', () => {
   it('should create a tagging process, persist it, dispatch its events, and clear them', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
-    const handler = new TagPostHandler(repository, dispatcher, makeLogger());
+    const useCase = new TagPostUseCase(repository, dispatcher, makeLogger());
 
-    await handler.execute(makeCommand());
+    await useCase.execute(makeInput());
 
     const saveMock = repository.save as ReturnType<typeof vi.fn>;
     const dispatchMock = dispatcher.dispatch as ReturnType<typeof vi.fn>;
@@ -70,7 +73,7 @@ describe('TagPostHandler', () => {
   it('should call repository.save before dispatcher.dispatch', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
-    const handler = new TagPostHandler(repository, dispatcher, makeLogger());
+    const useCase = new TagPostUseCase(repository, dispatcher, makeLogger());
 
     const callOrder: string[] = [];
     (repository.save as ReturnType<typeof vi.fn>).mockImplementation(() => {
@@ -80,7 +83,7 @@ describe('TagPostHandler', () => {
       callOrder.push('dispatcher.dispatch');
     });
 
-    await handler.execute(makeCommand());
+    await useCase.execute(makeInput());
 
     expect(callOrder).toEqual(['repository.save', 'dispatcher.dispatch']);
   });
@@ -88,13 +91,13 @@ describe('TagPostHandler', () => {
   it('should skip creating a new process when an initialized one exists for the post', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
-    const handler = new TagPostHandler(repository, dispatcher, makeLogger());
+    const useCase = new TagPostUseCase(repository, dispatcher, makeLogger());
 
     (repository.findByPostId as ReturnType<typeof vi.fn>).mockResolvedValue(
       makeExistingProcess(TaggingStatusEnum.initialized),
     );
 
-    await handler.execute(makeCommand());
+    await useCase.execute(makeInput());
 
     expect(repository.save).not.toHaveBeenCalled();
     expect(dispatcher.dispatch).not.toHaveBeenCalled();
@@ -103,13 +106,13 @@ describe('TagPostHandler', () => {
   it('should skip creating a new process when a failed one exists for the post', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
-    const handler = new TagPostHandler(repository, dispatcher, makeLogger());
+    const useCase = new TagPostUseCase(repository, dispatcher, makeLogger());
 
     (repository.findByPostId as ReturnType<typeof vi.fn>).mockResolvedValue(
       makeExistingProcess(TaggingStatusEnum.failed),
     );
 
-    await handler.execute(makeCommand());
+    await useCase.execute(makeInput());
 
     expect(repository.save).not.toHaveBeenCalled();
     expect(dispatcher.dispatch).not.toHaveBeenCalled();
@@ -118,13 +121,13 @@ describe('TagPostHandler', () => {
   it('should create a new process when an existing one has status tagged', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
-    const handler = new TagPostHandler(repository, dispatcher, makeLogger());
+    const useCase = new TagPostUseCase(repository, dispatcher, makeLogger());
 
     (repository.findByPostId as ReturnType<typeof vi.fn>).mockResolvedValue(
       makeExistingProcess(TaggingStatusEnum.tagged),
     );
 
-    await handler.execute(makeCommand());
+    await useCase.execute(makeInput());
 
     expect(repository.save).toHaveBeenCalledTimes(1);
   });
@@ -132,13 +135,13 @@ describe('TagPostHandler', () => {
   it('should create a new process when an existing one has status abandoned', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
-    const handler = new TagPostHandler(repository, dispatcher, makeLogger());
+    const useCase = new TagPostUseCase(repository, dispatcher, makeLogger());
 
     (repository.findByPostId as ReturnType<typeof vi.fn>).mockResolvedValue(
       makeExistingProcess(TaggingStatusEnum.abandoned),
     );
 
-    await handler.execute(makeCommand());
+    await useCase.execute(makeInput());
 
     expect(repository.save).toHaveBeenCalledTimes(1);
   });

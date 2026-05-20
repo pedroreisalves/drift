@@ -1,7 +1,6 @@
 import type { TaggingInitializedEventPayload } from '../../../domain/tagging-process/event/tagging-initialized.event';
 import { type EventHandler } from '@drift/shared';
-import ExecuteTaggingCommand from '../../command/execute-tagging/execute-tagging.command';
-import type ExecuteTaggingHandler from '../../command/execute-tagging/execute-tagging.handler';
+import type ExecuteTaggingUseCase from '../../usecase/execute-tagging/execute-tagging.use-case';
 import { type Logger } from '@drift/shared';
 
 export interface TaggingInitializedMessage {
@@ -12,7 +11,7 @@ export interface TaggingInitializedMessage {
 
 export default class TaggingInitializedEventHandler implements EventHandler<TaggingInitializedMessage> {
   constructor(
-    private readonly executeTaggingHandler: ExecuteTaggingHandler,
+    private readonly executeTaggingUseCase: ExecuteTaggingUseCase,
     private readonly logger: Logger,
   ) {}
 
@@ -24,7 +23,6 @@ export default class TaggingInitializedEventHandler implements EventHandler<Tagg
       postId,
     });
 
-    const command = new ExecuteTaggingCommand(taggingProcessId);
-    await this.executeTaggingHandler.execute(command);
+    await this.executeTaggingUseCase.execute({ taggingProcessId });
   }
 }
