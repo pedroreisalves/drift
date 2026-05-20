@@ -1,26 +1,30 @@
+import { z } from 'zod';
 import { type EventHandler } from '@drift/shared';
 import { type Logger } from '@drift/shared';
 import LockPostForTaggingCommand from '../../command/lock-post-for-tagging/lock-post-for-tagging.command';
 import type LockPostForTaggingHandler from '../../command/lock-post-for-tagging/lock-post-for-tagging.handler';
 
-export interface TaggingInitializedMessage {
-  eventName: string;
-  occurredAt: string;
-  payload: {
-    taggingProcessId: string;
-    postId: string;
-    retryCount: number;
-    initializedAt: string;
-  };
-}
+export const taggingInitializedMessageSchema = z.object({
+  eventName: z.literal('TaggingInitialized'),
+  occurredAt: z.iso.datetime(),
+  payload: z.object({
+    taggingProcessId: z.uuidv7(),
+    postId: z.uuidv7(),
+    retryCount: z.number(),
+    initializedAt: z.iso.datetime(),
+  }),
+});
 
-export default class TaggingInitializedEventHandler implements EventHandler<TaggingInitializedMessage> {
+export type TaggingInitializedMessage = z.infer<typeof taggingInitializedMessageSchema>;
+
+export default class TaggingInitializedEventHandler implements EventHandler {
   constructor(
     private readonly lockPostForTaggingHandler: LockPostForTaggingHandler,
     private readonly logger: Logger,
   ) {}
 
-  async handle(event: TaggingInitializedMessage): Promise<void> {
+  async handle(raw: unknown): Promise<void> {
+    const event = taggingInitializedMessageSchema.parse(raw);
     const { postId } = event.payload;
 
     await this.lockPostForTaggingHandler.execute(new LockPostForTaggingCommand(postId));

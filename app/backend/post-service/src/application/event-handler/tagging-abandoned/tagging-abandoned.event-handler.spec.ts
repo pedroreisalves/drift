@@ -1,50 +1,72 @@
-import { uuidv7 } from 'uuidv7';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
+import type { Logger } from '@drift/shared';
 import TaggingAbandonedEventHandler, {
   type TaggingAbandonedMessage,
 } from './tagging-abandoned.event-handler';
-import UnlockPostForTaggingHandler from '../../command/unlock-post-for-tagging/unlock-post-for-tagging.handler';
-import type PostLockRepository from '../../@shared/interface/post-lock.repository';
-import { type Logger } from '@drift/shared';
+import type UnlockPostForTaggingHandler from '../../command/unlock-post-for-tagging/unlock-post-for-tagging.handler';
+import UnlockPostForTaggingCommand from '../../command/unlock-post-for-tagging/unlock-post-for-tagging.command';
+
+const makeLogger = (): Logger => ({
+  info: vi.fn(),
+  warn: vi.fn(),
+  error: vi.fn(),
+});
+
+const makeValidMessage = (overrides: Partial<TaggingAbandonedMessage> = {}): TaggingAbandonedMessage => ({
+  eventName: 'TaggingAbandoned',
+  occurredAt: '2026-01-01T00:00:00.000Z',
+  payload: {
+    taggingProcessId: '019682a0-1234-7000-8000-abcdef012345',
+    postId: '019682a0-1234-7000-8000-abcdef012346',
+    retryCount: 3,
+    reason: 'LLM timeout after 3 retries',
+    abandonedAt: '2026-01-01T00:00:00.000Z',
+  },
+  ...overrides,
+});
 
 describe('TaggingAbandonedEventHandler', () => {
-  const makePostLockRepository = (): PostLockRepository => ({
-    lock: vi.fn().mockResolvedValue(undefined),
-    unlock: vi.fn().mockResolvedValue(undefined),
-    isLocked: vi.fn().mockResolvedValue(false),
+  let handler: TaggingAbandonedEventHandler;
+  let unlockPostForTaggingHandler: UnlockPostForTaggingHandler;
+
+  beforeEach(() => {
+    unlockPostForTaggingHandler = {
+      execute: vi.fn().mockResolvedValue(undefined),
+    } as unknown as UnlockPostForTaggingHandler;
+
+    handler = new TaggingAbandonedEventHandler(unlockPostForTaggingHandler, makeLogger());
   });
 
-  const makeLogger = (): Logger => ({
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
+  it('should call use case with correct input when message is valid', async () => {
+    const executeSpy = vi.spyOn(unlockPostForTaggingHandler, 'execute');
+
+    await handler.handle(makeValidMessage());
+
+    expect(executeSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        postId: '019682a0-1234-7000-8000-abcdef012346',
+      }),
+    );
+    expect(executeSpy.mock.calls[0][0]).toBeInstanceOf(UnlockPostForTaggingCommand);
   });
 
-  const makeUnlockPostForTaggingHandler = (): UnlockPostForTaggingHandler =>
-    new UnlockPostForTaggingHandler(makePostLockRepository(), makeLogger());
+  it('should throw when message is invalid', async () => {
+    const executeSpy = vi.spyOn(unlockPostForTaggingHandler, 'execute');
 
-  const makeMessage = (postId = uuidv7()): TaggingAbandonedMessage => ({
-    eventName: 'TaggingAbandoned',
-    occurredAt: '2026-01-01T00:00:00.000Z',
-    payload: {
-      taggingProcessId: uuidv7(),
-      postId,
-      reason: 'LLM timeout after 3 retries',
-      retryCount: 3,
-      abandonedAt: '2026-01-01T00:00:00.000Z',
-    },
-  });
+    await expect(
+      handler.handle(
+        makeValidMessage({
+          payload: {
+            taggingProcessId: '019682a0-1234-7000-8000-abcdef012345',
+            postId: 'not-a-uuid',
+            retryCount: 3,
+            reason: 'LLM timeout after 3 retries',
+            abandonedAt: '2026-01-01T00:00:00.000Z',
+          },
+        }),
+      ),
+    ).rejects.toThrow();
 
-  it('should dispatch UnlockPostForTaggingCommand when a TaggingAbandoned event is received', async () => {
-    const unlockHandler = makeUnlockPostForTaggingHandler();
-    const handler = new TaggingAbandonedEventHandler(unlockHandler, makeLogger());
-    const postId = uuidv7();
-
-    const executeSpy = vi.spyOn(unlockHandler, 'execute');
-
-    await handler.handle(makeMessage(postId));
-
-    expect(executeSpy).toHaveBeenCalledTimes(1);
-    const command = executeSpy.mock.calls[0][0];
-    expect(command.postId).toBe(postId);
+    expect(executeSpy).not.toHaveBeenCalled();
   });
 });

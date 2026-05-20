@@ -1,138 +1,103 @@
-import { uuidv7 } from 'uuidv7';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
+import type { Logger } from '@drift/shared';
 import PostTaggedEventHandler, { type PostTaggedMessage } from './post-tagged.event-handler';
-import UpdatePostTagsHandler from '../../command/update-post-tags/update-post-tags.handler';
+import type UpdatePostTagsHandler from '../../command/update-post-tags/update-post-tags.handler';
+import type UnlockPostForTaggingHandler from '../../command/unlock-post-for-tagging/unlock-post-for-tagging.handler';
 import UpdatePostTagsCommand from '../../command/update-post-tags/update-post-tags.command';
-import UnlockPostForTaggingHandler from '../../command/unlock-post-for-tagging/unlock-post-for-tagging.handler';
-import { type Logger } from '@drift/shared';
-import type PostRepository from '../../../domain/post/repository/post.repository';
-import { type EventDispatcher } from '@drift/shared';
-import type PostLockRepository from '../../@shared/interface/post-lock.repository';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 
-type MessageOverrides = Partial<Pick<PostTaggedMessage['payload'], 'postId' | 'tags'>>;
+const makeLogger = (): Logger => ({
+  info: vi.fn(),
+  warn: vi.fn(),
+  error: vi.fn(),
+});
+
+const makeValidMessage = (overrides: Partial<PostTaggedMessage> = {}): PostTaggedMessage => ({
+  eventName: 'PostTagged',
+  occurredAt: '2026-01-01T00:00:00.000Z',
+  payload: {
+    taggingProcessId: '019682a0-1234-7000-8000-abcdef012345',
+    postId: '019682a0-1234-7000-8000-abcdef012346',
+    tags: ['tech', 'news'],
+    taggedAt: '2026-01-01T00:00:00.000Z',
+  },
+  ...overrides,
+});
 
 describe('PostTaggedEventHandler', () => {
-  const makeRepository = (): PostRepository => ({
-    save: vi.fn().mockResolvedValue(undefined),
-    delete: vi.fn().mockResolvedValue(undefined),
-    findById: vi.fn().mockResolvedValue(null),
-    findAll: vi.fn().mockResolvedValue([]),
-  });
+  let handler: PostTaggedEventHandler;
+  let updatePostTagsHandler: UpdatePostTagsHandler;
+  let unlockPostForTaggingHandler: UnlockPostForTaggingHandler;
 
-  const makeDispatcher = (): EventDispatcher => ({
-    dispatch: vi.fn().mockResolvedValue(undefined),
-  });
+  beforeEach(() => {
+    updatePostTagsHandler = {
+      execute: vi.fn().mockResolvedValue(undefined),
+    } as unknown as UpdatePostTagsHandler;
 
-  const makePostLockRepository = (): PostLockRepository => ({
-    lock: vi.fn().mockResolvedValue(undefined),
-    unlock: vi.fn().mockResolvedValue(undefined),
-    isLocked: vi.fn().mockResolvedValue(false),
-  });
+    unlockPostForTaggingHandler = {
+      execute: vi.fn().mockResolvedValue(undefined),
+    } as unknown as UnlockPostForTaggingHandler;
 
-  const makeLogger = (): Logger => ({
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-  });
-
-  const makeUpdatePostTagsHandler = (): UpdatePostTagsHandler =>
-    new UpdatePostTagsHandler(makeRepository(), makeDispatcher(), makeLogger());
-
-  const makeUnlockPostForTaggingHandler = (): UnlockPostForTaggingHandler =>
-    new UnlockPostForTaggingHandler(makePostLockRepository(), makeLogger());
-
-  const makeMessage = (overrides: MessageOverrides = {}): PostTaggedMessage => ({
-    eventName: 'PostTagged',
-    occurredAt: '2026-01-01T00:00:00.000Z',
-    payload: {
-      taggingProcessId: uuidv7(),
-      postId: overrides.postId ?? uuidv7(),
-      tags: overrides.tags ?? ['tech', 'news'],
-      taggedAt: '2026-01-01T00:00:00.000Z',
-    },
-  });
-
-  it('should invoke UpdatePostTagsHandler.execute with a command built from the message payload', async () => {
-    const updatePostTagsHandler = makeUpdatePostTagsHandler();
-    const eventHandler = new PostTaggedEventHandler(
+    handler = new PostTaggedEventHandler(
       updatePostTagsHandler,
-      makeUnlockPostForTaggingHandler(),
+      unlockPostForTaggingHandler,
       makeLogger(),
     );
-    const postId = uuidv7();
-    const tags = ['tech', 'news', 'sports'];
-
-    const executeSpy = vi.spyOn(updatePostTagsHandler, 'execute').mockResolvedValue(undefined);
-
-    await eventHandler.handle(makeMessage({ postId, tags }));
-
-    expect(executeSpy).toHaveBeenCalledTimes(1);
-    const command = executeSpy.mock.calls[0][0];
-    expect(command).toBeInstanceOf(UpdatePostTagsCommand);
-    expect(command.postId).toBe(postId);
-    expect(command.tags).toEqual(tags);
   });
 
-  it('should unlock the post after successfully applying tags', async () => {
-    const updatePostTagsHandler = makeUpdatePostTagsHandler();
-    const unlockHandler = makeUnlockPostForTaggingHandler();
-    const postId = uuidv7();
+  it('should call use case with correct input when message is valid', async () => {
+    const executeSpy = vi.spyOn(updatePostTagsHandler, 'execute');
 
-    vi.spyOn(updatePostTagsHandler, 'execute').mockResolvedValue(undefined);
-    const unlockSpy = vi.spyOn(unlockHandler, 'execute');
+    await handler.handle(makeValidMessage());
 
-    const eventHandler = new PostTaggedEventHandler(
-      updatePostTagsHandler,
-      unlockHandler,
-      makeLogger(),
+    expect(executeSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        postId: '019682a0-1234-7000-8000-abcdef012346',
+        tags: ['tech', 'news'],
+      }),
     );
-
-    await eventHandler.handle(makeMessage({ postId }));
-
-    expect(unlockSpy).toHaveBeenCalledTimes(1);
-    const command = unlockSpy.mock.calls[0][0];
-    expect(command.postId).toBe(postId);
+    expect(executeSpy.mock.calls[0][0]).toBeInstanceOf(UpdatePostTagsCommand);
   });
 
-  it('should unlock the post and skip applying tags when the post no longer exists', async () => {
-    const updatePostTagsHandler = makeUpdatePostTagsHandler();
-    const unlockHandler = makeUnlockPostForTaggingHandler();
-    const postId = uuidv7();
+  it('should throw when message is invalid', async () => {
+    const executeSpy = vi.spyOn(updatePostTagsHandler, 'execute');
 
-    const updateSpy = vi
-      .spyOn(updatePostTagsHandler, 'execute')
-      .mockRejectedValue(new PostNotFoundError(postId));
-    const unlockSpy = vi.spyOn(unlockHandler, 'execute');
+    await expect(
+      handler.handle(
+        makeValidMessage({
+          payload: {
+            taggingProcessId: '019682a0-1234-7000-8000-abcdef012345',
+            postId: 'not-a-uuid',
+            tags: ['tech', 'news'],
+            taggedAt: '2026-01-01T00:00:00.000Z',
+          },
+        }),
+      ),
+    ).rejects.toThrow();
 
-    const eventHandler = new PostTaggedEventHandler(
-      updatePostTagsHandler,
-      unlockHandler,
-      makeLogger(),
+    expect(executeSpy).not.toHaveBeenCalled();
+  });
+
+  it('should unlock the post and drop the event when the post no longer exists', async () => {
+    const updateSpy = vi.spyOn(updatePostTagsHandler, 'execute').mockRejectedValue(
+      new PostNotFoundError('019682a0-1234-7000-8000-abcdef012346'),
     );
+    const unlockSpy = vi.spyOn(unlockPostForTaggingHandler, 'execute');
 
-    await eventHandler.handle(makeMessage({ postId }));
+    await handler.handle(makeValidMessage());
 
     expect(updateSpy).toHaveBeenCalledTimes(1);
     expect(unlockSpy).toHaveBeenCalledTimes(1);
-    const command = unlockSpy.mock.calls[0][0];
-    expect(command.postId).toBe(postId);
+    expect(unlockSpy.mock.calls[0][0]).toMatchObject({ postId: '019682a0-1234-7000-8000-abcdef012346' });
   });
 
   it('should rethrow unexpected errors without unlocking', async () => {
-    const updatePostTagsHandler = makeUpdatePostTagsHandler();
-    const unlockHandler = makeUnlockPostForTaggingHandler();
     const unexpectedError = new Error('db connection lost');
-
     vi.spyOn(updatePostTagsHandler, 'execute').mockRejectedValue(unexpectedError);
-    const unlockSpy = vi.spyOn(unlockHandler, 'execute');
+    const unlockSpy = vi.spyOn(unlockPostForTaggingHandler, 'execute');
 
-    const eventHandler = new PostTaggedEventHandler(
-      updatePostTagsHandler,
-      unlockHandler,
-      makeLogger(),
-    );
+    await expect(handler.handle(makeValidMessage())).rejects.toThrow(unexpectedError);
 
-    await expect(eventHandler.handle(makeMessage())).rejects.toThrow(unexpectedError);
     expect(unlockSpy).not.toHaveBeenCalled();
   });
 });

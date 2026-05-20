@@ -1,49 +1,70 @@
-import { uuidv7 } from 'uuidv7';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
+import type { Logger } from '@drift/shared';
 import TaggingInitializedEventHandler, {
   type TaggingInitializedMessage,
 } from './tagging-initialized.event-handler';
-import LockPostForTaggingHandler from '../../command/lock-post-for-tagging/lock-post-for-tagging.handler';
-import type PostLockRepository from '../../@shared/interface/post-lock.repository';
-import { type Logger } from '@drift/shared';
+import type LockPostForTaggingHandler from '../../command/lock-post-for-tagging/lock-post-for-tagging.handler';
+import LockPostForTaggingCommand from '../../command/lock-post-for-tagging/lock-post-for-tagging.command';
+
+const makeLogger = (): Logger => ({
+  info: vi.fn(),
+  warn: vi.fn(),
+  error: vi.fn(),
+});
+
+const makeValidMessage = (overrides: Partial<TaggingInitializedMessage> = {}): TaggingInitializedMessage => ({
+  eventName: 'TaggingInitialized',
+  occurredAt: '2026-01-01T00:00:00.000Z',
+  payload: {
+    taggingProcessId: '019682a0-1234-7000-8000-abcdef012345',
+    postId: '019682a0-1234-7000-8000-abcdef012346',
+    retryCount: 0,
+    initializedAt: '2026-01-01T00:00:00.000Z',
+  },
+  ...overrides,
+});
 
 describe('TaggingInitializedEventHandler', () => {
-  const makePostLockRepository = (): PostLockRepository => ({
-    lock: vi.fn().mockResolvedValue(undefined),
-    unlock: vi.fn().mockResolvedValue(undefined),
-    isLocked: vi.fn().mockResolvedValue(false),
+  let handler: TaggingInitializedEventHandler;
+  let lockPostForTaggingHandler: LockPostForTaggingHandler;
+
+  beforeEach(() => {
+    lockPostForTaggingHandler = {
+      execute: vi.fn().mockResolvedValue(undefined),
+    } as unknown as LockPostForTaggingHandler;
+
+    handler = new TaggingInitializedEventHandler(lockPostForTaggingHandler, makeLogger());
   });
 
-  const makeLogger = (): Logger => ({
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
+  it('should call use case with correct input when message is valid', async () => {
+    const executeSpy = vi.spyOn(lockPostForTaggingHandler, 'execute');
+
+    await handler.handle(makeValidMessage());
+
+    expect(executeSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        postId: '019682a0-1234-7000-8000-abcdef012346',
+      }),
+    );
+    expect(executeSpy.mock.calls[0][0]).toBeInstanceOf(LockPostForTaggingCommand);
   });
 
-  const makeLockPostForTaggingHandler = (): LockPostForTaggingHandler =>
-    new LockPostForTaggingHandler(makePostLockRepository(), makeLogger());
+  it('should throw when message is invalid', async () => {
+    const executeSpy = vi.spyOn(lockPostForTaggingHandler, 'execute');
 
-  const makeMessage = (postId = uuidv7()): TaggingInitializedMessage => ({
-    eventName: 'TaggingInitialized',
-    occurredAt: '2026-01-01T00:00:00.000Z',
-    payload: {
-      taggingProcessId: uuidv7(),
-      postId,
-      retryCount: 0,
-      initializedAt: '2026-01-01T00:00:00.000Z',
-    },
-  });
+    await expect(
+      handler.handle(
+        makeValidMessage({
+          payload: {
+            taggingProcessId: '019682a0-1234-7000-8000-abcdef012345',
+            postId: 'not-a-uuid',
+            retryCount: 0,
+            initializedAt: '2026-01-01T00:00:00.000Z',
+          },
+        }),
+      ),
+    ).rejects.toThrow();
 
-  it('should dispatch LockPostForTaggingCommand when a TaggingInitialized event is received', async () => {
-    const lockHandler = makeLockPostForTaggingHandler();
-    const handler = new TaggingInitializedEventHandler(lockHandler, makeLogger());
-    const postId = uuidv7();
-
-    const executeSpy = vi.spyOn(lockHandler, 'execute');
-
-    await handler.handle(makeMessage(postId));
-
-    expect(executeSpy).toHaveBeenCalledTimes(1);
-    const command = executeSpy.mock.calls[0][0];
-    expect(command.postId).toBe(postId);
+    expect(executeSpy).not.toHaveBeenCalled();
   });
 });
