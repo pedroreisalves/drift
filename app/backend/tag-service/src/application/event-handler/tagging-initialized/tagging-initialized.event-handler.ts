@@ -1,21 +1,29 @@
-import type { TaggingInitializedEventPayload } from '../../../domain/tagging-process/event/tagging-initialized.event';
+import { z } from 'zod';
 import { type EventHandler } from '@drift/shared';
 import type ExecuteTaggingUseCase from '../../usecase/execute-tagging/execute-tagging.use-case';
 import { type Logger } from '@drift/shared';
 
-export interface TaggingInitializedMessage {
-  eventName: string;
-  occurredAt: string;
-  payload: TaggingInitializedEventPayload;
-}
+export const taggingInitializedMessageSchema = z.object({
+  eventName: z.literal('TaggingInitialized'),
+  occurredAt: z.iso.datetime(),
+  payload: z.object({
+    taggingProcessId: z.uuidv7(),
+    postId: z.uuidv7(),
+    retryCount: z.number(),
+    initializedAt: z.iso.datetime(),
+  }),
+});
 
-export default class TaggingInitializedEventHandler implements EventHandler<TaggingInitializedMessage> {
+export type TaggingInitializedMessage = z.infer<typeof taggingInitializedMessageSchema>;
+
+export default class TaggingInitializedEventHandler implements EventHandler {
   constructor(
     private readonly executeTaggingUseCase: ExecuteTaggingUseCase,
     private readonly logger: Logger,
   ) {}
 
-  async handle(event: TaggingInitializedMessage): Promise<void> {
+  async handle(raw: unknown): Promise<void> {
+    const event = taggingInitializedMessageSchema.parse(raw);
     const { taggingProcessId, postId } = event.payload;
 
     this.logger.info('Received tagging initialized event, scheduling execution', {

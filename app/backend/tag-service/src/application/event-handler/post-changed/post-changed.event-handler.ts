@@ -1,28 +1,32 @@
+import { z } from 'zod';
 import { type EventHandler } from '@drift/shared';
 import type TagPostUseCase from '../../usecase/tag-post/tag-post.use-case';
 import { type Logger } from '@drift/shared';
 
-export interface PostChangedMessage {
-  eventName: string;
-  occurredAt: string;
-  payload: {
-    postId: string;
-    clientId: string;
-    clientName: string;
-    title: string;
-    body: string;
-    createdAt?: string;
-    updatedAt?: string;
-  };
-}
+export const postChangedMessageSchema = z.object({
+  eventName: z.literal('PostChanged'),
+  occurredAt: z.iso.datetime(),
+  payload: z.object({
+    postId: z.uuidv7(),
+    clientId: z.uuidv7(),
+    clientName: z.string(),
+    title: z.string(),
+    body: z.string(),
+    createdAt: z.iso.datetime().optional(),
+    updatedAt: z.iso.datetime().optional(),
+  }),
+});
 
-export default class PostChangedEventHandler implements EventHandler<PostChangedMessage> {
+export type PostChangedMessage = z.infer<typeof postChangedMessageSchema>;
+
+export default class PostChangedEventHandler implements EventHandler {
   constructor(
     private readonly tagPostUseCase: TagPostUseCase,
     private readonly logger: Logger,
   ) {}
 
-  async handle(event: PostChangedMessage): Promise<void> {
+  async handle(raw: unknown): Promise<void> {
+    const event = postChangedMessageSchema.parse(raw);
     const { postId, title, body } = event.payload;
 
     this.logger.info('Received post changed event', {

@@ -3,7 +3,9 @@ import ExecuteTaggingUseCase from './execute-tagging.use-case';
 import TaggingProcess from '../../../domain/tagging-process/entity/tagging-process.aggregate';
 import { PostId } from '@drift/shared';
 import TaggingProcessId from '../../../domain/tagging-process/value-object/tagging-process-id.value-object';
-import TaggingStatus, { TaggingStatusEnum } from '../../../domain/tagging-process/value-object/tagging-status.value-object';
+import TaggingStatus, {
+  TaggingStatusEnum,
+} from '../../../domain/tagging-process/value-object/tagging-status.value-object';
 import type TaggingProcessRepository from '../../../domain/tagging-process/repository/tagging-process.repository';
 import { type EventDispatcher } from '@drift/shared';
 import type TagGenerator from '../../@shared/interface/tag-generator.interface';
