@@ -16,7 +16,9 @@ describe('PostDeletedEventHandler', () => {
     error: vi.fn(),
   });
 
-  const makeMessage = (overrides: Partial<PostDeletedMessage['payload']> = {}): PostDeletedMessage => ({
+  const makeMessage = (
+    overrides: Partial<PostDeletedMessage['payload']> = {},
+  ): PostDeletedMessage => ({
     eventName: 'PostDeleted',
     occurredAt: '2026-01-01T00:00:00.000Z',
     payload: {

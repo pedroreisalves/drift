@@ -33,6 +33,8 @@ export default class IndexPostHandler {
 
     this.logger.info('Post indexed', { postId: command.postId });
 
-    await this.eventDispatcher.dispatch(new PostIndexedEvent({ postId: command.postId, indexedAt }));
+    await this.eventDispatcher.dispatch(
+      new PostIndexedEvent({ postId: command.postId, indexedAt }),
+    );
   }
 }

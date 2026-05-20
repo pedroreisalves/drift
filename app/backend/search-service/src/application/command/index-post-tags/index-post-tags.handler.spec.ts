@@ -63,9 +63,9 @@ describe('IndexPostTagsHandler', () => {
     const repository = makeRepository();
     const handler = new IndexPostTagsHandler(repository, makeDispatcher(), makeLogger());
 
-    await expect(
-      handler.execute(new IndexPostTagsCommand(uuidv7(), ['tag'])),
-    ).rejects.toThrow(DocumentNotFoundError);
+    await expect(handler.execute(new IndexPostTagsCommand(uuidv7(), ['tag']))).rejects.toThrow(
+      DocumentNotFoundError,
+    );
   });
 
   it('should call repository.update before dispatcher.dispatch', async () => {

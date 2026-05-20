@@ -17,7 +17,9 @@ describe('PostUpdatedEventHandler', () => {
     error: vi.fn(),
   });
 
-  const makeMessage = (overrides: Partial<PostUpdatedMessage['payload']> = {}): PostUpdatedMessage => ({
+  const makeMessage = (
+    overrides: Partial<PostUpdatedMessage['payload']> = {},
+  ): PostUpdatedMessage => ({
     eventName: 'PostUpdated',
     occurredAt: '2026-01-01T00:00:00.000Z',
     payload: {
@@ -47,7 +49,9 @@ describe('PostUpdatedEventHandler', () => {
     );
     const eventHandler = new PostUpdatedEventHandler(updatePostIndexHandler, makeLogger());
 
-    await expect(eventHandler.handle(makeMessage())).rejects.toThrow('unexpected infrastructure error');
+    await expect(eventHandler.handle(makeMessage())).rejects.toThrow(
+      'unexpected infrastructure error',
+    );
   });
 
   it('should invoke UpdatePostIndexHandler.execute with a command built from the message payload', async () => {

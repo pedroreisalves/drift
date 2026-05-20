@@ -11,27 +11,27 @@ Indexes posts into Meilisearch and exposes a full-text search API for clients.
 
 ## HTTP endpoints
 
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/search` | Search indexed posts (`q`, `clientId`, `limit`, `offset` query params) |
+| Method | Path      | Description                                                            |
+| ------ | --------- | ---------------------------------------------------------------------- |
+| `GET`  | `/search` | Search indexed posts (`q`, `clientId`, `limit`, `offset` query params) |
 
 ## Events consumed
 
-| Event | Source service |
-|---|---|
-| `PostCreated` | post-service |
-| `PostUpdated` | post-service |
-| `PostDeleted` | post-service |
-| `PostTagsUpdated` | post-service |
+| Event             | Source service |
+| ----------------- | -------------- |
+| `PostCreated`     | post-service   |
+| `PostUpdated`     | post-service   |
+| `PostDeleted`     | post-service   |
+| `PostTagsUpdated` | post-service   |
 
 ## Events produced
 
-| Event | Consumed by |
-|---|---|
-| `PostIndexed` | analytics-service |
-| `PostTagsIndexed` | analytics-service |
+| Event                  | Consumed by       |
+| ---------------------- | ----------------- |
+| `PostIndexed`          | analytics-service |
+| `PostTagsIndexed`      | analytics-service |
 | `PostRemovedFromIndex` | analytics-service |
-| `PostSearched` | analytics-service |
+| `PostSearched`         | analytics-service |
 
 ## Tech
 
@@ -42,15 +42,15 @@ Indexes posts into Meilisearch and exposes a full-text search API for clients.
 
 ## Environment variables
 
-| Variable | Description | Example |
-|---|---|---|
-| `MEILISEARCH_URL` | Meilisearch base URL | `http://localhost:7700` |
-| `RABBITMQ_URL` | RabbitMQ connection string | `amqp://user:pass@localhost:5672` |
-| `RABBITMQ_EXCHANGE` | RabbitMQ topic exchange name | `drift.events` |
-| `PORT` | HTTP port to listen on | `3002` |
-| `SERVICE_NAME` | Identifies this service in logs and queues | `search-service` |
-| `NODE_ENV` | Runtime environment | `production` |
-| `LOG_LEVEL` | Pino log level | `info` |
+| Variable            | Description                                | Example                           |
+| ------------------- | ------------------------------------------ | --------------------------------- |
+| `MEILISEARCH_URL`   | Meilisearch base URL                       | `http://localhost:7700`           |
+| `RABBITMQ_URL`      | RabbitMQ connection string                 | `amqp://user:pass@localhost:5672` |
+| `RABBITMQ_EXCHANGE` | RabbitMQ topic exchange name               | `drift.events`                    |
+| `PORT`              | HTTP port to listen on                     | `3002`                            |
+| `SERVICE_NAME`      | Identifies this service in logs and queues | `search-service`                  |
+| `NODE_ENV`          | Runtime environment                        | `production`                      |
+| `LOG_LEVEL`         | Pino log level                             | `info`                            |
 
 ## How to run
 

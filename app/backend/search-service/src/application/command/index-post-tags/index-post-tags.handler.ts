@@ -25,7 +25,10 @@ export default class IndexPostTagsHandler {
 
     const indexedAt = new Date().toISOString();
 
-    this.logger.info('Post tags indexed', { postId: command.postId, tagCount: command.tags.length });
+    this.logger.info('Post tags indexed', {
+      postId: command.postId,
+      tagCount: command.tags.length,
+    });
 
     await this.eventDispatcher.dispatch(
       new PostTagsIndexedEvent({ postId: command.postId, tags: command.tags, indexedAt }),

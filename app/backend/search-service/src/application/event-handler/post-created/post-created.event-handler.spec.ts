@@ -16,7 +16,9 @@ describe('PostCreatedEventHandler', () => {
     error: vi.fn(),
   });
 
-  const makeMessage = (overrides: Partial<PostCreatedMessage['payload']> = {}): PostCreatedMessage => ({
+  const makeMessage = (
+    overrides: Partial<PostCreatedMessage['payload']> = {},
+  ): PostCreatedMessage => ({
     eventName: 'PostCreated',
     occurredAt: '2026-01-01T00:00:00.000Z',
     payload: {
