@@ -6,6 +6,7 @@ import { PostId } from '@drift/shared';
 import SearchEntry from '../../../domain/search-entry/entity/search-entry.entity';
 import PostTagsIndexedEvent from '../../../domain/search-entry/event/post-tags-indexed.event';
 import DocumentNotFoundError from '../../@shared/error/document-not-found.error';
+import IndexingFailedError from '../../@shared/error/indexing-failed.error';
 
 describe('IndexPostTagsUseCase', () => {
   const makeRepository = (): SearchEntryRepository => ({
@@ -65,6 +66,28 @@ describe('IndexPostTagsUseCase', () => {
     await expect(useCase.execute({ postId: uuidv7(), tags: ['tag'] })).rejects.toThrow(
       DocumentNotFoundError,
     );
+  });
+
+  it('should throw IndexingFailedError when the repository update fails', async () => {
+    const repository = makeRepository();
+    const useCase = new IndexPostTagsUseCase(repository, makeDispatcher(), makeLogger());
+
+    const postId = uuidv7();
+    (repository.findByPostId as ReturnType<typeof vi.fn>).mockResolvedValue(makeEntry(postId));
+    (repository.update as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('DB error'));
+
+    await expect(useCase.execute({ postId, tags: ['tag'] })).rejects.toThrow(IndexingFailedError);
+  });
+
+  it('should throw IndexingFailedError when the repository update rejects with a non-Error value', async () => {
+    const repository = makeRepository();
+    const useCase = new IndexPostTagsUseCase(repository, makeDispatcher(), makeLogger());
+
+    const postId = uuidv7();
+    (repository.findByPostId as ReturnType<typeof vi.fn>).mockResolvedValue(makeEntry(postId));
+    (repository.update as ReturnType<typeof vi.fn>).mockRejectedValue('raw string error');
+
+    await expect(useCase.execute({ postId, tags: ['tag'] })).rejects.toThrow(IndexingFailedError);
   });
 
   it('should call repository.update before dispatcher.dispatch', async () => {

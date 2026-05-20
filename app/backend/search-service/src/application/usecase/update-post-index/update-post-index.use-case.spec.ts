@@ -6,6 +6,7 @@ import { PostId } from '@drift/shared';
 import SearchEntry from '../../../domain/search-entry/entity/search-entry.entity';
 import PostIndexedEvent from '../../../domain/search-entry/event/post-indexed.event';
 import DocumentNotFoundError from '../../@shared/error/document-not-found.error';
+import IndexingFailedError from '../../@shared/error/indexing-failed.error';
 
 describe('UpdatePostIndexUseCase', () => {
   const makeRepository = (): SearchEntryRepository => ({
@@ -54,6 +55,32 @@ describe('UpdatePostIndexUseCase', () => {
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledWith(expect.any(PostIndexedEvent));
+  });
+
+  it('should throw IndexingFailedError when the repository update fails', async () => {
+    const repository = makeRepository();
+    const useCase = new UpdatePostIndexUseCase(repository, makeDispatcher(), makeLogger());
+
+    const postId = uuidv7();
+    (repository.findByPostId as ReturnType<typeof vi.fn>).mockResolvedValue(makeEntry(postId));
+    (repository.update as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('DB error'));
+
+    await expect(
+      useCase.execute({ postId, title: 'Title', body: 'Body content.' }),
+    ).rejects.toThrow(IndexingFailedError);
+  });
+
+  it('should throw IndexingFailedError when the repository update rejects with a non-Error value', async () => {
+    const repository = makeRepository();
+    const useCase = new UpdatePostIndexUseCase(repository, makeDispatcher(), makeLogger());
+
+    const postId = uuidv7();
+    (repository.findByPostId as ReturnType<typeof vi.fn>).mockResolvedValue(makeEntry(postId));
+    (repository.update as ReturnType<typeof vi.fn>).mockRejectedValue('raw string error');
+
+    await expect(
+      useCase.execute({ postId, title: 'Title', body: 'Body content.' }),
+    ).rejects.toThrow(IndexingFailedError);
   });
 
   it('should throw DocumentNotFoundError when entry does not exist', async () => {

@@ -3,6 +3,7 @@ import type SearchEntryRepository from '../../../domain/search-entry/repository/
 import type { UpdatePostIndexInputDto } from './update-post-index.input-dto';
 import PostIndexedEvent from '../../../domain/search-entry/event/post-indexed.event';
 import DocumentNotFoundError from '../../@shared/error/document-not-found.error';
+import IndexingFailedError from '../../@shared/error/indexing-failed.error';
 
 export default class UpdatePostIndexUseCase {
   constructor(
@@ -21,7 +22,12 @@ export default class UpdatePostIndexUseCase {
 
     entry.updateContent({ title: input.title, body: input.body });
 
-    await this.searchEntryRepository.update(entry);
+    try {
+      await this.searchEntryRepository.update(entry);
+    } catch (error: unknown) {
+      const reason = error instanceof Error ? error.message : String(error);
+      throw new IndexingFailedError(reason);
+    }
 
     const indexedAt = new Date().toISOString();
 
