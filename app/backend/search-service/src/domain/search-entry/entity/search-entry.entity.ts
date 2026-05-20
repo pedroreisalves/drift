@@ -130,6 +130,6 @@ export default class SearchEntry {
   }
 
   get tags(): string[] {
-    return this.props.tags;
+    return [...this.props.tags];
   }
 }
