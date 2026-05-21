@@ -1,9 +1,10 @@
-export default class ForbiddenPostUpdateError extends Error {
+export class ForbiddenPostOperationError extends Error {
   constructor(
-    public readonly postId: string,
     public readonly clientId: string,
+    public readonly postId: string,
+    operation: 'update' | 'delete',
   ) {
-    super(`Client ${clientId} is not allowed to update post ${postId}`);
-    this.name = 'ForbiddenPostUpdateError';
+    super(`Client ${clientId} is not allowed to ${operation} post ${postId}`);
+    this.name = 'ForbiddenPostOperationError';
   }
 }

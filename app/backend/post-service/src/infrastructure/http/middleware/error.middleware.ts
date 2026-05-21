@@ -3,7 +3,7 @@ import InvalidPostError from '../../../domain/post/error/invalid-post.error';
 import InvalidPostTagsError from '../../../domain/post/error/invalid-post-tags.error';
 import { InvalidValueObjectError } from '@drift/shared';
 import PostNotFoundError from '../../../application/@shared/error/post-not-found.error';
-import ForbiddenPostUpdateError from '../../../application/@shared/error/forbidden-post-update.error';
+import { ForbiddenPostOperationError } from '../../../application/@shared/error/forbidden-post-update.error';
 import TaggingInProgressError from '../../../application/@shared/error/tagging-in-progress.error';
 import { type Logger } from '@drift/shared';
 
@@ -28,7 +28,7 @@ export default function createErrorMiddleware(logger: Logger) {
       return;
     }
 
-    if (error instanceof ForbiddenPostUpdateError) {
+    if (error instanceof ForbiddenPostOperationError) {
       res.status(403).json({ error: error.message });
       return;
     }
