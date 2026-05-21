@@ -22,14 +22,20 @@ export default class SearchPostsUseCase {
 
     this.logger.info('Posts searched', { q: input.q, resultCount: results.length, limit, offset });
 
-    await this.eventDispatcher.dispatch(
-      new PostSearchedEvent({
-        query: input.q,
-        clientId: input.clientId,
-        resultCount: results.length,
-        searchedAt,
-      }),
-    );
+    this.eventDispatcher
+      .dispatch(
+        new PostSearchedEvent({
+          query: input.q,
+          clientId: input.clientId,
+          resultCount: results.length,
+          searchedAt,
+        }),
+      )
+      .catch((err: unknown) => {
+        this.logger.warn('Failed to dispatch PostSearchedEvent', {
+          error: err instanceof Error ? err.message : String(err),
+        });
+      });
 
     return results.map((entry) => SearchPostsMapper.toOutputDto(entry));
   }

@@ -48,6 +48,8 @@ describe('SearchPostsUseCase', () => {
 
     const result = await useCase.execute({ q: 'drift', clientId: uuidv7() });
 
+    await Promise.resolve();
+
     expect(result).toHaveLength(2);
     expect(result[0].postId).toBe(firstId);
     expect(result[1].postId).toBe(secondId);
@@ -57,6 +59,41 @@ describe('SearchPostsUseCase', () => {
     const event = dispatchSpy.mock.calls[0][0] as PostSearchedEvent;
     expect(event.payload.resultCount).toBe(2);
     expect(event.payload.query).toBe('drift');
+  });
+
+  it('should still return results when event dispatch fails with an Error', async () => {
+    const repository = makeRepository();
+    const dispatcher = makeDispatcher();
+    const logger = makeLogger();
+    const useCase = new SearchPostsUseCase(repository, dispatcher, logger);
+
+    const postId = uuidv7();
+    (repository.search as ReturnType<typeof vi.fn>).mockResolvedValue([makeEntry(postId)]);
+    vi.spyOn(dispatcher, 'dispatch').mockRejectedValue(new Error('Analytics down'));
+
+    const result = await useCase.execute({ q: 'drift', clientId: uuidv7() });
+
+    await Promise.resolve();
+
+    expect(result).toHaveLength(1);
+    expect(result[0].postId).toBe(postId);
+  });
+
+  it('should still return results when event dispatch rejects with a non-Error value', async () => {
+    const repository = makeRepository();
+    const dispatcher = makeDispatcher();
+    const logger = makeLogger();
+    const useCase = new SearchPostsUseCase(repository, dispatcher, logger);
+
+    const postId = uuidv7();
+    (repository.search as ReturnType<typeof vi.fn>).mockResolvedValue([makeEntry(postId)]);
+    vi.spyOn(dispatcher, 'dispatch').mockRejectedValue('raw string error');
+
+    const result = await useCase.execute({ q: 'drift', clientId: uuidv7() });
+
+    await Promise.resolve();
+
+    expect(result).toHaveLength(1);
   });
 
   it('should forward the provided limit and offset to the repository', async () => {
