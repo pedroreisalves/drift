@@ -12,3 +12,6 @@ export type { default as Logger } from './application/interface/logger.interface
 export { default as RabbitMQEventDispatcher } from './infrastructure/messaging/rabbitmq-event-dispatcher';
 export { default as RabbitMQEventConsumer } from './infrastructure/messaging/rabbitmq-event-consumer';
 export { default as PinoLogger } from './infrastructure/logging/pino-logger';
+export { default as NodeCronScheduler } from './infrastructure/scheduler/node-cron-scheduler';
+
+export { chunk } from './utils/array/chunk';

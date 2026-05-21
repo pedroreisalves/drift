@@ -1,9 +1,10 @@
 {
-  "name": "@drift/shared",
+  "name": "analytics-service",
   "version": "1.0.0",
   "description": "",
-  "main": "src/index.ts",
+  "main": "",
   "scripts": {
+    "dev": "tsx watch --clear-screen=false --include '../@shared/src/**/*' src/main.ts",
     "test": "vitest",
     "coverage": "vitest run --coverage",
     "lint": "eslint .",
@@ -15,15 +16,19 @@
   "author": "",
   "license": "ISC",
   "type": "commonjs",
-  "devDependencies": {
-    "tsx": "^4.19.2",
-    "uuidv7": "^1.2.1"
-  },
   "dependencies": {
+    "@drift/shared": "*",
     "amqp-connection-manager": "^5.0.0",
-    "amqplib": "^1.0.6",
-    "node-cron": "^4.2.1",
+    "amqplib": "^1.2.0",
+    "dotenv": "^17.4.2",
+    "pg": "^8.20.0",
     "pino": "^10.3.1",
+    "uuidv7": "^1.2.1",
     "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.8",
+    "@types/pg": "^8.20.0",
+    "tsx": "^4.22.0"
   }
 }

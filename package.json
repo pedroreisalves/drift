@@ -12,10 +12,12 @@
     "test:post-service": "npm run test --workspace post-service",
     "test:tag-service": "npm run test --workspace tag-service",
     "test:search-service": "npm run test --workspace search-service",
+    "test:analytics-service": "npm run test --workspace analytics-service",
     "coverage:shared": "npm run coverage --workspace @drift/shared",
     "coverage:post-service": "npm run coverage --workspace post-service",
     "coverage:tag-service": "npm run coverage --workspace tag-service",
-    "coverage:search-service": "npm run coverage --workspace search-service"
+    "coverage:search-service": "npm run coverage --workspace search-service",
+    "coverage:analytics-service": "npm run coverage --workspace analytics-service"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

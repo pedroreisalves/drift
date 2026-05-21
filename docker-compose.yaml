@@ -9,8 +9,7 @@ x-rabbitmq-env: &rabbitmq-env
   RABBITMQ_URL: amqp://rabbitmq:5672
   RABBITMQ_EXCHANGE: drift.events
 
-x-shared-src-volume: &shared-src-volume
-  ./app/backend/@shared/src:/repo/app/backend/@shared/src
+x-shared-src-volume: &shared-src-volume ./app/backend/@shared/src:/repo/app/backend/@shared/src
 
 x-healthcheck-defaults: &healthcheck-defaults
   interval: 5s
@@ -30,6 +29,7 @@ services:
       - postgres_data:/var/lib/postgresql
       - ./app/backend/post-service/init.sql:/docker-entrypoint-initdb.d/01-post.sql
       - ./app/backend/tag-service/init.sql:/docker-entrypoint-initdb.d/02-tag.sql
+      - ./app/backend/analytics-service/init.sql:/docker-entrypoint-initdb.d/03-analytic.sql
     deploy:
       resources:
         limits:
@@ -143,6 +143,26 @@ services:
       rabbitmq:
         condition: service_healthy
       meilisearch:
+        condition: service_healthy
+
+  analytics-service:
+    build:
+      context: .
+      dockerfile: app/backend/Dockerfile
+      args:
+        SERVICE_NAME: analytics-service
+    container_name: drift-analytics-service
+    environment:
+      DB_URL: postgresql://drift:drift@postgres:5432/analytics_db
+      <<: *rabbitmq-env
+    volumes:
+      - ./app/backend/analytics-service/src:/repo/app/backend/analytics-service/src
+      - *shared-src-volume
+    <<: *app-resources
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
 
   tag-service:

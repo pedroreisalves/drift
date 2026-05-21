@@ -6,30 +6,32 @@ Shared domain primitives, application interfaces, and infrastructure implementat
 
 ### Domain
 
-| Export | Description |
-|---|---|
-| `AggregateRoot` | Base class for aggregate roots — collects and clears domain events |
-| `PostId` / `postIdSchema` | Value object for post identifiers (UUIDv7) |
-| `ClientId` / `clientIdSchema` | Value object for client identifiers (UUIDv7) |
-| `InvalidValueObjectError` | Error thrown when a value object receives an invalid input |
-| `DomainEvent` | Interface all domain events must implement |
+| Export                        | Description                                                        |
+| ----------------------------- | ------------------------------------------------------------------ |
+| `AggregateRoot`               | Base class for aggregate roots — collects and clears domain events |
+| `PostId` / `postIdSchema`     | Value object for post identifiers (UUIDv7)                         |
+| `ClientId` / `clientIdSchema` | Value object for client identifiers (UUIDv7)                       |
+| `InvalidValueObjectError`     | Error thrown when a value object receives an invalid input         |
+| `DomainEvent`                 | Interface all domain events must implement                         |
 
 ### Application interfaces
 
-| Export | Description |
-|---|---|
-| `EventDispatcher` | Contract for publishing domain events to a message broker |
-| `EventConsumer` | Contract for subscribing to domain events from a message broker |
-| `EventHandler` | Contract for handling a specific domain event |
-| `Logger` | Contract for structured logging |
+| Export            | Description                                                     |
+| ----------------- | --------------------------------------------------------------- |
+| `EventDispatcher` | Contract for publishing domain events to a message broker       |
+| `EventConsumer`   | Contract for subscribing to domain events from a message broker |
+| `EventHandler`    | Contract for handling a specific domain event                   |
+| `Logger`          | Contract for structured logging                                 |
+| `Scheduler`       | Contract for scheduling recurring jobs via cron expressions     |
 
 ### Infrastructure
 
-| Export | Description |
-|---|---|
+| Export                    | Description                                                                         |
+| ------------------------- | ----------------------------------------------------------------------------------- |
 | `RabbitMQEventDispatcher` | `EventDispatcher` implementation backed by RabbitMQ (via `amqp-connection-manager`) |
-| `RabbitMQEventConsumer` | `EventConsumer` implementation backed by RabbitMQ |
-| `PinoLogger` | `Logger` implementation backed by Pino |
+| `RabbitMQEventConsumer`   | `EventConsumer` implementation backed by RabbitMQ                                   |
+| `PinoLogger`              | `Logger` implementation backed by Pino                                              |
+| `NodeCronScheduler`       | `Scheduler` implementation backed by node-cron                                      |
 
 ## How services consume this package
 
@@ -43,11 +45,17 @@ This package is referenced as a local workspace dependency — no publishing req
 ```
 
 ```ts
-import { AggregateRoot, RabbitMQEventDispatcher, PinoLogger } from '@drift/shared';
+import {
+  AggregateRoot,
+  RabbitMQEventDispatcher,
+  PinoLogger,
+  NodeCronScheduler,
+} from '@drift/shared';
 ```
 
 ## Key libraries
 
 - **Messaging:** `amqp-connection-manager`, `amqplib`
 - **Logging:** `pino`
+- **Scheduling:** `node-cron`
 - **Validation:** `zod`
