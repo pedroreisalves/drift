@@ -4,10 +4,12 @@ Tracks post interactions and monitors engagement trends, emitting signals when p
 
 ## Responsibilities
 
-- Listens for post interaction events and records them as analytics log entries in PostgreSQL
-- Ignores events for deleted posts to avoid polluting analytics data
-- Runs an hourly scheduled job to evaluate engagement: raises or drops engagement signals based on view counts in a 24-hour window
-- Persists engagement state per post (`raised` / `dropped`) to avoid duplicate signals
+- Listens for all post interaction events (`PostCreated`, `PostUpdated`, `PostViewed`, `PostSearched`, `PostDeleted`) and appends them as log entries in PostgreSQL
+- Registers deleted posts in a `deleted_posts` table so they can be excluded from engagement evaluation
+- Runs an hourly scheduled job that evaluates two candidate sets:
+  - **Raise candidates** — posts with views in the last 24h that are not already in `raised` state; emits `PostEngagementRaised` if views > 10
+  - **Drop candidates** — posts currently in `raised` state; emits `PostEngagementDropped` if views < 5 in the last 24h and the post has been raised for ≥ 48h
+- Persists the last engagement signal per post so raise/drop events are only emitted on state transition
 - Publishes domain events when a post's engagement level changes
 
 ## Events consumed
@@ -22,11 +24,11 @@ Tracks post interactions and monitors engagement trends, emitting signals when p
 
 ## Events produced
 
-| Event                    | Description                                                         |
-| ------------------------ | ------------------------------------------------------------------- |
-| `AnalyticsEventRecorded` | Emitted after each interaction is persisted                         |
-| `PostEngagementRaised`   | Emitted when a post exceeds 10 views in the last 24 hours           |
-| `PostEngagementDropped`  | Emitted when a raised post falls below 5 views in the last 24 hours |
+| Event                    | Consumed by      |
+| ------------------------ | ---------------- |
+| `AnalyticsEventRecorded` | none             |
+| `PostEngagementRaised`   | featured-service |
+| `PostEngagementDropped`  | featured-service |
 
 ## Tech
 
