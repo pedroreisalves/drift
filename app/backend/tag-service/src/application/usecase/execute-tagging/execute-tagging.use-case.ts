@@ -21,7 +21,9 @@ export default class ExecuteTaggingUseCase {
     const taggingProcess = await this.taggingProcessRepository.findById(taggingProcessId);
 
     if (!taggingProcess) {
-      this.logger.error('Tagging process not found', { taggingProcessId: taggingProcessId });
+      this.logger.error('Tagging process not found', {
+        taggingProcessId: taggingProcessId.toString(),
+      });
       throw new TaggingProcessNotFoundError(taggingProcessId.toString());
     }
 

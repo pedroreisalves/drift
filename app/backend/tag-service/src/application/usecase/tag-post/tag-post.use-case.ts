@@ -19,7 +19,7 @@ export default class TagPostUseCase {
 
     const existing = await this.taggingProcessRepository.findByPostId(postId);
 
-    if (existing && ['initialized', 'failed'].includes(existing.status.toString())) {
+    if (existing?.isInProgress) {
       this.logger.info('Tagging already in progress, skipping', {
         postId: postId.toString(),
         existingStatus: existing.status.toString(),
