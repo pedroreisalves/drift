@@ -1,6 +1,7 @@
 import { uuidv7 } from 'uuidv7';
 import LockPostForTaggingUseCase from './lock-post-for-tagging.use-case';
 import type PostLockRepository from '../../@shared/interface/post-lock.repository';
+import { POST_LOCK_TYPE } from '../../@shared/constant/post-lock.constant';
 import { type Logger } from '@drift/shared';
 
 describe('LockPostForTaggingUseCase', () => {
@@ -23,6 +24,6 @@ describe('LockPostForTaggingUseCase', () => {
 
     await useCase.execute({ postId });
 
-    expect(postLockRepository.lock).toHaveBeenCalledWith(postId, 'tagging');
+    expect(postLockRepository.lock).toHaveBeenCalledWith(postId, POST_LOCK_TYPE.TAGGING);
   });
 });

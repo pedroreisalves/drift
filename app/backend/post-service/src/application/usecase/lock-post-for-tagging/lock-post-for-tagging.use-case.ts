@@ -1,5 +1,6 @@
 import type { LockPostForTaggingInputDto } from './lock-post-for-tagging.input-dto';
 import type PostLockRepository from '../../@shared/interface/post-lock.repository';
+import { POST_LOCK_TYPE } from '../../@shared/constant/post-lock.constant';
 import { type Logger } from '@drift/shared';
 
 export default class LockPostForTaggingUseCase {
@@ -9,7 +10,7 @@ export default class LockPostForTaggingUseCase {
   ) {}
 
   async execute(input: LockPostForTaggingInputDto): Promise<void> {
-    await this.postLockRepository.lock(input.postId, 'tagging');
+    await this.postLockRepository.lock(input.postId, POST_LOCK_TYPE.TAGGING);
     this.logger.info('Post locked for tagging', { postId: input.postId });
   }
 }
