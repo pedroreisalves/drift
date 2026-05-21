@@ -4,7 +4,7 @@ import type PostRepository from '../../../domain/post/repository/post.repository
 import { type EventDispatcher } from '@drift/shared';
 import type { DeletePostInputDto } from './delete-post.input-dto';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
-import ForbiddenPostUpdateError from '../../@shared/error/forbidden-post-update.error';
+import { ForbiddenPostOperationError } from '../../@shared/error/forbidden-post-update.error';
 import { type Logger } from '@drift/shared';
 
 export default class DeletePostUseCase {
@@ -30,7 +30,7 @@ export default class DeletePostUseCase {
         postId: postId.toString(),
         clientId: clientId.toString(),
       });
-      throw new ForbiddenPostUpdateError(postId.toString(), clientId.toString());
+      throw new ForbiddenPostOperationError(clientId.toString(), postId.toString(), 'delete');
     }
 
     post.delete();

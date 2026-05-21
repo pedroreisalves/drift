@@ -8,7 +8,7 @@ import { type EventDispatcher } from '@drift/shared';
 import { type Logger } from '@drift/shared';
 import PostDeletedEvent from '../../../domain/post/event/post-deleted.event';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
-import ForbiddenPostUpdateError from '../../@shared/error/forbidden-post-update.error';
+import { ForbiddenPostOperationError } from '../../@shared/error/forbidden-post-update.error';
 
 describe('DeletePostUseCase', () => {
   const makeRepository = (): PostRepository => ({
@@ -110,7 +110,7 @@ describe('DeletePostUseCase', () => {
     expect(dispatchMock).not.toHaveBeenCalled();
   });
 
-  it('should throw ForbiddenPostUpdateError when the post belongs to a different client', async () => {
+  it('should throw ForbiddenPostOperationError when the post belongs to a different client', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
     const useCase = new DeletePostUseCase(repository, dispatcher, makeLogger());
@@ -123,7 +123,7 @@ describe('DeletePostUseCase', () => {
     );
 
     await expect(useCase.execute({ postId, clientId: otherClientId })).rejects.toThrow(
-      ForbiddenPostUpdateError,
+      ForbiddenPostOperationError,
     );
     const deleteMock = repository.delete as ReturnType<typeof vi.fn>;
     const dispatchMock = dispatcher.dispatch as ReturnType<typeof vi.fn>;
