@@ -18,7 +18,7 @@ CREATE INDEX posts_client_id_idx ON posts (client_id);
 CREATE INDEX posts_created_at_idx ON posts (created_at DESC);
 
 CREATE TABLE post_locks (
-	post_id   UUID        NOT NULL
+	post_id   UUID        NOT NULL REFERENCES posts(id) ON DELETE CASCADE
 	,lock_type TEXT        NOT NULL
 	,locked_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 	,PRIMARY KEY (post_id, lock_type)
