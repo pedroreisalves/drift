@@ -9,7 +9,7 @@ const makeLogger = (): Logger => ({
 });
 
 const makeValidMessage = (overrides: Partial<PostChangedMessage> = {}): PostChangedMessage => ({
-  eventName: 'PostChanged',
+  eventName: 'PostCreated',
   occurredAt: '2026-01-01T00:00:00.000Z',
   payload: {
     postId: '019682a0-1234-7000-8000-abcdef012345',

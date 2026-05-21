@@ -4,7 +4,7 @@ import type TagPostUseCase from '../../usecase/tag-post/tag-post.use-case';
 import { type Logger } from '@drift/shared';
 
 export const postChangedMessageSchema = z.object({
-  eventName: z.literal('PostChanged'),
+  eventName: z.union([z.literal('PostCreated'), z.literal('PostUpdated')]),
   occurredAt: z.iso.datetime(),
   payload: z.object({
     postId: z.uuidv7(),
