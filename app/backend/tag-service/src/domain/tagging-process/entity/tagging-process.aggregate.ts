@@ -33,7 +33,6 @@ export interface CreateTaggingProcessProps {
 
 const createTaggingProcessSchema = z
   .object({
-    id: z.uuidv7('Invalid Tagging Process ID format'),
     title: z
       .string()
       .nonempty('Title cannot be empty')
@@ -42,7 +41,6 @@ const createTaggingProcessSchema = z
       .string()
       .nonempty('Body cannot be empty')
       .max(2000, 'Body cannot exceed 2000 characters'),
-    postId: z.uuidv7('Invalid Post ID format'),
   })
   .strict();
 
@@ -83,10 +81,8 @@ export default class TaggingProcess extends AggregateRoot {
 
   static create(props: CreateTaggingProcessProps): TaggingProcess {
     const result = createTaggingProcessSchema.safeParse({
-      id: props.id.toString(),
       title: props.title,
       body: props.body,
-      postId: props.postId.toString(),
     });
 
     if (!result.success) {
@@ -119,8 +115,8 @@ export default class TaggingProcess extends AggregateRoot {
   }
 
   succeed(props: SucceedTaggingProcessProps): void {
-    const allowedStatuses = [TaggingStatusEnum.initialized, TaggingStatusEnum.failed];
-    if (!allowedStatuses.includes(this.props.status.toString())) {
+    const allowed = [TaggingStatusEnum.initialized, TaggingStatusEnum.failed];
+    if (!allowed.some((s) => this.props.status.equals(new TaggingStatus(s)))) {
       throw new InvalidTaggingProcessError([
         `Cannot succeed a process in status '${this.props.status.toString()}'`,
       ]);
@@ -134,9 +130,9 @@ export default class TaggingProcess extends AggregateRoot {
       throw new InvalidTaggingProcessError(result.error.issues.map((e) => e.message));
     }
 
-    const now = new Date();
+    const updatedAt = new Date();
 
-    this.props.updatedAt = now;
+    this.props.updatedAt = updatedAt;
     this.props.status = new TaggingStatus(TaggingStatusEnum.tagged);
     this.props.reason = null;
     this.props.tags = props.tags;
@@ -145,15 +141,15 @@ export default class TaggingProcess extends AggregateRoot {
       taggingProcessId: this.props.id.toString(),
       postId: this.props.postId.toString(),
       tags: props.tags,
-      taggedAt: now.toISOString(),
+      taggedAt: updatedAt.toISOString(),
     });
 
     this.addDomainEvent(event);
   }
 
   fail(props: FailedTaggingProcessProps): void {
-    const allowedStatuses = [TaggingStatusEnum.initialized, TaggingStatusEnum.failed];
-    if (!allowedStatuses.includes(this.props.status.toString())) {
+    const allowed = [TaggingStatusEnum.initialized, TaggingStatusEnum.failed];
+    if (!allowed.some((s) => this.props.status.equals(new TaggingStatus(s)))) {
       throw new InvalidTaggingProcessError([
         `Cannot fail a process in status '${this.props.status.toString()}'`,
       ]);
@@ -212,11 +208,8 @@ export default class TaggingProcess extends AggregateRoot {
   }
 
   get isInProgress(): boolean {
-    const inProgressStatuses: TaggingStatusEnum[] = [
-      TaggingStatusEnum.initialized,
-      TaggingStatusEnum.failed,
-    ];
-    return inProgressStatuses.includes(this.props.status.toString());
+    const inProgressStatuses = [TaggingStatusEnum.initialized, TaggingStatusEnum.failed];
+    return inProgressStatuses.some((s) => this.props.status.equals(new TaggingStatus(s)));
   }
 
   get id(): TaggingProcessId {
@@ -240,7 +233,7 @@ export default class TaggingProcess extends AggregateRoot {
   }
 
   get tags(): string[] {
-    return this.props.tags;
+    return [...this.props.tags];
   }
 
   get title(): string {

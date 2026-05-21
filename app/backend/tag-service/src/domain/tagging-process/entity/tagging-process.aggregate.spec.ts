@@ -38,48 +38,32 @@ describe('TaggingProcess', () => {
     expect(tp.updatedAt).toBeInstanceOf(Date);
   });
 
-  it('should throw when id does not satisfy the uuidv7 format', () => {
-    const props = makeProps({
-      id: { toString: () => 'not-a-uuid' } as unknown as TaggingProcessId,
-    });
-
-    expect(() => TaggingProcess.create(props)).toThrow(InvalidTaggingProcessError);
-    expect(() => TaggingProcess.create(props)).toThrow(/Invalid Tagging Process ID format/);
-  });
-
-  it('should throw when postId does not satisfy the uuidv7 format', () => {
-    const props = makeProps({ postId: { toString: () => 'not-a-uuid' } as unknown as PostId });
-
-    expect(() => TaggingProcess.create(props)).toThrow(InvalidTaggingProcessError);
-    expect(() => TaggingProcess.create(props)).toThrow(/Invalid Post ID format/);
-  });
-
   it('should throw when title is empty', () => {
     const props = makeProps({ title: '' });
 
     expect(() => TaggingProcess.create(props)).toThrow(InvalidTaggingProcessError);
-    expect(() => TaggingProcess.create(props)).toThrow(/Title cannot be empty/);
+    expect(() => TaggingProcess.create(props)).toThrow('Title cannot be empty');
   });
 
   it('should throw when title exceeds 45 characters', () => {
     const props = makeProps({ title: 'a'.repeat(46) });
 
     expect(() => TaggingProcess.create(props)).toThrow(InvalidTaggingProcessError);
-    expect(() => TaggingProcess.create(props)).toThrow(/Title cannot exceed 45 characters/);
+    expect(() => TaggingProcess.create(props)).toThrow('Title cannot exceed 45 characters');
   });
 
   it('should throw when body is empty', () => {
     const props = makeProps({ body: '' });
 
     expect(() => TaggingProcess.create(props)).toThrow(InvalidTaggingProcessError);
-    expect(() => TaggingProcess.create(props)).toThrow(/Body cannot be empty/);
+    expect(() => TaggingProcess.create(props)).toThrow('Body cannot be empty');
   });
 
   it('should throw when body exceeds 2000 characters', () => {
     const props = makeProps({ body: 'a'.repeat(2001) });
 
     expect(() => TaggingProcess.create(props)).toThrow(InvalidTaggingProcessError);
-    expect(() => TaggingProcess.create(props)).toThrow(/Body cannot exceed 2000 characters/);
+    expect(() => TaggingProcess.create(props)).toThrow('Body cannot exceed 2000 characters');
   });
 
   it('should reconstruct a tagging process from existing properties', () => {
@@ -173,14 +157,14 @@ describe('TaggingProcess', () => {
     const tp = TaggingProcess.create(makeProps());
 
     expect(() => tp.succeed({ tags: ['a'.repeat(46)] })).toThrow(InvalidTaggingProcessError);
-    expect(() => tp.succeed({ tags: ['a'.repeat(46)] })).toThrow(/Tag cannot exceed 45 characters/);
+    expect(() => tp.succeed({ tags: ['a'.repeat(46)] })).toThrow('Tag cannot exceed 45 characters');
   });
 
   it('should throw when a tag is empty', () => {
     const tp = TaggingProcess.create(makeProps());
 
     expect(() => tp.succeed({ tags: [''] })).toThrow(InvalidTaggingProcessError);
-    expect(() => tp.succeed({ tags: [''] })).toThrow(/Tag cannot be empty/);
+    expect(() => tp.succeed({ tags: [''] })).toThrow('Tag cannot be empty');
   });
 
   it('should throw when more than 10 tags are provided', () => {
@@ -188,14 +172,14 @@ describe('TaggingProcess', () => {
     const tooManyTags = Array.from({ length: 11 }, (_, i) => `tag${i}`);
 
     expect(() => tp.succeed({ tags: tooManyTags })).toThrow(InvalidTaggingProcessError);
-    expect(() => tp.succeed({ tags: tooManyTags })).toThrow(/Cannot have more than 10 tags/);
+    expect(() => tp.succeed({ tags: tooManyTags })).toThrow('Cannot have more than 10 tags');
   });
 
   it('should throw when tags contain duplicates', () => {
     const tp = TaggingProcess.create(makeProps());
 
     expect(() => tp.succeed({ tags: ['tag', 'tag'] })).toThrow(InvalidTaggingProcessError);
-    expect(() => tp.succeed({ tags: ['tag', 'tag'] })).toThrow(/Tags cannot be duplicated/);
+    expect(() => tp.succeed({ tags: ['tag', 'tag'] })).toThrow('Tags cannot be duplicated');
   });
 
   it('should set status to failed, store reason, and increment retryCount when retries are left', () => {
@@ -290,7 +274,7 @@ describe('TaggingProcess', () => {
     const tp = TaggingProcess.create(makeProps());
 
     expect(() => tp.fail({ reason: '' })).toThrow(InvalidTaggingProcessError);
-    expect(() => tp.fail({ reason: '' })).toThrow(/Reason cannot be empty/);
+    expect(() => tp.fail({ reason: '' })).toThrow('Reason cannot be empty');
     expect(tp.getDomainEvents()).toHaveLength(1);
   });
 
@@ -389,7 +373,7 @@ describe('TaggingProcess', () => {
   it('should throw when succeed is called with an empty tags array', () => {
     const tp = TaggingProcess.create(makeProps());
     expect(() => tp.succeed({ tags: [] })).toThrow(InvalidTaggingProcessError);
-    expect(() => tp.succeed({ tags: [] })).toThrow(/At least one tag is required/);
+    expect(() => tp.succeed({ tags: [] })).toThrow('At least one tag is required');
   });
 
   it('should throw when succeed is called on an abandoned process', () => {
@@ -407,7 +391,9 @@ describe('TaggingProcess', () => {
     });
 
     expect(() => tp.succeed({ tags: ['tech'] })).toThrow(InvalidTaggingProcessError);
-    expect(() => tp.succeed({ tags: ['tech'] })).toThrow(/Cannot succeed a process in status/);
+    expect(() => tp.succeed({ tags: ['tech'] })).toThrow(
+      "Cannot succeed a process in status 'abandoned'",
+    );
   });
 
   it('should throw when succeed is called on an already-tagged process', () => {
@@ -415,7 +401,9 @@ describe('TaggingProcess', () => {
     tp.succeed({ tags: ['tech'] });
 
     expect(() => tp.succeed({ tags: ['news'] })).toThrow(InvalidTaggingProcessError);
-    expect(() => tp.succeed({ tags: ['news'] })).toThrow(/Cannot succeed a process in status/);
+    expect(() => tp.succeed({ tags: ['news'] })).toThrow(
+      "Cannot succeed a process in status 'tagged'",
+    );
   });
 
   it('should throw when fail is called on an abandoned process', () => {
@@ -433,7 +421,9 @@ describe('TaggingProcess', () => {
     });
 
     expect(() => tp.fail({ reason: 'another error' })).toThrow(InvalidTaggingProcessError);
-    expect(() => tp.fail({ reason: 'another error' })).toThrow(/Cannot fail a process in status/);
+    expect(() => tp.fail({ reason: 'another error' })).toThrow(
+      "Cannot fail a process in status 'abandoned'",
+    );
   });
 
   it('should throw when fail is called on an already-tagged process', () => {
@@ -441,7 +431,9 @@ describe('TaggingProcess', () => {
     tp.succeed({ tags: ['tech'] });
 
     expect(() => tp.fail({ reason: 'some error' })).toThrow(InvalidTaggingProcessError);
-    expect(() => tp.fail({ reason: 'some error' })).toThrow(/Cannot fail a process in status/);
+    expect(() => tp.fail({ reason: 'some error' })).toThrow(
+      "Cannot fail a process in status 'tagged'",
+    );
   });
 
   it('should clear all domain events', () => {

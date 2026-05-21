@@ -49,7 +49,6 @@ describe('CheckEngagementUseCase', () => {
       overrides.logger ?? makeLogger(),
     );
 
-  /** An EngagementState in 'raised' signal with updatedAt set to `hoursAgo` hours before now. */
   const raisedState = (postId: PostId, hoursAgo = 49): EngagementState => {
     const updatedAt = new Date(Date.now() - hoursAgo * 60 * 60 * 1000);
     return EngagementState.reconstruct({

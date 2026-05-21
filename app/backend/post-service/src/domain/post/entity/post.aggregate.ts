@@ -7,7 +7,6 @@ import PostUpdatedEvent from '../event/post-updated.event';
 import { type ClientId } from '@drift/shared';
 import { type PostId } from '@drift/shared';
 import InvalidPostError from '../error/invalid-post.error';
-import InvalidPostTagsError from '../error/invalid-post-tags.error';
 
 interface PostProps {
   id: PostId;
@@ -146,7 +145,7 @@ export default class Post extends AggregateRoot {
     const result = applyTagsSchema.safeParse(tags);
 
     if (!result.success) {
-      throw new InvalidPostTagsError(result.error.issues.map((e) => e.message));
+      throw new InvalidPostError(result.error.issues.map((e) => e.message));
     }
 
     const updatedAt = new Date();
@@ -198,7 +197,7 @@ export default class Post extends AggregateRoot {
   }
 
   get tags(): string[] {
-    return this.props.tags;
+    return [...this.props.tags];
   }
 
   get createdAt(): Date {

@@ -41,7 +41,7 @@ export default class RecordAnalyticsEventUseCase {
     await this.analyticsLogRepository.save(analyticsLog);
 
     if (eventType.toString() === EventTypeEnum.PostDeleted) {
-      await this.deletedPostRepository.save(postId!, timestamp);
+      await this.deletedPostRepository.save(postId as PostId, timestamp);
     }
 
     const event = new AnalyticsEventRecordedEvent({

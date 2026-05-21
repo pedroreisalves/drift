@@ -6,7 +6,6 @@ import type { EventDispatcher, Logger } from '@drift/shared';
 import AnalyticsLog from '../../../domain/analytics-log/entity/analytics-log.entity';
 import AnalyticsEventRecordedEvent from '../../../domain/analytics-log/event/analytics-event-recorded.event';
 import { EventTypeEnum } from '../../../domain/analytics-log/value-object/event-type.value-object';
-import InvalidAnalyticsLogError from '../../../domain/analytics-log/error/invalid-analytics-log.error';
 
 describe('RecordAnalyticsEventUseCase', () => {
   const makeAnalyticsLogRepository = (): AnalyticsLogRepository => ({
@@ -110,32 +109,6 @@ describe('RecordAnalyticsEventUseCase', () => {
     await useCase.execute({ eventType: EventTypeEnum.PostDeleted, postId, clientId, timestamp });
 
     expect(deletedSaveSpy).toHaveBeenCalledTimes(1);
-  });
-
-  it('should throw when PostDeleted event has no postId', async () => {
-    const useCase = new RecordAnalyticsEventUseCase(
-      makeAnalyticsLogRepository(),
-      makeDeletedPostRepository(),
-      makeDispatcher(),
-      makeLogger(),
-    );
-
-    await expect(
-      useCase.execute({
-        eventType: EventTypeEnum.PostDeleted,
-        postId: null,
-        clientId: uuidv7(),
-        timestamp: new Date().toISOString(),
-      }),
-    ).rejects.toThrow(InvalidAnalyticsLogError);
-    await expect(
-      useCase.execute({
-        eventType: EventTypeEnum.PostDeleted,
-        postId: null,
-        clientId: uuidv7(),
-        timestamp: new Date().toISOString(),
-      }),
-    ).rejects.toThrow('PostDeleted event must include a postId');
   });
 
   it('should not save to deletedPostRepository for non-delete events', async () => {

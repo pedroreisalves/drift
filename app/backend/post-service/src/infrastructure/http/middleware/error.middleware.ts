@@ -1,6 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
 import InvalidPostError from '../../../domain/post/error/invalid-post.error';
-import InvalidPostTagsError from '../../../domain/post/error/invalid-post-tags.error';
 import { InvalidValueObjectError } from '@drift/shared';
 import PostNotFoundError from '../../../application/@shared/error/post-not-found.error';
 import { ForbiddenPostOperationError } from '../../../application/@shared/error/forbidden-post-update.error';
@@ -14,11 +13,7 @@ export default function createErrorMiddleware(logger: Logger) {
     res: Response,
     _next: NextFunction,
   ): void {
-    if (
-      error instanceof InvalidPostError ||
-      error instanceof InvalidPostTagsError ||
-      error instanceof InvalidValueObjectError
-    ) {
+    if (error instanceof InvalidPostError || error instanceof InvalidValueObjectError) {
       res.status(400).json({ error: error.message });
       return;
     }

@@ -3,13 +3,12 @@ import { PostId } from '@drift/shared';
 import { ClientId } from '@drift/shared';
 import Post, { type CreatePostProps } from './post.aggregate';
 import InvalidPostError from '../error/invalid-post.error';
-import InvalidPostTagsError from '../error/invalid-post-tags.error';
 import PostCreatedEvent from '../event/post-created.event';
 import PostDeletedEvent from '../event/post-deleted.event';
 import PostUpdatedEvent from '../event/post-updated.event';
 import PostTagsUpdated from '../event/post-tags-updated.event';
 
-describe('PostAggregate', () => {
+describe('Post', () => {
   const makeProps = (overrides: Partial<CreatePostProps> = {}): CreatePostProps => ({
     id: new PostId(uuidv7()),
     clientId: new ClientId(uuidv7()),
@@ -39,21 +38,21 @@ describe('PostAggregate', () => {
     const props = makeProps({ clientName: '' });
 
     expect(() => Post.create(props)).toThrow(InvalidPostError);
-    expect(() => Post.create(props)).toThrow(/Client name cannot be empty/);
+    expect(() => Post.create(props)).toThrow('Client name cannot be empty');
   });
 
   it('should throw an error when creating a post aggregate with title exceeding 45 characters', () => {
     const props = makeProps({ title: 'a'.repeat(46) });
 
     expect(() => Post.create(props)).toThrow(InvalidPostError);
-    expect(() => Post.create(props)).toThrow(/Title cannot exceed 45 characters/);
+    expect(() => Post.create(props)).toThrow('Title cannot exceed 45 characters');
   });
 
   it('should throw an error when creating a post aggregate with body exceeding 2000 characters', () => {
     const props = makeProps({ body: 'a'.repeat(2001) });
 
     expect(() => Post.create(props)).toThrow(InvalidPostError);
-    expect(() => Post.create(props)).toThrow(/Body cannot exceed 2000 characters/);
+    expect(() => Post.create(props)).toThrow('Body cannot exceed 2000 characters');
   });
 
   it('should update a post aggregate', () => {
@@ -89,15 +88,15 @@ describe('PostAggregate', () => {
     const post = Post.create(makeProps());
 
     expect(() => post.update({ title: '', body: '' })).toThrow(InvalidPostError);
-    expect(() => post.update({ title: '', body: '' })).toThrow(/Title cannot be empty/);
-    expect(() => post.update({ title: '', body: '' })).toThrow(/Body cannot be empty/);
+    expect(() => post.update({ title: '', body: '' })).toThrow('Title cannot be empty');
+    expect(() => post.update({ title: '', body: '' })).toThrow('Body cannot be empty');
   });
 
   it('should throw an error when updating a post aggregate with neither title nor body', () => {
     const post = Post.create(makeProps());
 
     expect(() => post.update({})).toThrow(InvalidPostError);
-    expect(() => post.update({})).toThrow(/At least one of 'title' or 'body' must be provided/);
+    expect(() => post.update({})).toThrow("At least one of 'title' or 'body' must be provided");
   });
 
   it('should refresh updatedAt when updating a post aggregate', () => {
@@ -137,31 +136,31 @@ describe('PostAggregate', () => {
   it('should throw an error when applying a tag exceeding 45 characters', () => {
     const post = Post.create(makeProps());
 
-    expect(() => post.applyTags(['a'.repeat(46)])).toThrow(InvalidPostTagsError);
-    expect(() => post.applyTags(['a'.repeat(46)])).toThrow(/Tag cannot exceed 45 characters/);
+    expect(() => post.applyTags(['a'.repeat(46)])).toThrow(InvalidPostError);
+    expect(() => post.applyTags(['a'.repeat(46)])).toThrow('Tag cannot exceed 45 characters');
   });
 
   it('should throw an error when applying an empty tag', () => {
     const post = Post.create(makeProps());
 
-    expect(() => post.applyTags([''])).toThrow(InvalidPostTagsError);
-    expect(() => post.applyTags([''])).toThrow(/Tag cannot be empty/);
+    expect(() => post.applyTags([''])).toThrow(InvalidPostError);
+    expect(() => post.applyTags([''])).toThrow('Tag cannot be empty');
   });
 
   it('should throw an error when applying more than 10 tags', () => {
     const post = Post.create(makeProps());
     const tooManyTags = Array.from({ length: 11 }, (_, i) => `tag${i}`);
 
-    expect(() => post.applyTags(tooManyTags)).toThrow(InvalidPostTagsError);
-    expect(() => post.applyTags(tooManyTags)).toThrow(/Cannot have more than 10 tags/);
+    expect(() => post.applyTags(tooManyTags)).toThrow(InvalidPostError);
+    expect(() => post.applyTags(tooManyTags)).toThrow('Cannot have more than 10 tags');
   });
 
   it('should throw an error when applying duplicate tags', () => {
     const post = Post.create(makeProps());
     const duplicateTags = ['tag', 'tag', 'tag'];
 
-    expect(() => post.applyTags(duplicateTags)).toThrow(InvalidPostTagsError);
-    expect(() => post.applyTags(duplicateTags)).toThrow(/Tags cannot be duplicated/);
+    expect(() => post.applyTags(duplicateTags)).toThrow(InvalidPostError);
+    expect(() => post.applyTags(duplicateTags)).toThrow('Tags cannot be duplicated');
   });
 
   it('should reconstruct a post aggregate from existing properties', () => {
@@ -262,7 +261,7 @@ describe('PostAggregate', () => {
     expect(events[1].payload).toEqual({
       postId: props.id.toString(),
       tags,
-      updatedAt: expect.any(String) as string,
+      updatedAt: post.updatedAt.toISOString(),
     });
   });
 
@@ -276,27 +275,33 @@ describe('PostAggregate', () => {
   it('should not add a domain event when applyTags fails validation', () => {
     const post = Post.create(makeProps());
 
-    expect(() => post.applyTags([''])).toThrow(InvalidPostTagsError);
+    expect(() => post.applyTags([''])).toThrow(InvalidPostError);
     expect(post.getDomainEvents()).toHaveLength(1);
   });
 
   it('should add a PostDeletedEvent when deleting a post aggregate', () => {
-    const props = makeProps();
-    const post = Post.create(props);
-    post.clearDomainEvents();
+    vi.useFakeTimers();
+    try {
+      const props = makeProps();
+      const post = Post.create(props);
+      post.clearDomainEvents();
 
-    post.delete();
+      const deletedAt = new Date();
+      post.delete();
 
-    const events = post.getDomainEvents();
+      const events = post.getDomainEvents();
 
-    expect(events).toHaveLength(1);
-    expect(events[0]).toBeInstanceOf(PostDeletedEvent);
-    expect(events[0].eventName).toEqual('PostDeleted');
-    expect(events[0].payload).toEqual({
-      postId: props.id.toString(),
-      clientId: props.clientId.toString(),
-      deletedAt: expect.any(String) as string,
-    });
+      expect(events).toHaveLength(1);
+      expect(events[0]).toBeInstanceOf(PostDeletedEvent);
+      expect(events[0].eventName).toEqual('PostDeleted');
+      expect(events[0].payload).toEqual({
+        postId: props.id.toString(),
+        clientId: props.clientId.toString(),
+        deletedAt: deletedAt.toISOString(),
+      });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('should clear all domain events when calling clearDomainEvents', () => {

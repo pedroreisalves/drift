@@ -6,7 +6,7 @@ import EngagementState, {
 } from './engagement-state.entity';
 import Signal, { SignalEnum } from '../value-object/signal.value-object';
 
-describe('EngagementStateEntity', () => {
+describe('EngagementState', () => {
   const makeProps = (
     overrides: Partial<CreateEngagementStateProps> = {},
   ): CreateEngagementStateProps => ({

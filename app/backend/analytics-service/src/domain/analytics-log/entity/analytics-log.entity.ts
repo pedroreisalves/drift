@@ -1,4 +1,5 @@
 import type { ClientId, PostId } from '@drift/shared';
+import { postIdSchema } from '@drift/shared';
 import type AnalyticsLogId from '../value-object/analytics-log-id.value-object';
 import type EventType from '../value-object/event-type.value-object';
 import { EventTypeEnum, eventTypeSchema } from '../value-object/event-type.value-object';
@@ -25,11 +26,11 @@ const createAnalyticsLogSchema = z
   .object({
     timestamp: z.date({ message: 'Timestamp must be a valid date' }),
     eventType: eventTypeSchema,
-    postId: z.custom<PostId>().nullable(),
+    postId: postIdSchema.nullable(),
   })
   .strict()
-  .refine((data) => !(data.eventType === EventTypeEnum.PostDeleted && data.postId === null), {
-    message: 'PostDeleted event must include a postId',
+  .refine((data) => data.eventType === EventTypeEnum.PostSearched || data.postId !== null, {
+    message: 'This event type must include a postId',
   });
 
 export default class AnalyticsLog {
@@ -43,7 +44,7 @@ export default class AnalyticsLog {
     const result = createAnalyticsLogSchema.safeParse({
       timestamp: props.timestamp,
       eventType: props.eventType.toString(),
-      postId: props.postId,
+      postId: props.postId?.toString() ?? null,
     });
 
     if (!result.success) {
