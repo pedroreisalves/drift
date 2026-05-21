@@ -14,7 +14,6 @@ interface CreatePostBody {
 
 interface UpdatePostBody {
   clientId: string;
-  clientName: string;
   title?: string;
   body?: string;
 }
@@ -46,10 +45,10 @@ export default class PostController {
 
   async update(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = String(req.params['id']);
       const { clientId, title, body } = req.body as UpdatePostBody;
 
-      await this.updatePostUseCase.execute({ postId: id as string, clientId, title, body });
+      await this.updatePostUseCase.execute({ postId: id, clientId, title, body });
 
       res.status(204).send();
     } catch (error) {
@@ -59,10 +58,10 @@ export default class PostController {
 
   async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = String(req.params['id']);
       const { clientId } = req.body as DeletePostBody;
 
-      await this.deletePostUseCase.execute({ postId: id as string, clientId });
+      await this.deletePostUseCase.execute({ postId: id, clientId });
 
       res.status(204).send();
     } catch (error) {
@@ -72,9 +71,9 @@ export default class PostController {
 
   async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = String(req.params['id']);
 
-      const post = await this.getPostUseCase.execute({ id: id as string });
+      const post = await this.getPostUseCase.execute({ id });
 
       res.status(200).json(post);
     } catch (error) {
