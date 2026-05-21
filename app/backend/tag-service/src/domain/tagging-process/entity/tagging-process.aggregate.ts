@@ -54,6 +54,7 @@ const succeedTaggingProcessSchema = z
   .object({
     tags: z
       .array(z.string().max(45, 'Tag cannot exceed 45 characters').nonempty('Tag cannot be empty'))
+      .min(1, 'At least one tag is required')
       .max(10, 'Cannot have more than 10 tags')
       .refine((tags) => new Set(tags).size === tags.length, {
         message: 'Tags cannot be duplicated',
@@ -118,6 +119,13 @@ export default class TaggingProcess extends AggregateRoot {
   }
 
   succeed(props: SucceedTaggingProcessProps): void {
+    const allowedStatuses = [TaggingStatusEnum.initialized, TaggingStatusEnum.failed];
+    if (!allowedStatuses.includes(this.props.status.toString())) {
+      throw new InvalidTaggingProcessError([
+        `Cannot succeed a process in status '${this.props.status.toString()}'`,
+      ]);
+    }
+
     const result = succeedTaggingProcessSchema.safeParse({
       tags: props.tags,
     });
@@ -126,10 +134,9 @@ export default class TaggingProcess extends AggregateRoot {
       throw new InvalidTaggingProcessError(result.error.issues.map((e) => e.message));
     }
 
-    const updatedAt = new Date();
-    const taggedAt = new Date();
+    const now = new Date();
 
-    this.props.updatedAt = updatedAt;
+    this.props.updatedAt = now;
     this.props.status = new TaggingStatus(TaggingStatusEnum.tagged);
     this.props.reason = null;
     this.props.tags = props.tags;
@@ -138,13 +145,20 @@ export default class TaggingProcess extends AggregateRoot {
       taggingProcessId: this.props.id.toString(),
       postId: this.props.postId.toString(),
       tags: props.tags,
-      taggedAt: taggedAt.toISOString(),
+      taggedAt: now.toISOString(),
     });
 
     this.addDomainEvent(event);
   }
 
   fail(props: FailedTaggingProcessProps): void {
+    const allowedStatuses = [TaggingStatusEnum.initialized, TaggingStatusEnum.failed];
+    if (!allowedStatuses.includes(this.props.status.toString())) {
+      throw new InvalidTaggingProcessError([
+        `Cannot fail a process in status '${this.props.status.toString()}'`,
+      ]);
+    }
+
     const result = failedTaggingProcessSchema.safeParse({
       reason: props.reason,
     });
@@ -195,6 +209,14 @@ export default class TaggingProcess extends AggregateRoot {
 
   private increaseRetryCounter(): void {
     this.props.retryCount += 1;
+  }
+
+  get isInProgress(): boolean {
+    const inProgressStatuses: TaggingStatusEnum[] = [
+      TaggingStatusEnum.initialized,
+      TaggingStatusEnum.failed,
+    ];
+    return inProgressStatuses.includes(this.props.status.toString());
   }
 
   get id(): TaggingProcessId {

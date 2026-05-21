@@ -343,6 +343,107 @@ describe('TaggingProcess', () => {
     });
   });
 
+  it('should return true for isInProgress when status is initialized', () => {
+    const tp = TaggingProcess.create(makeProps());
+    expect(tp.isInProgress).toBe(true);
+  });
+
+  it('should return true for isInProgress when status is failed', () => {
+    const tp = TaggingProcess.reconstruct({
+      id: new TaggingProcessId(uuidv7()),
+      postId: new PostId(uuidv7()),
+      title: 'My First Post',
+      body: 'This is the body of my first post.',
+      reason: 'some reason',
+      retryCount: 1,
+      status: new TaggingStatus(TaggingStatusEnum.failed),
+      tags: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    expect(tp.isInProgress).toBe(true);
+  });
+
+  it('should return false for isInProgress when status is tagged', () => {
+    const tp = TaggingProcess.create(makeProps());
+    tp.succeed({ tags: ['tech'] });
+    expect(tp.isInProgress).toBe(false);
+  });
+
+  it('should return false for isInProgress when status is abandoned', () => {
+    const tp = TaggingProcess.reconstruct({
+      id: new TaggingProcessId(uuidv7()),
+      postId: new PostId(uuidv7()),
+      title: 'My First Post',
+      body: 'This is the body of my first post.',
+      reason: 'exhausted',
+      retryCount: 3,
+      status: new TaggingStatus(TaggingStatusEnum.abandoned),
+      tags: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    expect(tp.isInProgress).toBe(false);
+  });
+
+  it('should throw when succeed is called with an empty tags array', () => {
+    const tp = TaggingProcess.create(makeProps());
+    expect(() => tp.succeed({ tags: [] })).toThrow(InvalidTaggingProcessError);
+    expect(() => tp.succeed({ tags: [] })).toThrow(/At least one tag is required/);
+  });
+
+  it('should throw when succeed is called on an abandoned process', () => {
+    const tp = TaggingProcess.reconstruct({
+      id: new TaggingProcessId(uuidv7()),
+      postId: new PostId(uuidv7()),
+      title: 'My First Post',
+      body: 'This is the body of my first post.',
+      reason: 'exhausted',
+      retryCount: 3,
+      status: new TaggingStatus(TaggingStatusEnum.abandoned),
+      tags: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    expect(() => tp.succeed({ tags: ['tech'] })).toThrow(InvalidTaggingProcessError);
+    expect(() => tp.succeed({ tags: ['tech'] })).toThrow(/Cannot succeed a process in status/);
+  });
+
+  it('should throw when succeed is called on an already-tagged process', () => {
+    const tp = TaggingProcess.create(makeProps());
+    tp.succeed({ tags: ['tech'] });
+
+    expect(() => tp.succeed({ tags: ['news'] })).toThrow(InvalidTaggingProcessError);
+    expect(() => tp.succeed({ tags: ['news'] })).toThrow(/Cannot succeed a process in status/);
+  });
+
+  it('should throw when fail is called on an abandoned process', () => {
+    const tp = TaggingProcess.reconstruct({
+      id: new TaggingProcessId(uuidv7()),
+      postId: new PostId(uuidv7()),
+      title: 'My First Post',
+      body: 'This is the body of my first post.',
+      reason: 'exhausted',
+      retryCount: 3,
+      status: new TaggingStatus(TaggingStatusEnum.abandoned),
+      tags: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    expect(() => tp.fail({ reason: 'another error' })).toThrow(InvalidTaggingProcessError);
+    expect(() => tp.fail({ reason: 'another error' })).toThrow(/Cannot fail a process in status/);
+  });
+
+  it('should throw when fail is called on an already-tagged process', () => {
+    const tp = TaggingProcess.create(makeProps());
+    tp.succeed({ tags: ['tech'] });
+
+    expect(() => tp.fail({ reason: 'some error' })).toThrow(InvalidTaggingProcessError);
+    expect(() => tp.fail({ reason: 'some error' })).toThrow(/Cannot fail a process in status/);
+  });
+
   it('should clear all domain events', () => {
     const tp = TaggingProcess.create(makeProps());
     tp.fail({ reason: 'AI service unavailable' });
