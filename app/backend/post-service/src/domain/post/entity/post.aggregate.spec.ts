@@ -164,15 +164,6 @@ describe('PostAggregate', () => {
     expect(() => post.applyTags(duplicateTags)).toThrow(/Tags cannot be duplicated/);
   });
 
-  it('should reset tags of a post aggregate', () => {
-    const post = Post.create(makeProps());
-    post.applyTags(['tag1', 'tag2', 'tag3']);
-
-    post.resetTags();
-
-    expect(post.tags).toEqual([]);
-  });
-
   it('should reconstruct a post aggregate from existing properties', () => {
     const createdAt = new Date('2026-01-01T00:00:00.000Z');
     const updatedAt = new Date('2026-01-02T00:00:00.000Z');

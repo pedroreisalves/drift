@@ -173,7 +173,7 @@ export default class Post extends AggregateRoot {
     this.addDomainEvent(event);
   }
 
-  resetTags(): void {
+  private resetTags(): void {
     this.props.tags = [];
   }
 
