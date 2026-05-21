@@ -9,7 +9,7 @@ import { type EventDispatcher } from '@drift/shared';
 import { type Logger } from '@drift/shared';
 import PostUpdatedEvent from '../../../domain/post/event/post-updated.event';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
-import ForbiddenPostUpdateError from '../../@shared/error/forbidden-post-update.error';
+import { ForbiddenPostOperationError } from '../../@shared/error/forbidden-post-update.error';
 import TaggingInProgressError from '../../@shared/error/tagging-in-progress.error';
 
 describe('UpdatePostUseCase', () => {
@@ -130,7 +130,7 @@ describe('UpdatePostUseCase', () => {
     expect(dispatchMock).not.toHaveBeenCalled();
   });
 
-  it('should throw ForbiddenPostUpdateError when the post belongs to a different client', async () => {
+  it('should throw ForbiddenPostOperationError when the post belongs to a different client', async () => {
     const repository = makeRepository();
     const dispatcher = makeDispatcher();
     const useCase = new UpdatePostUseCase(
@@ -148,7 +148,7 @@ describe('UpdatePostUseCase', () => {
 
     await expect(
       useCase.execute({ postId, clientId: otherClientId, title: 'Title', body: 'Body.' }),
-    ).rejects.toThrow(ForbiddenPostUpdateError);
+    ).rejects.toThrow(ForbiddenPostOperationError);
     const saveMock = repository.save as ReturnType<typeof vi.fn>;
     const dispatchMock = dispatcher.dispatch as ReturnType<typeof vi.fn>;
     expect(saveMock).not.toHaveBeenCalled();

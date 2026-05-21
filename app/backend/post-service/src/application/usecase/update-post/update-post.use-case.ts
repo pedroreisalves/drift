@@ -3,9 +3,10 @@ import { PostId } from '@drift/shared';
 import { ClientId } from '@drift/shared';
 import type PostRepository from '../../../domain/post/repository/post.repository';
 import type PostLockRepository from '../../@shared/interface/post-lock.repository';
+import { POST_LOCK_TYPE } from '../../@shared/constant/post-lock.constant';
 import { type EventDispatcher } from '@drift/shared';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
-import ForbiddenPostUpdateError from '../../@shared/error/forbidden-post-update.error';
+import { ForbiddenPostOperationError } from '../../@shared/error/forbidden-post-update.error';
 import TaggingInProgressError from '../../@shared/error/tagging-in-progress.error';
 import { type Logger } from '@drift/shared';
 
@@ -33,10 +34,13 @@ export default class UpdatePostUseCase {
         postId: postId.toString(),
         clientId: clientId.toString(),
       });
-      throw new ForbiddenPostUpdateError(postId.toString(), clientId.toString());
+      throw new ForbiddenPostOperationError(clientId.toString(), postId.toString(), 'update');
     }
 
-    const isLockedByTagging = await this.postLockRepository.isLocked(postId.toString(), 'tagging');
+    const isLockedByTagging = await this.postLockRepository.isLocked(
+      postId.toString(),
+      POST_LOCK_TYPE.TAGGING,
+    );
 
     if (isLockedByTagging) {
       this.logger.warn('Post update rejected: tagging in progress', { postId: postId.toString() });
