@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { InvalidValueObjectError } from '@drift/shared';
 
-export const taggingProcessIdSchema = z.uuidv7({ error: 'Invalid Post ID format' });
+export const taggingProcessIdSchema = z.uuidv7({ error: 'Invalid TaggingProcessId format' });
 
 export default class TaggingProcessId {
   constructor(private readonly value: string) {
@@ -11,7 +11,7 @@ export default class TaggingProcessId {
   private validate(): void {
     const result = taggingProcessIdSchema.safeParse(this.value);
     if (!result.success) {
-      throw new InvalidValueObjectError('TaggingProcessId', this.value);
+      throw new InvalidValueObjectError('TaggingProcessId', result.error.issues[0].message);
     }
   }
 
