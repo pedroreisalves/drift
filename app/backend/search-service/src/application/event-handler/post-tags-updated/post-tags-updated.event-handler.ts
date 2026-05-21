@@ -8,7 +8,12 @@ export const postTagsUpdatedMessageSchema = z.object({
   occurredAt: z.iso.datetime(),
   payload: z.object({
     postId: z.uuidv7(),
-    tags: z.array(z.string()),
+    tags: z
+      .array(z.string().nonempty('Tag cannot be empty').max(45, 'Tag cannot exceed 45 characters'))
+      .max(10, 'Cannot have more than 10 tags')
+      .refine((tags) => new Set(tags).size === tags.length, {
+        message: 'Tags cannot be duplicated',
+      }),
     updatedAt: z.iso.datetime(),
   }),
 });

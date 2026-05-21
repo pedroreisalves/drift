@@ -86,6 +86,54 @@ describe('PostTagsUpdatedEventHandler', () => {
     await expect(eventHandler.handle(makeValidMessage())).rejects.toThrow('Unexpected');
   });
 
+  it('should reject a message with duplicate tags', async () => {
+    const indexPostTagsUseCase = makeUseCase();
+    const eventHandler = new PostTagsUpdatedEventHandler(indexPostTagsUseCase, makeLogger());
+    const executeSpy = vi.spyOn(indexPostTagsUseCase, 'execute');
+
+    const invalid = makeValidMessage({
+      payload: {
+        ...makeValidMessage().payload,
+        tags: ['dup', 'dup'],
+      },
+    });
+
+    await expect(eventHandler.handle(invalid)).rejects.toThrow();
+    expect(executeSpy).not.toHaveBeenCalled();
+  });
+
+  it('should reject a message with an empty tag', async () => {
+    const indexPostTagsUseCase = makeUseCase();
+    const eventHandler = new PostTagsUpdatedEventHandler(indexPostTagsUseCase, makeLogger());
+    const executeSpy = vi.spyOn(indexPostTagsUseCase, 'execute');
+
+    const invalid = makeValidMessage({
+      payload: {
+        ...makeValidMessage().payload,
+        tags: [''],
+      },
+    });
+
+    await expect(eventHandler.handle(invalid)).rejects.toThrow();
+    expect(executeSpy).not.toHaveBeenCalled();
+  });
+
+  it('should reject a message with more than 10 tags', async () => {
+    const indexPostTagsUseCase = makeUseCase();
+    const eventHandler = new PostTagsUpdatedEventHandler(indexPostTagsUseCase, makeLogger());
+    const executeSpy = vi.spyOn(indexPostTagsUseCase, 'execute');
+
+    const invalid = makeValidMessage({
+      payload: {
+        ...makeValidMessage().payload,
+        tags: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'],
+      },
+    });
+
+    await expect(eventHandler.handle(invalid)).rejects.toThrow();
+    expect(executeSpy).not.toHaveBeenCalled();
+  });
+
   it('should export a valid schema', () => {
     expect(postTagsUpdatedMessageSchema).toBeDefined();
   });
