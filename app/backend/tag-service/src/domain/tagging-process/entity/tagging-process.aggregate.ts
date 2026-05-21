@@ -7,6 +7,7 @@ import TaggingInitializedEvent from '../event/tagging-initialized.event';
 import { type PostId } from '@drift/shared';
 import type TaggingProcessId from '../value-object/tagging-process-id.value-object';
 import TaggingStatus, { TaggingStatusEnum } from '../value-object/tagging-status.value-object';
+import { MAX_RETRY_COUNT } from '../../../application/@shared/constant/tagging-process.constant';
 
 import { z } from 'zod';
 
@@ -189,7 +190,7 @@ export default class TaggingProcess extends AggregateRoot {
   }
 
   private get hasRetryAttemptsLeft(): boolean {
-    return this.props.retryCount < 3;
+    return this.props.retryCount < MAX_RETRY_COUNT;
   }
 
   private increaseRetryCounter(): void {
