@@ -29,15 +29,15 @@ describe('CreatePostUseCase', () => {
     const dispatcher = makeDispatcher();
     const useCase = new CreatePostUseCase(repository, dispatcher, makeLogger());
 
+    const saveSpy = vi.spyOn(repository, 'save');
+    const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
+
     const postId = await useCase.execute({
       clientId: uuidv7(),
       clientName: 'John Doe',
       title: 'My First Post',
       body: 'This is the body of my first post.',
     });
-
-    const saveSpy = vi.spyOn(repository, 'save');
-    const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
     expect(saveSpy).toHaveBeenCalledTimes(1);
     const persisted = saveSpy.mock.calls[0][0];
