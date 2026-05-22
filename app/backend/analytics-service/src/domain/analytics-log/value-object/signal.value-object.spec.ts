@@ -6,19 +6,17 @@ describe('Signal', () => {
     const signal = new Signal(value);
 
     expect(signal).toBeInstanceOf(Signal);
-    expect(signal.toString()).toEqual(value);
+    expect(signal.toString()).toBe(value);
   });
 
   it('should throw when value is not one of the allowed signals', () => {
-    const invalidSignal = 'invalid' as unknown as SignalEnum;
-
-    expect(() => new Signal(invalidSignal)).toThrow(InvalidValueObjectError);
-    expect(() => new Signal(invalidSignal)).toThrow('Invalid Signal: invalid');
+    expect(() => new Signal('invalid' as never)).toThrow(InvalidValueObjectError);
+    expect(() => new Signal('invalid' as never)).toThrow('Invalid Signal: invalid');
   });
 
   it('should throw when value is an empty string', () => {
-    expect(() => new Signal('' as unknown as SignalEnum)).toThrow(InvalidValueObjectError);
-    expect(() => new Signal('' as unknown as SignalEnum)).toThrow('Invalid Signal: ');
+    expect(() => new Signal('' as never)).toThrow(InvalidValueObjectError);
+    expect(() => new Signal('' as never)).toThrow('Invalid Signal: ');
   });
 
   it('should return true when comparing equal signals', () => {

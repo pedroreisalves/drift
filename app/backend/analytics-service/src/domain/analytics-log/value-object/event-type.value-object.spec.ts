@@ -8,20 +8,18 @@ describe('EventType', () => {
       const eventType = new EventType(value);
 
       expect(eventType).toBeInstanceOf(EventType);
-      expect(eventType.toString()).toEqual(value);
+      expect(eventType.toString()).toBe(value);
     },
   );
 
   it('should throw when value is not one of the allowed event types', () => {
-    const invalidEventType = 'InvalidEvent' as unknown as EventTypeEnum;
-
-    expect(() => new EventType(invalidEventType)).toThrow(InvalidValueObjectError);
-    expect(() => new EventType(invalidEventType)).toThrow('Invalid EventType: InvalidEvent');
+    expect(() => new EventType('InvalidEvent' as never)).toThrow(InvalidValueObjectError);
+    expect(() => new EventType('InvalidEvent' as never)).toThrow('Invalid EventType: InvalidEvent');
   });
 
   it('should throw when value is an empty string', () => {
-    expect(() => new EventType('' as unknown as EventTypeEnum)).toThrow(InvalidValueObjectError);
-    expect(() => new EventType('' as unknown as EventTypeEnum)).toThrow('Invalid EventType: ');
+    expect(() => new EventType('' as never)).toThrow(InvalidValueObjectError);
+    expect(() => new EventType('' as never)).toThrow('Invalid EventType: ');
   });
 
   it('should return true when comparing equal event types', () => {
