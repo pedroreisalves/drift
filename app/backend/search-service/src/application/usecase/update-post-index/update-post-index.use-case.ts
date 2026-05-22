@@ -17,6 +17,7 @@ export default class UpdatePostIndexUseCase implements UseCase<UpdatePostIndexIn
     const entry = await this.searchEntryRepository.findByPostId(postId);
 
     if (!entry) {
+      this.logger.error('Search entry not found', { postId: input.postId });
       throw new DocumentNotFoundError(input.postId);
     }
 

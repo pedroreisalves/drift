@@ -26,11 +26,6 @@ export default class ExecuteTaggingUseCase implements UseCase<ExecuteTaggingInpu
     }
 
     try {
-      this.logger.info('Starting tag generation', {
-        taggingProcessId: taggingProcessId.toString(),
-        postId: taggingProcess.postId.toString(),
-      });
-
       const tags = await this.tagGenerator.generateTags(taggingProcess.title, taggingProcess.body);
       taggingProcess.succeed({ tags });
 
