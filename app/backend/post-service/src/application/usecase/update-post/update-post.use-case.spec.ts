@@ -66,7 +66,6 @@ describe('UpdatePostUseCase', () => {
     await useCase.execute({ postId, clientId, title: 'Updated Title', body: 'Updated body.' });
 
     expect(saveSpy).toHaveBeenCalledTimes(1);
-    // instance-reference check: the aggregate passed to save is the same object
     expect(saveSpy.mock.calls[0][0]).toBe(existing);
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);

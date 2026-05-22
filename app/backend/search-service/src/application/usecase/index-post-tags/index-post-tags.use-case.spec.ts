@@ -55,13 +55,11 @@ describe('IndexPostTagsUseCase', () => {
     await useCase.execute({ postId, tags });
 
     expect(updateSpy).toHaveBeenCalledTimes(1);
-    // instance-reference check: the updated entry has the correct tags
     const updated = updateSpy.mock.calls[0][0];
     expect(updated.tags).toEqual(tags);
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledWith(expect.any(PostTagsIndexedEvent));
-    // instance-reference check: verify event payload fields via typed access
     const dispatched = dispatchSpy.mock.calls[0][0] as PostTagsIndexedEvent;
     expect(dispatched.payload.postId).toBe(postId);
     expect(dispatched.payload.tags).toEqual(tags);

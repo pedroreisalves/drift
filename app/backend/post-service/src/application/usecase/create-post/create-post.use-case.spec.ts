@@ -46,7 +46,6 @@ describe('CreatePostUseCase', () => {
 
     expect(saveSpy).toHaveBeenCalledTimes(1);
     expect(saveSpy).toHaveBeenCalledWith(expect.any(Post));
-    // instance-reference check: the persisted aggregate id matches the returned postId
     expect(saveSpy.mock.calls[0][0].id.toString()).toBe(output.postId);
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);

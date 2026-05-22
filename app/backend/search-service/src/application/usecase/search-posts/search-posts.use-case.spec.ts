@@ -59,7 +59,6 @@ describe('SearchPostsUseCase', () => {
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledWith(expect.any(PostSearchedEvent));
-    // instance-reference check: verify event payload fields via typed access
     const dispatched = dispatchSpy.mock.calls[0][0] as PostSearchedEvent;
     expect(dispatched.payload.resultCount).toBe(2);
     expect(dispatched.payload.query).toBe('drift');

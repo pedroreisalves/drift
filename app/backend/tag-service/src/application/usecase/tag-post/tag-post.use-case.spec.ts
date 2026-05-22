@@ -64,7 +64,6 @@ describe('TagPostUseCase', () => {
     await useCase.execute(makeInput());
 
     expect(saveSpy).toHaveBeenCalledTimes(1);
-    // instance-reference check: persisted object is a TaggingProcess
     expect(saveSpy.mock.calls[0][0]).toBeInstanceOf(TaggingProcess);
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);

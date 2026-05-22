@@ -57,7 +57,6 @@ describe('UpdatePostTagsUseCase', () => {
     await useCase.execute({ postId, tags });
 
     expect(saveSpy).toHaveBeenCalledTimes(1);
-    // instance-reference check: the aggregate passed to save is the same object
     expect(saveSpy.mock.calls[0][0]).toBe(existing);
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);

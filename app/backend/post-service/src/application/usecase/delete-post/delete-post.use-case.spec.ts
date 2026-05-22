@@ -57,12 +57,10 @@ describe('DeletePostUseCase', () => {
     await useCase.execute({ postId, clientId });
 
     expect(deleteSpy).toHaveBeenCalledTimes(1);
-    // instance-reference check: the PostId passed to delete round-trips to the input string
     expect(deleteSpy.mock.calls[0][0].toString()).toEqual(postId);
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledWith(expect.any(PostDeletedEvent));
-    // Verify the event payload contains the correct postId and clientId
     const dispatched = dispatchSpy.mock.calls[0][0] as PostDeletedEvent;
     expect(dispatched.payload.postId).toBe(postId);
     expect(dispatched.payload.clientId).toBe(clientId);

@@ -47,7 +47,6 @@ describe('GetPostUseCase', () => {
     const result = await useCase.execute({ postId });
 
     expect(findByIdSpy).toHaveBeenCalledTimes(1);
-    // instance-reference check: the PostId passed to findById round-trips to the input string
     expect(findByIdSpy.mock.calls[0][0].toString()).toEqual(postId);
     expect(result.postId).toEqual(postId);
   });

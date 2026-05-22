@@ -55,7 +55,6 @@ describe('RecordAnalyticsEventUseCase', () => {
     await useCase.execute({ eventType: EventTypeEnum.PostViewed, postId, clientId, timestamp });
 
     expect(saveSpy).toHaveBeenCalledTimes(1);
-    // instance-reference check: the persisted entity has the correct fields
     const persisted = saveSpy.mock.calls[0][0];
     expect(persisted).toBeInstanceOf(AnalyticsLog);
     expect(persisted.eventType.toString()).toBe(EventTypeEnum.PostViewed);
@@ -63,7 +62,6 @@ describe('RecordAnalyticsEventUseCase', () => {
     expect(persisted.clientId.toString()).toBe(clientId);
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
-    // Verify event payload fields via typed instance reference
     const dispatched = dispatchSpy.mock.calls[0][0] as unknown as {
       payload: { eventType: string; postId: string; clientId: string };
     };

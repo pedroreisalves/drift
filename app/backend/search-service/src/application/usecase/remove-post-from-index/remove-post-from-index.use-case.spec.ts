@@ -53,7 +53,6 @@ describe('RemovePostFromIndexUseCase', () => {
     await useCase.execute({ postId });
 
     expect(removeSpy).toHaveBeenCalledTimes(1);
-    // instance-reference check: the PostId passed to remove round-trips to the input string
     expect(removeSpy.mock.calls[0][0].toString()).toBe(postId);
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);

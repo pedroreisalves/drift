@@ -24,9 +24,6 @@ export default class SearchPostsUseCase implements UseCase<
 
     this.logger.info('Posts searched', { q: input.q, resultCount: results.length, limit, offset });
 
-    // Intentional fire-and-forget: PostSearchedEvent is a non-critical analytics side-effect of a
-    // user-facing query. A dispatch failure must never degrade search response latency or cause the
-    // caller to receive an error. Errors are captured via .catch so they are never silently lost.
     this.eventDispatcher
       .dispatch(
         new PostSearchedEvent({

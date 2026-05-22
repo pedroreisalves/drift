@@ -70,7 +70,6 @@ describe('ExecuteTaggingUseCase', () => {
     await useCase.execute({ taggingProcessId: process.id.toString() });
 
     expect(saveSpy).toHaveBeenCalledTimes(1);
-    // instance-reference check: the persisted process is the same object
     expect(saveSpy.mock.calls[0][0]).toBe(process);
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
