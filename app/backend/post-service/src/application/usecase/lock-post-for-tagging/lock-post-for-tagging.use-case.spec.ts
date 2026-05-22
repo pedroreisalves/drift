@@ -1,8 +1,8 @@
 import { uuidv7 } from 'uuidv7';
 import LockPostForTaggingUseCase from './lock-post-for-tagging.use-case';
 import type PostLockRepository from '../../../domain/post/repository/post-lock.repository';
-import { POST_LOCK_TYPE } from '../../@shared/constant/post-lock.constant';
-import { type Logger } from '@drift/shared';
+import { POST_LOCK_TYPE } from '../../../domain/post/repository/post-lock.repository';
+import { PostId, type Logger } from '@drift/shared';
 
 const makePostLockRepository = (): PostLockRepository => ({
   lock: vi.fn().mockResolvedValue(undefined),
@@ -32,7 +32,7 @@ describe('LockPostForTaggingUseCase', () => {
     await useCase.execute({ postId });
 
     expect(lockSpy).toHaveBeenCalledTimes(1);
-    expect(lockSpy).toHaveBeenCalledWith(postId, POST_LOCK_TYPE.TAGGING);
+    expect(lockSpy).toHaveBeenCalledWith(expect.any(PostId), POST_LOCK_TYPE.TAGGING);
   });
 
   it('should call repository.lock before returning', async () => {

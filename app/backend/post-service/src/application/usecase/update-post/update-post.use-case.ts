@@ -2,7 +2,7 @@ import type { UpdatePostInputDto } from './update-post.dto';
 import { PostId, ClientId, type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
 import type PostRepository from '../../../domain/post/repository/post.repository';
 import type PostLockRepository from '../../../domain/post/repository/post-lock.repository';
-import { POST_LOCK_TYPE } from '../../@shared/constant/post-lock.constant';
+import { POST_LOCK_TYPE } from '../../../domain/post/repository/post-lock.repository';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 import { ForbiddenPostOperationError } from '../../@shared/error/forbidden-post-update.error';
 import TaggingInProgressError from '../../@shared/error/tagging-in-progress.error';
@@ -35,7 +35,7 @@ export default class UpdatePostUseCase implements UseCase<UpdatePostInputDto, vo
     }
 
     const isLockedByTagging = await this.postLockRepository.isLocked(
-      postId.toString(),
+      postId,
       POST_LOCK_TYPE.TAGGING,
     );
 

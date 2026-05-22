@@ -1,6 +1,6 @@
 import type { UnlockPostForTaggingInputDto } from './unlock-post-for-tagging.dto';
 import type PostLockRepository from '../../../domain/post/repository/post-lock.repository';
-import { POST_LOCK_TYPE } from '../../@shared/constant/post-lock.constant';
+import { POST_LOCK_TYPE } from '../../../domain/post/repository/post-lock.repository';
 import { PostId, type Logger, type UseCase } from '@drift/shared';
 
 export default class UnlockPostForTaggingUseCase implements UseCase<
@@ -14,7 +14,7 @@ export default class UnlockPostForTaggingUseCase implements UseCase<
 
   async execute(input: UnlockPostForTaggingInputDto): Promise<void> {
     const postId = new PostId(input.postId);
-    await this.postLockRepository.unlock(postId.toString(), POST_LOCK_TYPE.TAGGING);
+    await this.postLockRepository.unlock(postId, POST_LOCK_TYPE.TAGGING);
     this.logger.info('Post unlocked after tagging', { postId: postId.toString() });
   }
 }
