@@ -26,7 +26,7 @@ export default class EventType {
     }
   }
 
-  toString(): EventTypeEnum {
+  toString(): string {
     return this.value;
   }
 

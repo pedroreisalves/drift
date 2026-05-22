@@ -8,7 +8,7 @@ export default class ClientId {
     this.validate();
   }
 
-  validate(): void {
+  private validate(): void {
     const result = clientIdSchema.safeParse(this.value);
     if (!result.success) {
       throw new InvalidValueObjectError('ClientId', this.value);

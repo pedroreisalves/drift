@@ -79,17 +79,18 @@ describe('AnalyticsLog', () => {
     expect(analyticsLog.postId).toBeNull();
   });
 
-  it.each(
-    Object.values(EventTypeEnum).filter((e) => e !== EventTypeEnum.PostSearched),
-  )('should throw when %s event has null postId', (eventType) => {
-    const props = makeProps({
-      eventType: new EventType(eventType),
-      postId: null,
-    });
+  it.each(Object.values(EventTypeEnum).filter((e) => e !== EventTypeEnum.PostSearched))(
+    'should throw when %s event has null postId',
+    (eventType) => {
+      const props = makeProps({
+        eventType: new EventType(eventType),
+        postId: null,
+      });
 
-    expect(() => AnalyticsLog.create(props)).toThrow(InvalidAnalyticsLogError);
-    expect(() => AnalyticsLog.create(props)).toThrow('This event type must include a postId');
-  });
+      expect(() => AnalyticsLog.create(props)).toThrow(InvalidAnalyticsLogError);
+      expect(() => AnalyticsLog.create(props)).toThrow('This event type must include a postId');
+    },
+  );
 
   it('should reconstruct an analytics log entity with null postId', () => {
     const props = {

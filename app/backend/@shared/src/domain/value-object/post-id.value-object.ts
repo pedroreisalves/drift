@@ -8,7 +8,7 @@ export default class PostId {
     this.validate();
   }
 
-  validate(): void {
+  private validate(): void {
     const result = postIdSchema.safeParse(this.value);
     if (!result.success) {
       throw new InvalidValueObjectError('PostId', this.value);

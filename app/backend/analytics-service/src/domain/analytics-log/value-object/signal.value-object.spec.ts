@@ -2,21 +2,23 @@ import { InvalidValueObjectError } from '@drift/shared';
 import Signal, { SignalEnum } from './signal.value-object';
 
 describe('Signal', () => {
-  it.each(Object.values(SignalEnum))(
-    'should create a signal value object with valid value "%s"',
-    (value) => {
-      const signal = new Signal(value);
+  it.each(Object.values(SignalEnum))('should create a Signal with valid value "%s"', (value) => {
+    const signal = new Signal(value);
 
-      expect(signal).toBeInstanceOf(Signal);
-      expect(signal.toString()).toEqual(value);
-    },
-  );
+    expect(signal).toBeInstanceOf(Signal);
+    expect(signal.toString()).toEqual(value);
+  });
 
-  it('should throw an error when creating a signal with invalid type', () => {
+  it('should throw when value is not one of the allowed signals', () => {
     const invalidSignal = 'invalid' as unknown as SignalEnum;
 
     expect(() => new Signal(invalidSignal)).toThrow(InvalidValueObjectError);
-    expect(() => new Signal(invalidSignal)).toThrow(/Invalid Signal/);
+    expect(() => new Signal(invalidSignal)).toThrow('Invalid Signal: invalid');
+  });
+
+  it('should throw when value is an empty string', () => {
+    expect(() => new Signal('' as unknown as SignalEnum)).toThrow(InvalidValueObjectError);
+    expect(() => new Signal('' as unknown as SignalEnum)).toThrow('Invalid Signal: ');
   });
 
   it('should return true when comparing equal signals', () => {

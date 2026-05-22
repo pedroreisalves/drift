@@ -23,7 +23,7 @@ export default class Signal {
     }
   }
 
-  toString(): SignalEnum {
+  toString(): string {
     return this.value;
   }
 

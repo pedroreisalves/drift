@@ -15,15 +15,13 @@ describe('TaggingProcessId', () => {
   it('should throw an error when value is not a valid uuid', () => {
     expect(() => new TaggingProcessId('not-a-uuid')).toThrow(InvalidValueObjectError);
     expect(() => new TaggingProcessId('not-a-uuid')).toThrow(
-      'Invalid TaggingProcessId: Invalid TaggingProcessId format',
+      'Invalid TaggingProcessId: not-a-uuid',
     );
   });
 
   it('should throw an error when value is an empty string', () => {
     expect(() => new TaggingProcessId('')).toThrow(InvalidValueObjectError);
-    expect(() => new TaggingProcessId('')).toThrow(
-      'Invalid TaggingProcessId: Invalid TaggingProcessId format',
-    );
+    expect(() => new TaggingProcessId('')).toThrow('Invalid TaggingProcessId: ');
   });
 
   it('should throw an error when value is a uuidv4 instead of uuidv7', () => {
@@ -31,7 +29,7 @@ describe('TaggingProcessId', () => {
 
     expect(() => new TaggingProcessId(uuidv4Value)).toThrow(InvalidValueObjectError);
     expect(() => new TaggingProcessId(uuidv4Value)).toThrow(
-      'Invalid TaggingProcessId: Invalid TaggingProcessId format',
+      `Invalid TaggingProcessId: ${uuidv4Value}`,
     );
   });
 

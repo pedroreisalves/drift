@@ -21,11 +21,11 @@ export default class TaggingStatus {
   private validate(): void {
     const result = statusSchema.safeParse(this.value);
     if (!result.success) {
-      throw new InvalidValueObjectError('Status', this.value);
+      throw new InvalidValueObjectError('TaggingStatus', this.value);
     }
   }
 
-  toString(): TaggingStatusEnum {
+  toString(): string {
     return this.value;
   }
 

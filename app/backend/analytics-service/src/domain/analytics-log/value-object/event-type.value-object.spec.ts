@@ -3,7 +3,7 @@ import EventType, { EventTypeEnum } from './event-type.value-object';
 
 describe('EventType', () => {
   it.each(Object.values(EventTypeEnum))(
-    'should create an event type value object with valid value "%s"',
+    'should create an EventType with valid value "%s"',
     (value) => {
       const eventType = new EventType(value);
 
@@ -12,11 +12,16 @@ describe('EventType', () => {
     },
   );
 
-  it('should throw an error when creating an event type with invalid type', () => {
+  it('should throw when value is not one of the allowed event types', () => {
     const invalidEventType = 'InvalidEvent' as unknown as EventTypeEnum;
 
     expect(() => new EventType(invalidEventType)).toThrow(InvalidValueObjectError);
-    expect(() => new EventType(invalidEventType)).toThrow(/Invalid EventType/);
+    expect(() => new EventType(invalidEventType)).toThrow('Invalid EventType: InvalidEvent');
+  });
+
+  it('should throw when value is an empty string', () => {
+    expect(() => new EventType('' as unknown as EventTypeEnum)).toThrow(InvalidValueObjectError);
+    expect(() => new EventType('' as unknown as EventTypeEnum)).toThrow('Invalid EventType: ');
   });
 
   it('should return true when comparing equal event types', () => {

@@ -14,12 +14,12 @@ describe('TaggingStatus', () => {
 
   it('should throw an error when value is not one of the allowed statuses', () => {
     expect(() => new TaggingStatus('pending' as never)).toThrow(InvalidValueObjectError);
-    expect(() => new TaggingStatus('pending' as never)).toThrow(/Invalid Status: pending/);
+    expect(() => new TaggingStatus('pending' as never)).toThrow('Invalid TaggingStatus: pending');
   });
 
   it('should throw an error when value is an empty string', () => {
     expect(() => new TaggingStatus('' as never)).toThrow(InvalidValueObjectError);
-    expect(() => new TaggingStatus('' as never)).toThrow(/Invalid Status:/);
+    expect(() => new TaggingStatus('' as never)).toThrow('Invalid TaggingStatus: ');
   });
 
   it('should return true when comparing two TaggingStatuses with the same value', () => {
