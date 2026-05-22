@@ -83,12 +83,12 @@ export default class PostController {
 
   async list(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const limit = req.query.limit ? Number(req.query.limit) : undefined;
-      const offset = req.query.offset ? Number(req.query.offset) : undefined;
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined;
+      const offset = req.query.offset ? parseInt(req.query.offset as string, 10) : undefined;
 
       const posts = await this.listPostUseCase.execute({ limit, offset });
 
-      res.status(200).json(posts);
+      res.status(200).json({ posts });
     } catch (error) {
       next(error);
     }
