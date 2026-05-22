@@ -1,6 +1,5 @@
-import { type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
+import { PostId, type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
 import type TaggingProcessRepository from '../../../domain/tagging-process/repository/tagging-process.repository';
-import { PostId } from '@drift/shared';
 import type { TagPostInputDto } from './tag-post.dto';
 import TaggingProcess from '../../../domain/tagging-process/entity/tagging-process.aggregate';
 import TaggingProcessId from '../../../domain/tagging-process/value-object/tagging-process-id.value-object';

@@ -1,5 +1,4 @@
-import type { DomainEvent, EventDispatcher, Logger, PostId } from '@drift/shared';
-import type { UseCase } from '@drift/shared';
+import type { DomainEvent, EventDispatcher, Logger, PostId, UseCase } from '@drift/shared';
 import type AnalyticsLogRepository from '../../../domain/analytics-log/repository/analytics-log.repository';
 import type EngagementStateRepository from '../../../domain/analytics-log/repository/engagement-state.repository';
 import EngagementState from '../../../domain/analytics-log/entity/engagement-state.entity';

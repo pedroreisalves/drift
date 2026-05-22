@@ -13,6 +13,10 @@ export type { default as UseCase } from './application/interface/use-case.interf
 export { default as RabbitMQEventDispatcher } from './infrastructure/messaging/rabbitmq-event-dispatcher';
 export { default as RabbitMQEventConsumer } from './infrastructure/messaging/rabbitmq-event-consumer';
 export { default as PinoLogger } from './infrastructure/logging/pino-logger';
+export type {
+  default as Scheduler,
+  SchedulerOptions,
+} from './application/interface/scheduler.interface';
 export { default as NodeCronScheduler } from './infrastructure/scheduler/node-cron-scheduler';
 
 export { chunk } from './utils/array/chunk';

@@ -2,9 +2,7 @@ import express from 'express';
 import { Meilisearch } from 'meilisearch';
 import Environment from './infrastructure/config/environment';
 
-import { RabbitMQEventDispatcher } from '@drift/shared';
-import { RabbitMQEventConsumer } from '@drift/shared';
-import { PinoLogger } from '@drift/shared';
+import { RabbitMQEventDispatcher, RabbitMQEventConsumer, PinoLogger } from '@drift/shared';
 
 import IndexPostUseCase from './application/usecase/index-post/index-post.use-case';
 import RemovePostFromIndexUseCase from './application/usecase/remove-post-from-index/remove-post-from-index.use-case';

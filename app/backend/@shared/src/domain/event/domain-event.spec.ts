@@ -15,13 +15,21 @@ class StubEvent extends DomainEvent<StubPayload> {
 }
 
 describe('DomainEvent', () => {
-  it('should set occurredAt to current date on construction', () => {
-    const before = new Date();
-    const event = new StubEvent({ id: '1' });
-    const after = new Date();
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
 
-    expect(event.occurredAt.getTime()).toBeGreaterThanOrEqual(before.getTime());
-    expect(event.occurredAt.getTime()).toBeLessThanOrEqual(after.getTime());
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('should set occurredAt to current date on construction', () => {
+    const now = new Date('2024-01-01T00:00:00.000Z');
+    vi.setSystemTime(now);
+
+    const event = new StubEvent({ id: '1' });
+
+    expect(event.occurredAt).toEqual(now);
   });
 
   it('should expose the eventName defined by the subclass', () => {
@@ -36,9 +44,11 @@ describe('DomainEvent', () => {
     expect(event.payload).toEqual({ id: 'abc' });
   });
 
-  it('should have different occurredAt for events created at different times', async () => {
+  it('should have different occurredAt for events created at different times', () => {
+    vi.setSystemTime(new Date('2024-01-01T00:00:00.000Z'));
     const first = new StubEvent({ id: '1' });
-    await new Promise((resolve) => setTimeout(resolve, 1));
+
+    vi.setSystemTime(new Date('2024-01-01T00:00:00.001Z'));
     const second = new StubEvent({ id: '2' });
 
     expect(second.occurredAt.getTime()).toBeGreaterThan(first.occurredAt.getTime());

@@ -2,9 +2,7 @@ import express from 'express';
 import { Pool } from 'pg';
 import Environment from './infrastructure/config/environment';
 
-import { RabbitMQEventDispatcher } from '@drift/shared';
-import { RabbitMQEventConsumer } from '@drift/shared';
-import { PinoLogger } from '@drift/shared';
+import { RabbitMQEventDispatcher, RabbitMQEventConsumer, PinoLogger } from '@drift/shared';
 
 import CreatePostUseCase from './application/usecase/create-post/create-post.use-case';
 import UpdatePostUseCase from './application/usecase/update-post/update-post.use-case';

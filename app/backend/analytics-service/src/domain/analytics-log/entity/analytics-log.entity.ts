@@ -1,5 +1,4 @@
-import type { ClientId, PostId } from '@drift/shared';
-import { postIdSchema } from '@drift/shared';
+import { postIdSchema, type ClientId, type PostId } from '@drift/shared';
 import type AnalyticsLogId from '../value-object/analytics-log-id.value-object';
 import type EventType from '../value-object/event-type.value-object';
 import { EventTypeEnum, eventTypeSchema } from '../value-object/event-type.value-object';

@@ -1,10 +1,9 @@
 import type { Pool, PoolClient } from 'pg';
-import { PostId } from '@drift/shared';
+import { PostId, chunk } from '@drift/shared';
 import EngagementState from '../../domain/analytics-log/entity/engagement-state.entity';
 import type EngagementStateRepository from '../../domain/analytics-log/repository/engagement-state.repository';
 import type { FindAllRaisedOptions } from '../../domain/analytics-log/repository/engagement-state.repository';
 import Signal, { SignalEnum } from '../../domain/analytics-log/value-object/signal.value-object';
-import { chunk } from '@drift/shared';
 import { ID_CHUNK_SIZE } from './constants';
 
 interface EngagementStateRow {

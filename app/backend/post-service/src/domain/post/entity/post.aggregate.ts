@@ -1,11 +1,9 @@
 import { z } from 'zod';
-import { AggregateRoot } from '@drift/shared';
+import { AggregateRoot, type ClientId, type PostId } from '@drift/shared';
 import PostCreatedEvent from '../event/post-created.event';
 import PostDeletedEvent from '../event/post-deleted.event';
 import PostTagsUpdatedEvent from '../event/post-tags-updated.event';
 import PostUpdatedEvent from '../event/post-updated.event';
-import { type ClientId } from '@drift/shared';
-import { type PostId } from '@drift/shared';
 import InvalidPostError from '../error/invalid-post.error';
 
 interface PostProps {

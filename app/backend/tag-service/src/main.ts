@@ -1,11 +1,9 @@
 import { Pool } from 'pg';
 import Environment from './infrastructure/config/environment';
 
-import { RabbitMQEventDispatcher } from '@drift/shared';
-import { RabbitMQEventConsumer } from '@drift/shared';
+import { RabbitMQEventDispatcher, RabbitMQEventConsumer, PinoLogger } from '@drift/shared';
 import PostgresTaggingProcessRepository from './infrastructure/persistence/postgres-tagging-process.repository';
 import OllamaTagGenerator from './infrastructure/llm/ollama-tag-generator';
-import { PinoLogger } from '@drift/shared';
 import ExecuteTaggingUseCase from './application/usecase/execute-tagging/execute-tagging.use-case';
 import TagPostUseCase from './application/usecase/tag-post/tag-post.use-case';
 import PostChangedEventHandler from './application/event-handler/post-changed/post-changed.event-handler';

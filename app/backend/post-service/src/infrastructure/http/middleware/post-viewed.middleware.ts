@@ -1,6 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { type EventDispatcher } from '@drift/shared';
-import { type Logger } from '@drift/shared';
+import { type EventDispatcher, type Logger } from '@drift/shared';
 import PostViewedEvent from '../event/post-viewed.event';
 
 export default class PostViewedMiddleware {

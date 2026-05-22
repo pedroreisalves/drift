@@ -1,10 +1,9 @@
 import type { Pool } from 'pg';
-import { PostId } from '@drift/shared';
+import { PostId, chunk } from '@drift/shared';
 import type AnalyticsLogRepository from '../../domain/analytics-log/repository/analytics-log.repository';
 import type { FindPostIdsWithRecentViewsOptions } from '../../domain/analytics-log/repository/analytics-log.repository';
 import { EventTypeEnum } from '../../domain/analytics-log/value-object/event-type.value-object';
 import type AnalyticsLog from '../../domain/analytics-log/entity/analytics-log.entity';
-import { chunk } from '@drift/shared';
 import { ID_CHUNK_SIZE } from './constants';
 
 interface PostIdRow {
