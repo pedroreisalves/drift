@@ -1,20 +1,19 @@
 import { uuidv7 } from 'uuidv7';
 import Post from '../../../domain/post/entity/post.aggregate';
 import type { CreatePostInputDto } from './create-post.input-dto';
-import { PostId } from '@drift/shared';
-import { ClientId } from '@drift/shared';
+import type { CreatePostOutputDto } from './create-post.output-dto';
+import { toCreatePostOutputDto } from './create-post.mapper';
+import { PostId, ClientId, type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
 import type PostRepository from '../../../domain/post/repository/post.repository';
-import { type EventDispatcher } from '@drift/shared';
-import { type Logger } from '@drift/shared';
 
-export default class CreatePostUseCase {
+export default class CreatePostUseCase implements UseCase<CreatePostInputDto, CreatePostOutputDto> {
   constructor(
     private readonly postRepository: PostRepository,
     private readonly eventDispatcher: EventDispatcher,
     private readonly logger: Logger,
   ) {}
 
-  async execute(input: CreatePostInputDto): Promise<string> {
+  async execute(input: CreatePostInputDto): Promise<CreatePostOutputDto> {
     const postId = new PostId(uuidv7());
     const clientId = new ClientId(input.clientId);
 
@@ -33,14 +32,12 @@ export default class CreatePostUseCase {
       clientId: clientId.toString(),
     });
 
-    const events = post.getDomainEvents();
-
-    for (const event of events) {
+    for (const event of post.getDomainEvents()) {
       await this.eventDispatcher.dispatch(event);
     }
 
     post.clearDomainEvents();
 
-    return postId.toString();
+    return toCreatePostOutputDto(post);
   }
 }

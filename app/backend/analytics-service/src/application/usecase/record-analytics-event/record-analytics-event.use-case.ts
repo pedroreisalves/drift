@@ -1,4 +1,4 @@
-import { ClientId, PostId, type EventDispatcher, type Logger } from '@drift/shared';
+import { ClientId, PostId, type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
 import type AnalyticsLogRepository from '../../../domain/analytics-log/repository/analytics-log.repository';
 import type { RecordAnalyticsEventInputDto } from './record-analytics-event.input-dto';
 import { EventTypeEnum } from '../../../domain/analytics-log/value-object/event-type.value-object';
@@ -9,7 +9,10 @@ import { uuidv7 } from 'uuidv7';
 import AnalyticsEventRecordedEvent from '../../../domain/analytics-log/event/analytics-event-recorded.event';
 import type DeletedPostRepository from '../../../domain/analytics-log/repository/deleted-post.repository';
 
-export default class RecordAnalyticsEventUseCase {
+export default class RecordAnalyticsEventUseCase implements UseCase<
+  RecordAnalyticsEventInputDto,
+  void
+> {
   constructor(
     private readonly analyticsLogRepository: AnalyticsLogRepository,
     private readonly deletedPostRepository: DeletedPostRepository,
@@ -32,17 +35,17 @@ export default class RecordAnalyticsEventUseCase {
       timestamp,
     });
 
-    this.logger.info('Recording analytics event', {
-      eventType: input.eventType,
-      postId: input.postId,
-      clientId: input.clientId,
-    });
-
     await this.analyticsLogRepository.save(analyticsLog);
 
     if (eventType.equals(new EventType(EventTypeEnum.PostDeleted))) {
       await this.deletedPostRepository.save(postId as PostId, timestamp);
     }
+
+    this.logger.info('Analytics event recorded', {
+      eventType: input.eventType,
+      postId: input.postId,
+      clientId: input.clientId,
+    });
 
     const event = new AnalyticsEventRecordedEvent({
       clientId: clientId.toString(),

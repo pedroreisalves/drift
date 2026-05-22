@@ -8,6 +8,7 @@ export type { default as EventDispatcher } from './application/interface/event-d
 export type { default as EventConsumer } from './application/interface/event-consumer.interface';
 export type { default as EventHandler } from './application/interface/event-handler.interface';
 export type { default as Logger } from './application/interface/logger.interface';
+export type { default as UseCase } from './application/interface/use-case.interface';
 
 export { default as RabbitMQEventDispatcher } from './infrastructure/messaging/rabbitmq-event-dispatcher';
 export { default as RabbitMQEventConsumer } from './infrastructure/messaging/rabbitmq-event-consumer';

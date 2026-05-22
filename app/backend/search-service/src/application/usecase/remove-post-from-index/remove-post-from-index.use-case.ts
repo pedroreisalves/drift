@@ -1,10 +1,13 @@
-import { PostId, type EventDispatcher, type Logger } from '@drift/shared';
+import { PostId, type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
 import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository';
 import type { RemovePostFromIndexInputDto } from './remove-post-from-index.input-dto';
 import PostRemovedFromIndexEvent from '../../../domain/search-entry/event/post-removed-from-index.event';
 import RemovalFailedError from '../../@shared/error/removal-failed.error';
 
-export default class RemovePostFromIndexUseCase {
+export default class RemovePostFromIndexUseCase implements UseCase<
+  RemovePostFromIndexInputDto,
+  void
+> {
   constructor(
     private readonly searchEntryRepository: SearchEntryRepository,
     private readonly eventDispatcher: EventDispatcher,

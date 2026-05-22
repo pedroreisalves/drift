@@ -1,3 +1,3 @@
 export interface GetPostInputDto {
-  id: string;
+  postId: string;
 }

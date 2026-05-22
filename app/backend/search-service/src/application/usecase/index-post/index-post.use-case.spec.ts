@@ -6,29 +6,36 @@ import SearchEntry from '../../../domain/search-entry/entity/search-entry.entity
 import PostIndexedEvent from '../../../domain/search-entry/event/post-indexed.event';
 import IndexingFailedError from '../../@shared/error/indexing-failed.error';
 
+const makeRepository = (): SearchEntryRepository => ({
+  index: vi.fn().mockResolvedValue(undefined),
+  update: vi.fn().mockResolvedValue(undefined),
+  remove: vi.fn().mockResolvedValue(undefined),
+  findByPostId: vi.fn().mockResolvedValue(null),
+  search: vi.fn().mockResolvedValue([]),
+});
+
+const makeDispatcher = (): EventDispatcher => ({
+  dispatch: vi.fn().mockResolvedValue(undefined),
+});
+
+const makeLogger = (): Logger => ({
+  info: vi.fn(),
+  warn: vi.fn(),
+  error: vi.fn(),
+});
+
 describe('IndexPostUseCase', () => {
-  const makeRepository = (): SearchEntryRepository => ({
-    index: vi.fn().mockResolvedValue(undefined),
-    update: vi.fn().mockResolvedValue(undefined),
-    remove: vi.fn().mockResolvedValue(undefined),
-    findByPostId: vi.fn().mockResolvedValue(null),
-    search: vi.fn().mockResolvedValue([]),
-  });
+  let repository: SearchEntryRepository;
+  let dispatcher: EventDispatcher;
+  let useCase: IndexPostUseCase;
 
-  const makeDispatcher = (): EventDispatcher => ({
-    dispatch: vi.fn().mockResolvedValue(undefined),
-  });
-
-  const makeLogger = (): Logger => ({
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
+  beforeEach(() => {
+    repository = makeRepository();
+    dispatcher = makeDispatcher();
+    useCase = new IndexPostUseCase(repository, dispatcher, makeLogger());
   });
 
   it('should create a SearchEntry, persist it, and dispatch PostIndexedEvent', async () => {
-    const repository = makeRepository();
-    const dispatcher = makeDispatcher();
-    const useCase = new IndexPostUseCase(repository, dispatcher, makeLogger());
     const indexSpy = vi.spyOn(repository, 'index');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
@@ -47,31 +54,29 @@ describe('IndexPostUseCase', () => {
     expect(dispatchSpy).toHaveBeenCalledWith(expect.any(PostIndexedEvent));
   });
 
-  it('should throw IndexingFailedError when the repository throws an Error', async () => {
-    const repository = makeRepository();
-    const useCase = new IndexPostUseCase(repository, makeDispatcher(), makeLogger());
+  it('should throw IndexingFailedError when the repository throws an Error, without dispatching', async () => {
     vi.spyOn(repository, 'index').mockRejectedValue(new Error('Meilisearch unreachable'));
+    const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
     await expect(
       useCase.execute({ postId: uuidv7(), title: 'Title', body: 'Body content.' }),
     ).rejects.toThrow(IndexingFailedError);
+
+    expect(dispatchSpy).not.toHaveBeenCalled();
   });
 
-  it('should throw IndexingFailedError when the repository throws a non-Error value', async () => {
-    const repository = makeRepository();
-    const useCase = new IndexPostUseCase(repository, makeDispatcher(), makeLogger());
+  it('should throw IndexingFailedError when the repository throws a non-Error value, without dispatching', async () => {
     vi.spyOn(repository, 'index').mockRejectedValue('raw string error');
+    const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
     await expect(
       useCase.execute({ postId: uuidv7(), title: 'Title', body: 'Body content.' }),
     ).rejects.toThrow(IndexingFailedError);
+
+    expect(dispatchSpy).not.toHaveBeenCalled();
   });
 
   it('should call repository.index before dispatcher.dispatch', async () => {
-    const repository = makeRepository();
-    const dispatcher = makeDispatcher();
-    const useCase = new IndexPostUseCase(repository, dispatcher, makeLogger());
-
     const callOrder: string[] = [];
     vi.spyOn(repository, 'index').mockImplementation(() => {
       callOrder.push('repository.index');

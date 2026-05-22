@@ -1,11 +1,14 @@
-import { type EventDispatcher, type Logger } from '@drift/shared';
+import { type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
 import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository';
 import type { SearchPostsInputDto } from './search-posts.input-dto';
 import type SearchPostsOutputDto from './search-posts.output-dto';
 import SearchPostsMapper from './search-posts.mapper';
 import PostSearchedEvent from '../../../domain/search-entry/event/post-searched.event';
 
-export default class SearchPostsUseCase {
+export default class SearchPostsUseCase implements UseCase<
+  SearchPostsInputDto,
+  SearchPostsOutputDto[]
+> {
   constructor(
     private readonly searchEntryRepository: SearchEntryRepository,
     private readonly eventDispatcher: EventDispatcher,
@@ -22,6 +25,9 @@ export default class SearchPostsUseCase {
 
     this.logger.info('Posts searched', { q: input.q, resultCount: results.length, limit, offset });
 
+    // Intentional fire-and-forget: PostSearchedEvent is a non-critical analytics side-effect of a
+    // user-facing query. A dispatch failure must never degrade search response latency or cause the
+    // caller to receive an error. Errors are captured via .catch so they are never silently lost.
     this.eventDispatcher
       .dispatch(
         new PostSearchedEvent({

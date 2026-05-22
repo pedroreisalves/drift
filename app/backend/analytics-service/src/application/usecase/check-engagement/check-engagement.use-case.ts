@@ -1,16 +1,19 @@
 import type { DomainEvent, EventDispatcher, Logger, PostId } from '@drift/shared';
+import type { UseCase } from '@drift/shared';
 import type AnalyticsLogRepository from '../../../domain/analytics-log/repository/analytics-log.repository';
 import type EngagementStateRepository from '../../../domain/analytics-log/repository/engagement-state.repository';
 import EngagementState from '../../../domain/analytics-log/entity/engagement-state.entity';
 import PostEngagementRaisedEvent from '../../../domain/analytics-log/event/post-engagement-raised.event';
 import Signal, { SignalEnum } from '../../../domain/analytics-log/value-object/signal.value-object';
 import PostEngagementDroppedEvent from '../../../domain/analytics-log/event/post-engagement-dropped.event';
+import {
+  ENGAGEMENT_WINDOW_HOURS,
+  RAISE_THRESHOLD,
+  DROP_THRESHOLD,
+  PROMOTION_MIN_AGE_MS,
+} from '../../@shared/constant/check-engagement.constant';
 
-export default class CheckEngagementUseCase {
-  private static readonly ENGAGEMENT_WINDOW_HOURS = 24;
-  private static readonly RAISE_THRESHOLD = 10;
-  private static readonly DROP_THRESHOLD = 5;
-  private static readonly PROMOTION_MIN_AGE_MS = 48 * 60 * 60 * 1000;
+export default class CheckEngagementUseCase implements UseCase<void, void> {
 
   constructor(
     private readonly analyticsLogRepository: AnalyticsLogRepository,
@@ -24,12 +27,12 @@ export default class CheckEngagementUseCase {
     const now = new Date();
 
     const windowFrom = new Date(
-      now.getTime() - CheckEngagementUseCase.ENGAGEMENT_WINDOW_HOURS * 60 * 60 * 1000,
+      now.getTime() - ENGAGEMENT_WINDOW_HOURS * 60 * 60 * 1000,
     );
 
     const [activeIds, raisedStates] = await Promise.all([
       this.analyticsLogRepository.findPostIdsWithRecentViews(
-        CheckEngagementUseCase.ENGAGEMENT_WINDOW_HOURS,
+        ENGAGEMENT_WINDOW_HOURS,
         { excludeDeleted: true, now },
       ),
       this.engagementStateRepository.findAllRaised({ excludeDeleted: true }),
@@ -78,13 +81,13 @@ export default class CheckEngagementUseCase {
       const key = postId.toString();
       const viewCount = viewCounts.get(key) ?? 0;
 
-      if (viewCount > CheckEngagementUseCase.RAISE_THRESHOLD) {
+      if (viewCount > RAISE_THRESHOLD) {
         statesToSave.push(this.transition(postId, stateByPostId, SignalEnum.raised));
         events.push(
           new PostEngagementRaisedEvent({
             postId: key,
             viewCount,
-            windowHours: CheckEngagementUseCase.ENGAGEMENT_WINDOW_HOURS,
+            windowHours: ENGAGEMENT_WINDOW_HOURS,
             raisedAt: now.toISOString(),
           }),
         );
@@ -98,15 +101,15 @@ export default class CheckEngagementUseCase {
       const recentViews = viewCounts.get(key) ?? 0;
       const elapsed = now.getTime() - raisedState.updatedAt.getTime();
 
-      if (elapsed < CheckEngagementUseCase.PROMOTION_MIN_AGE_MS) continue;
-      if (recentViews >= CheckEngagementUseCase.DROP_THRESHOLD) continue;
+      if (elapsed < PROMOTION_MIN_AGE_MS) continue;
+      if (recentViews >= DROP_THRESHOLD) continue;
 
       statesToSave.push(this.transition(raisedState.postId, stateByPostId, SignalEnum.dropped));
       events.push(
         new PostEngagementDroppedEvent({
           postId: key,
           viewCount: recentViews,
-          windowHours: CheckEngagementUseCase.ENGAGEMENT_WINDOW_HOURS,
+          windowHours: ENGAGEMENT_WINDOW_HOURS,
           droppedAt: now.toISOString(),
         }),
       );

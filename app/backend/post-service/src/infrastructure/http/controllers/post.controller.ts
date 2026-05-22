@@ -35,9 +35,9 @@ export default class PostController {
     try {
       const { clientId, clientName, title, body } = req.body as CreatePostBody;
 
-      const postId = await this.createPostUseCase.execute({ clientId, clientName, title, body });
+      const result = await this.createPostUseCase.execute({ clientId, clientName, title, body });
 
-      res.status(201).json({ postId });
+      res.status(201).json({ postId: result.id });
     } catch (error) {
       next(error);
     }
@@ -73,7 +73,7 @@ export default class PostController {
     try {
       const id = String(req.params['id']);
 
-      const post = await this.getPostUseCase.execute({ id });
+      const post = await this.getPostUseCase.execute({ postId: id });
 
       res.status(200).json(post);
     } catch (error) {

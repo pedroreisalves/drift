@@ -4,26 +4,49 @@ import type PostLockRepository from '../../../domain/post/repository/post-lock.r
 import { POST_LOCK_TYPE } from '../../@shared/constant/post-lock.constant';
 import { type Logger } from '@drift/shared';
 
+const makePostLockRepository = (): PostLockRepository => ({
+  lock: vi.fn().mockResolvedValue(undefined),
+  unlock: vi.fn().mockResolvedValue(undefined),
+  isLocked: vi.fn().mockResolvedValue(false),
+});
+
+const makeLogger = (): Logger => ({
+  info: vi.fn(),
+  warn: vi.fn(),
+  error: vi.fn(),
+});
+
 describe('LockPostForTaggingUseCase', () => {
-  const makePostLockRepository = (): PostLockRepository => ({
-    lock: vi.fn().mockResolvedValue(undefined),
-    unlock: vi.fn().mockResolvedValue(undefined),
-    isLocked: vi.fn().mockResolvedValue(false),
+  let postLockRepository: PostLockRepository;
+  let useCase: LockPostForTaggingUseCase;
+
+  beforeEach(() => {
+    postLockRepository = makePostLockRepository();
+    useCase = new LockPostForTaggingUseCase(postLockRepository, makeLogger());
   });
 
-  const makeLogger = (): Logger => ({
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-  });
-
-  it('should lock the post for tagging', async () => {
-    const postLockRepository = makePostLockRepository();
-    const useCase = new LockPostForTaggingUseCase(postLockRepository, makeLogger());
+  it('should lock the post with POST_LOCK_TYPE.TAGGING', async () => {
     const postId = uuidv7();
+    const lockSpy = vi.spyOn(postLockRepository, 'lock');
 
     await useCase.execute({ postId });
 
-    expect(postLockRepository.lock).toHaveBeenCalledWith(postId, POST_LOCK_TYPE.TAGGING);
+    expect(lockSpy).toHaveBeenCalledTimes(1);
+    expect(lockSpy).toHaveBeenCalledWith(postId, POST_LOCK_TYPE.TAGGING);
   });
+
+  it('should call repository.lock before returning', async () => {
+    const postId = uuidv7();
+    const callOrder: string[] = [];
+
+    vi.spyOn(postLockRepository, 'lock').mockImplementation(() => {
+      callOrder.push('repository.lock');
+      return Promise.resolve();
+    });
+
+    await useCase.execute({ postId });
+
+    expect(callOrder).toEqual(['repository.lock']);
+  });
+
 });

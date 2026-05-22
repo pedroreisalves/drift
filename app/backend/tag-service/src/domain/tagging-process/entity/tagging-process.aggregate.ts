@@ -212,6 +212,10 @@ export default class TaggingProcess extends AggregateRoot {
     return inProgressStatuses.some((s) => this.props.status.equals(new TaggingStatus(s)));
   }
 
+  get isAbandoned(): boolean {
+    return this.props.status.equals(new TaggingStatus(TaggingStatusEnum.abandoned));
+  }
+
   get id(): TaggingProcessId {
     return this.props.id;
   }

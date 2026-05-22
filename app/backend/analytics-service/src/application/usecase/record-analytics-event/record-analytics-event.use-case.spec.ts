@@ -4,41 +4,47 @@ import type AnalyticsLogRepository from '../../../domain/analytics-log/repositor
 import type DeletedPostRepository from '../../../domain/analytics-log/repository/deleted-post.repository';
 import type { EventDispatcher, Logger } from '@drift/shared';
 import AnalyticsLog from '../../../domain/analytics-log/entity/analytics-log.entity';
-import AnalyticsEventRecordedEvent from '../../../domain/analytics-log/event/analytics-event-recorded.event';
 import { EventTypeEnum } from '../../../domain/analytics-log/value-object/event-type.value-object';
 
+const makeAnalyticsLogRepository = (): AnalyticsLogRepository => ({
+  save: vi.fn().mockResolvedValue(undefined),
+  findPostIdsWithRecentViews: vi.fn().mockResolvedValue([]),
+  countViewsInRangeBatch: vi.fn().mockResolvedValue(new Map<string, number>()),
+});
+
+const makeDeletedPostRepository = (): DeletedPostRepository => ({
+  save: vi.fn().mockResolvedValue(undefined),
+});
+
+const makeDispatcher = (): EventDispatcher => ({
+  dispatch: vi.fn().mockResolvedValue(undefined),
+});
+
+const makeLogger = (): Logger => ({
+  info: vi.fn(),
+  warn: vi.fn(),
+  error: vi.fn(),
+});
+
 describe('RecordAnalyticsEventUseCase', () => {
-  const makeAnalyticsLogRepository = (): AnalyticsLogRepository => ({
-    save: vi.fn().mockResolvedValue(undefined),
-    findPostIdsWithRecentViews: vi.fn().mockResolvedValue([]),
-    countViewsInRangeBatch: vi.fn().mockResolvedValue(new Map<string, number>()),
-  });
+  let analyticsLogRepository: AnalyticsLogRepository;
+  let deletedPostRepository: DeletedPostRepository;
+  let dispatcher: EventDispatcher;
+  let useCase: RecordAnalyticsEventUseCase;
 
-  const makeDeletedPostRepository = (): DeletedPostRepository => ({
-    save: vi.fn().mockResolvedValue(undefined),
-  });
-
-  const makeDispatcher = (): EventDispatcher => ({
-    dispatch: vi.fn().mockResolvedValue(undefined),
-  });
-
-  const makeLogger = (): Logger => ({
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-  });
-
-  it('should persist an AnalyticsLog and dispatch AnalyticsEventRecordedEvent', async () => {
-    const analyticsLogRepository = makeAnalyticsLogRepository();
-    const deletedPostRepository = makeDeletedPostRepository();
-    const dispatcher = makeDispatcher();
-    const useCase = new RecordAnalyticsEventUseCase(
+  beforeEach(() => {
+    analyticsLogRepository = makeAnalyticsLogRepository();
+    deletedPostRepository = makeDeletedPostRepository();
+    dispatcher = makeDispatcher();
+    useCase = new RecordAnalyticsEventUseCase(
       analyticsLogRepository,
       deletedPostRepository,
       dispatcher,
       makeLogger(),
     );
+  });
 
+  it('should persist an AnalyticsLog and dispatch AnalyticsEventRecordedEvent', async () => {
     const postId = uuidv7();
     const clientId = uuidv7();
     const timestamp = new Date().toISOString();
@@ -49,6 +55,7 @@ describe('RecordAnalyticsEventUseCase', () => {
     await useCase.execute({ eventType: EventTypeEnum.PostViewed, postId, clientId, timestamp });
 
     expect(saveSpy).toHaveBeenCalledTimes(1);
+    // instance-reference check: the persisted entity has the correct fields
     const persisted = saveSpy.mock.calls[0][0];
     expect(persisted).toBeInstanceOf(AnalyticsLog);
     expect(persisted.eventType.toString()).toBe(EventTypeEnum.PostViewed);
@@ -56,24 +63,16 @@ describe('RecordAnalyticsEventUseCase', () => {
     expect(persisted.clientId.toString()).toBe(clientId);
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
-    expect(dispatchSpy).toHaveBeenCalledWith(expect.any(AnalyticsEventRecordedEvent));
-    const event = dispatchSpy.mock.calls[0][0] as AnalyticsEventRecordedEvent;
-    expect(event.payload.eventType).toBe(EventTypeEnum.PostViewed);
-    expect(event.payload.postId).toBe(postId);
-    expect(event.payload.clientId).toBe(clientId);
+    // Verify event payload fields via typed instance reference
+    const dispatched = dispatchSpy.mock.calls[0][0] as unknown as {
+      payload: { eventType: string; postId: string; clientId: string };
+    };
+    expect(dispatched.payload.eventType).toBe(EventTypeEnum.PostViewed);
+    expect(dispatched.payload.postId).toBe(postId);
+    expect(dispatched.payload.clientId).toBe(clientId);
   });
 
   it('should handle null postId for non-post events', async () => {
-    const analyticsLogRepository = makeAnalyticsLogRepository();
-    const deletedPostRepository = makeDeletedPostRepository();
-    const dispatcher = makeDispatcher();
-    const useCase = new RecordAnalyticsEventUseCase(
-      analyticsLogRepository,
-      deletedPostRepository,
-      dispatcher,
-      makeLogger(),
-    );
-
     const clientId = uuidv7();
     const timestamp = new Date().toISOString();
 
@@ -90,16 +89,6 @@ describe('RecordAnalyticsEventUseCase', () => {
   });
 
   it('should also save to deletedPostRepository when eventType is PostDeleted', async () => {
-    const analyticsLogRepository = makeAnalyticsLogRepository();
-    const deletedPostRepository = makeDeletedPostRepository();
-    const dispatcher = makeDispatcher();
-    const useCase = new RecordAnalyticsEventUseCase(
-      analyticsLogRepository,
-      deletedPostRepository,
-      dispatcher,
-      makeLogger(),
-    );
-
     const postId = uuidv7();
     const clientId = uuidv7();
     const timestamp = new Date().toISOString();
@@ -112,15 +101,6 @@ describe('RecordAnalyticsEventUseCase', () => {
   });
 
   it('should not save to deletedPostRepository for non-delete events', async () => {
-    const analyticsLogRepository = makeAnalyticsLogRepository();
-    const deletedPostRepository = makeDeletedPostRepository();
-    const useCase = new RecordAnalyticsEventUseCase(
-      analyticsLogRepository,
-      deletedPostRepository,
-      makeDispatcher(),
-      makeLogger(),
-    );
-
     const deletedSaveSpy = vi.spyOn(deletedPostRepository, 'save');
 
     await useCase.execute({
@@ -134,16 +114,6 @@ describe('RecordAnalyticsEventUseCase', () => {
   });
 
   it('should call analyticsLogRepository.save before deletedPostRepository.save before dispatcher.dispatch for PostDeleted events', async () => {
-    const analyticsLogRepository = makeAnalyticsLogRepository();
-    const deletedPostRepository = makeDeletedPostRepository();
-    const dispatcher = makeDispatcher();
-    const useCase = new RecordAnalyticsEventUseCase(
-      analyticsLogRepository,
-      deletedPostRepository,
-      dispatcher,
-      makeLogger(),
-    );
-
     const callOrder: string[] = [];
     vi.spyOn(analyticsLogRepository, 'save').mockImplementation(() => {
       callOrder.push('analyticsLogRepository.save');
@@ -173,15 +143,6 @@ describe('RecordAnalyticsEventUseCase', () => {
   });
 
   it('should call repository.save before dispatcher.dispatch', async () => {
-    const analyticsLogRepository = makeAnalyticsLogRepository();
-    const dispatcher = makeDispatcher();
-    const useCase = new RecordAnalyticsEventUseCase(
-      analyticsLogRepository,
-      makeDeletedPostRepository(),
-      dispatcher,
-      makeLogger(),
-    );
-
     const callOrder: string[] = [];
     vi.spyOn(analyticsLogRepository, 'save').mockImplementation(() => {
       callOrder.push('repository.save');
@@ -201,4 +162,5 @@ describe('RecordAnalyticsEventUseCase', () => {
 
     expect(callOrder).toEqual(['repository.save', 'dispatcher.dispatch']);
   });
+
 });

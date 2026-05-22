@@ -1,13 +1,12 @@
-import { type EventDispatcher } from '@drift/shared';
+import { type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
 import type TaggingProcessRepository from '../../../domain/tagging-process/repository/tagging-process.repository';
 import { PostId } from '@drift/shared';
 import type { TagPostInputDto } from './tag-post.input-dto';
 import TaggingProcess from '../../../domain/tagging-process/entity/tagging-process.aggregate';
 import TaggingProcessId from '../../../domain/tagging-process/value-object/tagging-process-id.value-object';
 import { uuidv7 } from 'uuidv7';
-import { type Logger } from '@drift/shared';
 
-export default class TagPostUseCase {
+export default class TagPostUseCase implements UseCase<TagPostInputDto, void> {
   constructor(
     private readonly taggingProcessRepository: TaggingProcessRepository,
     private readonly eventDispatcher: EventDispatcher,
@@ -43,9 +42,7 @@ export default class TagPostUseCase {
       postId: postId.toString(),
     });
 
-    const events = taggingProcess.getDomainEvents();
-
-    for (const event of events) {
+    for (const event of taggingProcess.getDomainEvents()) {
       await this.eventDispatcher.dispatch(event);
     }
 

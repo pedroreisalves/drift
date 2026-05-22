@@ -8,66 +8,66 @@ import EngagementState from '../../../domain/analytics-log/entity/engagement-sta
 import Signal, { SignalEnum } from '../../../domain/analytics-log/value-object/signal.value-object';
 import PostEngagementRaisedEvent from '../../../domain/analytics-log/event/post-engagement-raised.event';
 import PostEngagementDroppedEvent from '../../../domain/analytics-log/event/post-engagement-dropped.event';
+import {
+  ENGAGEMENT_WINDOW_HOURS,
+  PROMOTION_MIN_AGE_MS,
+} from '../../@shared/constant/check-engagement.constant';
 
-const FORTY_EIGHT_HOURS_MS = 48 * 60 * 60 * 1000;
+const makeAnalyticsLogRepository = (): AnalyticsLogRepository => ({
+  save: vi.fn().mockResolvedValue(undefined),
+  findPostIdsWithRecentViews: vi.fn().mockResolvedValue([]),
+  countViewsInRangeBatch: vi.fn().mockResolvedValue(new Map<string, number>()),
+});
+
+const makeEngagementStateRepository = (): EngagementStateRepository => ({
+  saveMany: vi.fn().mockResolvedValue(undefined),
+  findByPostIds: vi.fn().mockResolvedValue([]),
+  findAllRaised: vi.fn().mockResolvedValue([]),
+});
+
+const makeDispatcher = (): EventDispatcher => ({
+  dispatch: vi.fn().mockResolvedValue(undefined),
+});
+
+const makeLogger = (): Logger => ({
+  info: vi.fn(),
+  warn: vi.fn(),
+  error: vi.fn(),
+});
+
+const raisedState = (postId: PostId, hoursAgo = 49): EngagementState => {
+  const updatedAt = new Date(Date.now() - hoursAgo * 60 * 60 * 1000);
+  return EngagementState.reconstruct({
+    postId,
+    lastSignal: new Signal(SignalEnum.raised),
+    updatedAt,
+  });
+};
 
 describe('CheckEngagementUseCase', () => {
-  const makeAnalyticsLogRepository = (): AnalyticsLogRepository => ({
-    save: vi.fn().mockResolvedValue(undefined),
-    findPostIdsWithRecentViews: vi.fn().mockResolvedValue([]),
-    countViewsInRangeBatch: vi.fn().mockResolvedValue(new Map<string, number>()),
-  });
+  let analyticsLogRepository: AnalyticsLogRepository;
+  let engagementStateRepository: EngagementStateRepository;
+  let dispatcher: EventDispatcher;
+  let useCase: CheckEngagementUseCase;
 
-  const makeEngagementStateRepository = (): EngagementStateRepository => ({
-    saveMany: vi.fn().mockResolvedValue(undefined),
-    findByPostIds: vi.fn().mockResolvedValue([]),
-    findAllRaised: vi.fn().mockResolvedValue([]),
-  });
-
-  const makeDispatcher = (): EventDispatcher => ({
-    dispatch: vi.fn().mockResolvedValue(undefined),
-  });
-
-  const makeLogger = (): Logger => ({
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-  });
-
-  const makeUseCase = (
-    overrides: {
-      analyticsLogRepository?: AnalyticsLogRepository;
-      engagementStateRepository?: EngagementStateRepository;
-      dispatcher?: EventDispatcher;
-      logger?: Logger;
-    } = {},
-  ): CheckEngagementUseCase =>
-    new CheckEngagementUseCase(
-      overrides.analyticsLogRepository ?? makeAnalyticsLogRepository(),
-      overrides.engagementStateRepository ?? makeEngagementStateRepository(),
-      overrides.dispatcher ?? makeDispatcher(),
-      overrides.logger ?? makeLogger(),
+  beforeEach(() => {
+    analyticsLogRepository = makeAnalyticsLogRepository();
+    engagementStateRepository = makeEngagementStateRepository();
+    dispatcher = makeDispatcher();
+    useCase = new CheckEngagementUseCase(
+      analyticsLogRepository,
+      engagementStateRepository,
+      dispatcher,
+      makeLogger(),
     );
-
-  const raisedState = (postId: PostId, hoursAgo = 49): EngagementState => {
-    const updatedAt = new Date(Date.now() - hoursAgo * 60 * 60 * 1000);
-    return EngagementState.reconstruct({
-      postId,
-      lastSignal: new Signal(SignalEnum.raised),
-      updatedAt,
-    });
-  };
+  });
 
   it('does nothing (no DB writes, no events) when there are no candidates', async () => {
-    const analyticsLogRepository = makeAnalyticsLogRepository();
-    const engagementStateRepository = makeEngagementStateRepository();
-    const dispatcher = makeDispatcher();
-
     const rangeSpy = vi.spyOn(analyticsLogRepository, 'countViewsInRangeBatch');
     const saveSpy = vi.spyOn(engagementStateRepository, 'saveMany');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
-    await makeUseCase({ analyticsLogRepository, engagementStateRepository, dispatcher }).execute();
+    await useCase.execute();
 
     expect(rangeSpy).not.toHaveBeenCalled();
     expect(saveSpy).not.toHaveBeenCalled();
@@ -76,10 +76,6 @@ describe('CheckEngagementUseCase', () => {
 
   it('raises an active post that has more than the raise threshold views in the last 24h', async () => {
     const postId = new PostId(uuidv7());
-    const analyticsLogRepository = makeAnalyticsLogRepository();
-    const engagementStateRepository = makeEngagementStateRepository();
-    const dispatcher = makeDispatcher();
-
     vi.spyOn(analyticsLogRepository, 'findPostIdsWithRecentViews').mockResolvedValue([postId]);
     vi.spyOn(analyticsLogRepository, 'countViewsInRangeBatch').mockResolvedValue(
       new Map([[postId.toString(), 15]]),
@@ -87,7 +83,7 @@ describe('CheckEngagementUseCase', () => {
     const saveSpy = vi.spyOn(engagementStateRepository, 'saveMany');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
-    await makeUseCase({ analyticsLogRepository, engagementStateRepository, dispatcher }).execute();
+    await useCase.execute();
 
     expect(saveSpy).toHaveBeenCalledTimes(1);
     const savedStates = saveSpy.mock.calls[0][0];
@@ -103,10 +99,6 @@ describe('CheckEngagementUseCase', () => {
 
   it('does nothing when an active post above the raise threshold is already raised', async () => {
     const postId = new PostId(uuidv7());
-    const analyticsLogRepository = makeAnalyticsLogRepository();
-    const engagementStateRepository = makeEngagementStateRepository();
-    const dispatcher = makeDispatcher();
-
     vi.spyOn(analyticsLogRepository, 'findPostIdsWithRecentViews').mockResolvedValue([postId]);
     vi.spyOn(engagementStateRepository, 'findAllRaised').mockResolvedValue([raisedState(postId)]);
     vi.spyOn(engagementStateRepository, 'findByPostIds').mockResolvedValue([raisedState(postId)]);
@@ -116,7 +108,7 @@ describe('CheckEngagementUseCase', () => {
     const saveSpy = vi.spyOn(engagementStateRepository, 'saveMany');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
-    await makeUseCase({ analyticsLogRepository, engagementStateRepository, dispatcher }).execute();
+    await useCase.execute();
 
     expect(saveSpy).not.toHaveBeenCalled();
     expect(dispatchSpy).not.toHaveBeenCalled();
@@ -124,10 +116,6 @@ describe('CheckEngagementUseCase', () => {
 
   it('drops a raised post that has been featured for ≥48h and has fewer than 5 recent views', async () => {
     const postId = new PostId(uuidv7());
-    const analyticsLogRepository = makeAnalyticsLogRepository();
-    const engagementStateRepository = makeEngagementStateRepository();
-    const dispatcher = makeDispatcher();
-
     const state = raisedState(postId, 49);
     vi.spyOn(engagementStateRepository, 'findAllRaised').mockResolvedValue([state]);
     vi.spyOn(engagementStateRepository, 'findByPostIds').mockResolvedValue([state]);
@@ -137,7 +125,7 @@ describe('CheckEngagementUseCase', () => {
     const saveSpy = vi.spyOn(engagementStateRepository, 'saveMany');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
-    await makeUseCase({ analyticsLogRepository, engagementStateRepository, dispatcher }).execute();
+    await useCase.execute();
 
     expect(saveSpy).toHaveBeenCalledTimes(1);
     expect(saveSpy.mock.calls[0][0][0].lastSignal.toString()).toBe(SignalEnum.dropped);
@@ -151,10 +139,6 @@ describe('CheckEngagementUseCase', () => {
 
   it('does NOT drop a raised post that has been featured for less than 48h, even with low views', async () => {
     const postId = new PostId(uuidv7());
-    const analyticsLogRepository = makeAnalyticsLogRepository();
-    const engagementStateRepository = makeEngagementStateRepository();
-    const dispatcher = makeDispatcher();
-
     const state = raisedState(postId, 24);
     vi.spyOn(engagementStateRepository, 'findAllRaised').mockResolvedValue([state]);
     vi.spyOn(engagementStateRepository, 'findByPostIds').mockResolvedValue([state]);
@@ -164,7 +148,7 @@ describe('CheckEngagementUseCase', () => {
     const saveSpy = vi.spyOn(engagementStateRepository, 'saveMany');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
-    await makeUseCase({ analyticsLogRepository, engagementStateRepository, dispatcher }).execute();
+    await useCase.execute();
 
     expect(saveSpy).not.toHaveBeenCalled();
     expect(dispatchSpy).not.toHaveBeenCalled();
@@ -172,10 +156,6 @@ describe('CheckEngagementUseCase', () => {
 
   it('does NOT drop a raised post that is ≥48h old but still has enough recent views', async () => {
     const postId = new PostId(uuidv7());
-    const analyticsLogRepository = makeAnalyticsLogRepository();
-    const engagementStateRepository = makeEngagementStateRepository();
-    const dispatcher = makeDispatcher();
-
     const state = raisedState(postId, 72);
     vi.spyOn(engagementStateRepository, 'findAllRaised').mockResolvedValue([state]);
     vi.spyOn(engagementStateRepository, 'findByPostIds').mockResolvedValue([state]);
@@ -185,23 +165,20 @@ describe('CheckEngagementUseCase', () => {
     const saveSpy = vi.spyOn(engagementStateRepository, 'saveMany');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
-    await makeUseCase({ analyticsLogRepository, engagementStateRepository, dispatcher }).execute();
+    await useCase.execute();
 
     expect(saveSpy).not.toHaveBeenCalled();
     expect(dispatchSpy).not.toHaveBeenCalled();
   });
 
   it('requests deleted posts to be excluded from both the raise and drop paths', async () => {
-    const analyticsLogRepository = makeAnalyticsLogRepository();
-    const engagementStateRepository = makeEngagementStateRepository();
-
     const recentSpy = vi.spyOn(analyticsLogRepository, 'findPostIdsWithRecentViews');
     const raisedSpy = vi.spyOn(engagementStateRepository, 'findAllRaised');
 
-    await makeUseCase({ analyticsLogRepository, engagementStateRepository }).execute();
+    await useCase.execute();
 
     const [windowHours, recentOptions] = recentSpy.mock.calls[0];
-    expect(windowHours).toBe(24);
+    expect(windowHours).toBe(ENGAGEMENT_WINDOW_HOURS);
     expect(recentOptions?.excludeDeleted).toBe(true);
     expect(recentOptions?.now).toBeInstanceOf(Date);
     expect(raisedSpy).toHaveBeenCalledWith({ excludeDeleted: true });
@@ -209,26 +186,19 @@ describe('CheckEngagementUseCase', () => {
 
   it('does not raise a post with exactly the raise threshold (must be strictly greater than 10)', async () => {
     const postId = new PostId(uuidv7());
-    const analyticsLogRepository = makeAnalyticsLogRepository();
-    const dispatcher = makeDispatcher();
-
     vi.spyOn(analyticsLogRepository, 'findPostIdsWithRecentViews').mockResolvedValue([postId]);
     vi.spyOn(analyticsLogRepository, 'countViewsInRangeBatch').mockResolvedValue(
       new Map([[postId.toString(), 10]]),
     );
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
-    await makeUseCase({ analyticsLogRepository, dispatcher }).execute();
+    await useCase.execute();
 
     expect(dispatchSpy).not.toHaveBeenCalled();
   });
 
   it('does not drop a raised post with exactly the drop threshold (must be strictly below 5)', async () => {
     const postId = new PostId(uuidv7());
-    const analyticsLogRepository = makeAnalyticsLogRepository();
-    const engagementStateRepository = makeEngagementStateRepository();
-    const dispatcher = makeDispatcher();
-
     const state = raisedState(postId, 49);
     vi.spyOn(engagementStateRepository, 'findAllRaised').mockResolvedValue([state]);
     vi.spyOn(engagementStateRepository, 'findByPostIds').mockResolvedValue([state]);
@@ -237,7 +207,7 @@ describe('CheckEngagementUseCase', () => {
     );
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
-    await makeUseCase({ analyticsLogRepository, engagementStateRepository, dispatcher }).execute();
+    await useCase.execute();
 
     expect(dispatchSpy).not.toHaveBeenCalled();
   });
@@ -245,9 +215,6 @@ describe('CheckEngagementUseCase', () => {
   it('issues a single countViewsInRangeBatch call covering all candidates', async () => {
     const raisePost = new PostId(uuidv7());
     const dropPost = new PostId(uuidv7());
-    const analyticsLogRepository = makeAnalyticsLogRepository();
-    const engagementStateRepository = makeEngagementStateRepository();
-
     vi.spyOn(analyticsLogRepository, 'findPostIdsWithRecentViews').mockResolvedValue([raisePost]);
     vi.spyOn(engagementStateRepository, 'findAllRaised').mockResolvedValue([raisedState(dropPost)]);
     vi.spyOn(engagementStateRepository, 'findByPostIds').mockResolvedValue([raisedState(dropPost)]);
@@ -255,7 +222,7 @@ describe('CheckEngagementUseCase', () => {
       .spyOn(analyticsLogRepository, 'countViewsInRangeBatch')
       .mockResolvedValue(new Map());
 
-    await makeUseCase({ analyticsLogRepository, engagementStateRepository }).execute();
+    await useCase.execute();
 
     expect(rangeSpy).toHaveBeenCalledTimes(1);
     const calledIds = rangeSpy.mock.calls[0][0].map((id) => id.toString());
@@ -266,8 +233,6 @@ describe('CheckEngagementUseCase', () => {
 
   it('captures a single point in time reused across window and range queries', async () => {
     const postId = new PostId(uuidv7());
-    const analyticsLogRepository = makeAnalyticsLogRepository();
-
     const recentSpy = vi
       .spyOn(analyticsLogRepository, 'findPostIdsWithRecentViews')
       .mockResolvedValue([postId]);
@@ -275,7 +240,7 @@ describe('CheckEngagementUseCase', () => {
       .spyOn(analyticsLogRepository, 'countViewsInRangeBatch')
       .mockResolvedValue(new Map([[postId.toString(), 0]]));
 
-    await makeUseCase({ analyticsLogRepository }).execute();
+    await useCase.execute();
 
     const findNow = recentSpy.mock.calls[0][1]?.now;
     const rangeTo = rangeSpy.mock.calls[0][2];
@@ -285,10 +250,6 @@ describe('CheckEngagementUseCase', () => {
 
   it('calls saveMany before dispatching events', async () => {
     const postId = new PostId(uuidv7());
-    const analyticsLogRepository = makeAnalyticsLogRepository();
-    const engagementStateRepository = makeEngagementStateRepository();
-    const dispatcher = makeDispatcher();
-
     vi.spyOn(analyticsLogRepository, 'findPostIdsWithRecentViews').mockResolvedValue([postId]);
     vi.spyOn(analyticsLogRepository, 'countViewsInRangeBatch').mockResolvedValue(
       new Map([[postId.toString(), 15]]),
@@ -304,7 +265,7 @@ describe('CheckEngagementUseCase', () => {
       return Promise.resolve();
     });
 
-    await makeUseCase({ analyticsLogRepository, engagementStateRepository, dispatcher }).execute();
+    await useCase.execute();
 
     expect(callOrder).toEqual(['saveMany', 'dispatch']);
   });
@@ -312,15 +273,12 @@ describe('CheckEngagementUseCase', () => {
   it('calls findByPostIds with only raise candidates (drop candidates already have state from findAllRaised)', async () => {
     const raisePost = new PostId(uuidv7());
     const dropPost = new PostId(uuidv7());
-    const analyticsLogRepository = makeAnalyticsLogRepository();
-    const engagementStateRepository = makeEngagementStateRepository();
-
     vi.spyOn(analyticsLogRepository, 'findPostIdsWithRecentViews').mockResolvedValue([raisePost]);
     vi.spyOn(engagementStateRepository, 'findAllRaised').mockResolvedValue([raisedState(dropPost)]);
     vi.spyOn(analyticsLogRepository, 'countViewsInRangeBatch').mockResolvedValue(new Map());
     const findByPostIdsSpy = vi.spyOn(engagementStateRepository, 'findByPostIds');
 
-    await makeUseCase({ analyticsLogRepository, engagementStateRepository }).execute();
+    await useCase.execute();
 
     expect(findByPostIdsSpy).toHaveBeenCalledTimes(1);
     const calledWith = findByPostIdsSpy.mock.calls[0][0].map((id) => id.toString());
@@ -331,16 +289,12 @@ describe('CheckEngagementUseCase', () => {
 
   it('does not raise a post absent from the batch view count result (defaults to 0 views)', async () => {
     const postId = new PostId(uuidv7());
-    const analyticsLogRepository = makeAnalyticsLogRepository();
-    const engagementStateRepository = makeEngagementStateRepository();
-    const dispatcher = makeDispatcher();
-
     vi.spyOn(analyticsLogRepository, 'findPostIdsWithRecentViews').mockResolvedValue([postId]);
     vi.spyOn(analyticsLogRepository, 'countViewsInRangeBatch').mockResolvedValue(new Map());
     const saveSpy = vi.spyOn(engagementStateRepository, 'saveMany');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
-    await makeUseCase({ analyticsLogRepository, engagementStateRepository, dispatcher }).execute();
+    await useCase.execute();
 
     expect(saveSpy).not.toHaveBeenCalled();
     expect(dispatchSpy).not.toHaveBeenCalled();
@@ -349,9 +303,6 @@ describe('CheckEngagementUseCase', () => {
   it('stamps saved state updatedAt within the run window for both raise and drop', async () => {
     const raisePost = new PostId(uuidv7());
     const dropPost = new PostId(uuidv7());
-    const analyticsLogRepository = makeAnalyticsLogRepository();
-    const engagementStateRepository = makeEngagementStateRepository();
-
     const dropState = raisedState(dropPost, 49);
     vi.spyOn(analyticsLogRepository, 'findPostIdsWithRecentViews').mockResolvedValue([raisePost]);
     vi.spyOn(engagementStateRepository, 'findAllRaised').mockResolvedValue([dropState]);
@@ -365,7 +316,7 @@ describe('CheckEngagementUseCase', () => {
     const saveSpy = vi.spyOn(engagementStateRepository, 'saveMany');
 
     const before = Date.now();
-    await makeUseCase({ analyticsLogRepository, engagementStateRepository }).execute();
+    await useCase.execute();
     const after = Date.now();
 
     const savedStates = saveSpy.mock.calls[0][0];
@@ -384,11 +335,7 @@ describe('CheckEngagementUseCase', () => {
 
   it('uses updatedAt from EngagementState to determine 48h promotion age', async () => {
     const postId = new PostId(uuidv7());
-    const analyticsLogRepository = makeAnalyticsLogRepository();
-    const engagementStateRepository = makeEngagementStateRepository();
-    const dispatcher = makeDispatcher();
-
-    const exactlyAt48h = new Date(Date.now() - FORTY_EIGHT_HOURS_MS);
+    const exactlyAt48h = new Date(Date.now() - PROMOTION_MIN_AGE_MS);
     const state = EngagementState.reconstruct({
       postId,
       lastSignal: new Signal(SignalEnum.raised),
@@ -402,7 +349,7 @@ describe('CheckEngagementUseCase', () => {
     );
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
-    await makeUseCase({ analyticsLogRepository, engagementStateRepository, dispatcher }).execute();
+    await useCase.execute();
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy.mock.calls[0][0]).toBeInstanceOf(PostEngagementDroppedEvent);

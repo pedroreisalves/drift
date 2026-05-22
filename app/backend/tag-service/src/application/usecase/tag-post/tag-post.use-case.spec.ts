@@ -5,82 +5,83 @@ import { PostId } from '@drift/shared';
 import TaggingProcessId from '../../../domain/tagging-process/value-object/tagging-process-id.value-object';
 import { TaggingStatusEnum } from '../../../domain/tagging-process/value-object/tagging-status.value-object';
 import type TaggingProcessRepository from '../../../domain/tagging-process/repository/tagging-process.repository';
-import { type EventDispatcher } from '@drift/shared';
-import { type Logger } from '@drift/shared';
+import { type EventDispatcher, type Logger } from '@drift/shared';
 import TaggingInitializedEvent from '../../../domain/tagging-process/event/tagging-initialized.event';
 import TaggingStatus from '../../../domain/tagging-process/value-object/tagging-status.value-object';
 import type { TagPostInputDto } from './tag-post.input-dto';
 
+const makeRepository = (): TaggingProcessRepository => ({
+  save: vi.fn().mockResolvedValue(undefined),
+  findById: vi.fn().mockResolvedValue(null),
+  findByPostId: vi.fn().mockResolvedValue(null),
+});
+
+const makeDispatcher = (): EventDispatcher => ({
+  dispatch: vi.fn().mockResolvedValue(undefined),
+});
+
+const makeLogger = (): Logger => ({
+  info: vi.fn(),
+  warn: vi.fn(),
+  error: vi.fn(),
+});
+
+const makeInput = (postId = uuidv7()): TagPostInputDto => ({
+  postId,
+  title: 'My Post Title',
+  body: 'This is the post body content.',
+});
+
+const makeExistingProcess = (status: TaggingStatusEnum): TaggingProcess =>
+  TaggingProcess.reconstruct({
+    id: new TaggingProcessId(uuidv7()),
+    postId: new PostId(uuidv7()),
+    title: 'Title',
+    body: 'Body',
+    retryCount: 0,
+    reason: null,
+    status: new TaggingStatus(status),
+    tags: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+
 describe('TagPostUseCase', () => {
-  const makeRepository = (): TaggingProcessRepository => ({
-    save: vi.fn().mockResolvedValue(undefined),
-    findById: vi.fn().mockResolvedValue(null),
-    findByPostId: vi.fn().mockResolvedValue(null),
-  });
+  let repository: TaggingProcessRepository;
+  let dispatcher: EventDispatcher;
+  let useCase: TagPostUseCase;
 
-  const makeDispatcher = (): EventDispatcher => ({
-    dispatch: vi.fn().mockResolvedValue(undefined),
+  beforeEach(() => {
+    repository = makeRepository();
+    dispatcher = makeDispatcher();
+    useCase = new TagPostUseCase(repository, dispatcher, makeLogger());
   });
-
-  const makeLogger = (): Logger => ({
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-  });
-
-  const makeInput = (postId = uuidv7()): TagPostInputDto => ({
-    postId,
-    title: 'My Post Title',
-    body: 'This is the post body content.',
-  });
-
-  const makeExistingProcess = (status: TaggingStatusEnum): TaggingProcess => {
-    const process = TaggingProcess.reconstruct({
-      id: new TaggingProcessId(uuidv7()),
-      postId: new PostId(uuidv7()),
-      title: 'Title',
-      body: 'Body',
-      retryCount: 0,
-      reason: null,
-      status: new TaggingStatus(status),
-      tags: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    return process;
-  };
 
   it('should create a tagging process, persist it, dispatch its events, and clear them', async () => {
-    const repository = makeRepository();
-    const dispatcher = makeDispatcher();
-    const useCase = new TagPostUseCase(repository, dispatcher, makeLogger());
+    const saveSpy = vi.spyOn(repository, 'save');
+    const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
     await useCase.execute(makeInput());
 
-    const saveMock = repository.save as ReturnType<typeof vi.fn>;
-    const dispatchMock = dispatcher.dispatch as ReturnType<typeof vi.fn>;
+    expect(saveSpy).toHaveBeenCalledTimes(1);
+    // instance-reference check: persisted object is a TaggingProcess
+    expect(saveSpy.mock.calls[0][0]).toBeInstanceOf(TaggingProcess);
 
-    expect(saveMock).toHaveBeenCalledTimes(1);
-    const persisted = saveMock.mock.calls[0][0] as TaggingProcess;
-    expect(persisted).toBeInstanceOf(TaggingProcess);
+    expect(dispatchSpy).toHaveBeenCalledTimes(1);
+    expect(dispatchSpy).toHaveBeenCalledWith(expect.any(TaggingInitializedEvent));
 
-    expect(dispatchMock).toHaveBeenCalledTimes(1);
-    expect(dispatchMock).toHaveBeenCalledWith(expect.any(TaggingInitializedEvent));
-
-    expect(persisted.getDomainEvents()).toEqual([]);
+    expect(saveSpy.mock.calls[0][0].getDomainEvents()).toEqual([]);
   });
 
   it('should call repository.save before dispatcher.dispatch', async () => {
-    const repository = makeRepository();
-    const dispatcher = makeDispatcher();
-    const useCase = new TagPostUseCase(repository, dispatcher, makeLogger());
-
     const callOrder: string[] = [];
-    (repository.save as ReturnType<typeof vi.fn>).mockImplementation(() => {
+    vi.spyOn(repository, 'save').mockImplementation(() => {
       callOrder.push('repository.save');
+      return Promise.resolve();
     });
-    (dispatcher.dispatch as ReturnType<typeof vi.fn>).mockImplementation(() => {
+    vi.spyOn(dispatcher, 'dispatch').mockImplementation(() => {
       callOrder.push('dispatcher.dispatch');
+      return Promise.resolve();
     });
 
     await useCase.execute(makeInput());
@@ -89,60 +90,50 @@ describe('TagPostUseCase', () => {
   });
 
   it('should skip creating a new process when an initialized one exists for the post', async () => {
-    const repository = makeRepository();
-    const dispatcher = makeDispatcher();
-    const useCase = new TagPostUseCase(repository, dispatcher, makeLogger());
-
-    (repository.findByPostId as ReturnType<typeof vi.fn>).mockResolvedValue(
+    vi.spyOn(repository, 'findByPostId').mockResolvedValue(
       makeExistingProcess(TaggingStatusEnum.initialized),
     );
+    const saveSpy = vi.spyOn(repository, 'save');
+    const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
     await useCase.execute(makeInput());
 
-    expect(repository.save).not.toHaveBeenCalled();
-    expect(dispatcher.dispatch).not.toHaveBeenCalled();
+    expect(saveSpy).not.toHaveBeenCalled();
+    expect(dispatchSpy).not.toHaveBeenCalled();
   });
 
   it('should skip creating a new process when a failed one exists for the post', async () => {
-    const repository = makeRepository();
-    const dispatcher = makeDispatcher();
-    const useCase = new TagPostUseCase(repository, dispatcher, makeLogger());
-
-    (repository.findByPostId as ReturnType<typeof vi.fn>).mockResolvedValue(
+    vi.spyOn(repository, 'findByPostId').mockResolvedValue(
       makeExistingProcess(TaggingStatusEnum.failed),
     );
+    const saveSpy = vi.spyOn(repository, 'save');
+    const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
     await useCase.execute(makeInput());
 
-    expect(repository.save).not.toHaveBeenCalled();
-    expect(dispatcher.dispatch).not.toHaveBeenCalled();
+    expect(saveSpy).not.toHaveBeenCalled();
+    expect(dispatchSpy).not.toHaveBeenCalled();
   });
 
   it('should create a new process when an existing one has status tagged', async () => {
-    const repository = makeRepository();
-    const dispatcher = makeDispatcher();
-    const useCase = new TagPostUseCase(repository, dispatcher, makeLogger());
-
-    (repository.findByPostId as ReturnType<typeof vi.fn>).mockResolvedValue(
+    vi.spyOn(repository, 'findByPostId').mockResolvedValue(
       makeExistingProcess(TaggingStatusEnum.tagged),
     );
+    const saveSpy = vi.spyOn(repository, 'save');
 
     await useCase.execute(makeInput());
 
-    expect(repository.save).toHaveBeenCalledTimes(1);
+    expect(saveSpy).toHaveBeenCalledTimes(1);
   });
 
   it('should create a new process when an existing one has status abandoned', async () => {
-    const repository = makeRepository();
-    const dispatcher = makeDispatcher();
-    const useCase = new TagPostUseCase(repository, dispatcher, makeLogger());
-
-    (repository.findByPostId as ReturnType<typeof vi.fn>).mockResolvedValue(
+    vi.spyOn(repository, 'findByPostId').mockResolvedValue(
       makeExistingProcess(TaggingStatusEnum.abandoned),
     );
+    const saveSpy = vi.spyOn(repository, 'save');
 
     await useCase.execute(makeInput());
 
-    expect(repository.save).toHaveBeenCalledTimes(1);
+    expect(saveSpy).toHaveBeenCalledTimes(1);
   });
 });

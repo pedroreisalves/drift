@@ -1,11 +1,9 @@
 import type { UpdatePostTagsInputDto } from './update-post-tags.input-dto';
-import { PostId } from '@drift/shared';
+import { PostId, type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
 import type PostRepository from '../../../domain/post/repository/post.repository';
-import { type EventDispatcher } from '@drift/shared';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
-import { type Logger } from '@drift/shared';
 
-export default class UpdatePostTagsUseCase {
+export default class UpdatePostTagsUseCase implements UseCase<UpdatePostTagsInputDto, void> {
   constructor(
     private readonly postRepository: PostRepository,
     private readonly eventDispatcher: EventDispatcher,
@@ -30,9 +28,7 @@ export default class UpdatePostTagsUseCase {
       tagCount: input.tags.length,
     });
 
-    const events = post.getDomainEvents();
-
-    for (const event of events) {
+    for (const event of post.getDomainEvents()) {
       await this.eventDispatcher.dispatch(event);
     }
 

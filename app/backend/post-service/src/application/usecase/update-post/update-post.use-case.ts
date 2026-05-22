@@ -1,16 +1,13 @@
 import type { UpdatePostInputDto } from './update-post.input-dto';
-import { PostId } from '@drift/shared';
-import { ClientId } from '@drift/shared';
+import { PostId, ClientId, type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
 import type PostRepository from '../../../domain/post/repository/post.repository';
 import type PostLockRepository from '../../../domain/post/repository/post-lock.repository';
 import { POST_LOCK_TYPE } from '../../@shared/constant/post-lock.constant';
-import { type EventDispatcher } from '@drift/shared';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 import { ForbiddenPostOperationError } from '../../@shared/error/forbidden-post-update.error';
 import TaggingInProgressError from '../../@shared/error/tagging-in-progress.error';
-import { type Logger } from '@drift/shared';
 
-export default class UpdatePostUseCase {
+export default class UpdatePostUseCase implements UseCase<UpdatePostInputDto, void> {
   constructor(
     private readonly postRepository: PostRepository,
     private readonly postLockRepository: PostLockRepository,
@@ -53,9 +50,7 @@ export default class UpdatePostUseCase {
 
     this.logger.info('Post updated', { postId: postId.toString() });
 
-    const events = post.getDomainEvents();
-
-    for (const event of events) {
+    for (const event of post.getDomainEvents()) {
       await this.eventDispatcher.dispatch(event);
     }
 

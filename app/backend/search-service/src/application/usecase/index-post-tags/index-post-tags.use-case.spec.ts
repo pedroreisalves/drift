@@ -8,97 +8,101 @@ import PostTagsIndexedEvent from '../../../domain/search-entry/event/post-tags-i
 import DocumentNotFoundError from '../../@shared/error/document-not-found.error';
 import IndexingFailedError from '../../@shared/error/indexing-failed.error';
 
+const makeRepository = (): SearchEntryRepository => ({
+  index: vi.fn().mockResolvedValue(undefined),
+  update: vi.fn().mockResolvedValue(undefined),
+  remove: vi.fn().mockResolvedValue(undefined),
+  findByPostId: vi.fn().mockResolvedValue(null),
+  search: vi.fn().mockResolvedValue([]),
+});
+
+const makeDispatcher = (): EventDispatcher => ({
+  dispatch: vi.fn().mockResolvedValue(undefined),
+});
+
+const makeLogger = (): Logger => ({
+  info: vi.fn(),
+  warn: vi.fn(),
+  error: vi.fn(),
+});
+
+const makeEntry = (postId = uuidv7()): SearchEntry =>
+  SearchEntry.reconstruct({
+    postId: new PostId(postId),
+    title: 'A Post Title',
+    body: 'Post body content.',
+    tags: [],
+  });
+
 describe('IndexPostTagsUseCase', () => {
-  const makeRepository = (): SearchEntryRepository => ({
-    index: vi.fn().mockResolvedValue(undefined),
-    update: vi.fn().mockResolvedValue(undefined),
-    remove: vi.fn().mockResolvedValue(undefined),
-    findByPostId: vi.fn().mockResolvedValue(null),
-    search: vi.fn().mockResolvedValue([]),
-  });
+  let repository: SearchEntryRepository;
+  let dispatcher: EventDispatcher;
+  let useCase: IndexPostTagsUseCase;
 
-  const makeDispatcher = (): EventDispatcher => ({
-    dispatch: vi.fn().mockResolvedValue(undefined),
+  beforeEach(() => {
+    repository = makeRepository();
+    dispatcher = makeDispatcher();
+    useCase = new IndexPostTagsUseCase(repository, dispatcher, makeLogger());
   });
-
-  const makeLogger = (): Logger => ({
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-  });
-
-  const makeEntry = (postId = uuidv7()): SearchEntry =>
-    SearchEntry.reconstruct({
-      postId: new PostId(postId),
-      title: 'A Post Title',
-      body: 'Post body content.',
-      tags: [],
-    });
 
   it('should update entry tags, persist it, and dispatch PostTagsIndexedEvent', async () => {
-    const repository = makeRepository();
-    const dispatcher = makeDispatcher();
-    const useCase = new IndexPostTagsUseCase(repository, dispatcher, makeLogger());
-
     const postId = uuidv7();
     const tags = ['rust', 'systems'];
-    (repository.findByPostId as ReturnType<typeof vi.fn>).mockResolvedValue(makeEntry(postId));
+    vi.spyOn(repository, 'findByPostId').mockResolvedValue(makeEntry(postId));
     const updateSpy = vi.spyOn(repository, 'update');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
     await useCase.execute({ postId, tags });
 
     expect(updateSpy).toHaveBeenCalledTimes(1);
+    // instance-reference check: the updated entry has the correct tags
     const updated = updateSpy.mock.calls[0][0];
     expect(updated.tags).toEqual(tags);
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledWith(expect.any(PostTagsIndexedEvent));
-    const event = dispatchSpy.mock.calls[0][0] as PostTagsIndexedEvent;
-    expect(event.payload.postId).toBe(postId);
-    expect(event.payload.tags).toEqual(tags);
+    // instance-reference check: verify event payload fields via typed access
+    const dispatched = dispatchSpy.mock.calls[0][0] as PostTagsIndexedEvent;
+    expect(dispatched.payload.postId).toBe(postId);
+    expect(dispatched.payload.tags).toEqual(tags);
   });
 
-  it('should throw DocumentNotFoundError when entry does not exist', async () => {
-    const repository = makeRepository();
-    const useCase = new IndexPostTagsUseCase(repository, makeDispatcher(), makeLogger());
+  it('should throw DocumentNotFoundError when entry does not exist, without persisting or dispatching', async () => {
+    const updateSpy = vi.spyOn(repository, 'update');
+    const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
     await expect(useCase.execute({ postId: uuidv7(), tags: ['tag'] })).rejects.toThrow(
       DocumentNotFoundError,
     );
+
+    expect(updateSpy).not.toHaveBeenCalled();
+    expect(dispatchSpy).not.toHaveBeenCalled();
   });
 
   it('should throw IndexingFailedError when the repository update fails', async () => {
-    const repository = makeRepository();
-    const useCase = new IndexPostTagsUseCase(repository, makeDispatcher(), makeLogger());
-
     const postId = uuidv7();
-    (repository.findByPostId as ReturnType<typeof vi.fn>).mockResolvedValue(makeEntry(postId));
-    (repository.update as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('DB error'));
+    vi.spyOn(repository, 'findByPostId').mockResolvedValue(makeEntry(postId));
+    vi.spyOn(repository, 'update').mockRejectedValue(new Error('DB error'));
 
     await expect(useCase.execute({ postId, tags: ['tag'] })).rejects.toThrow(IndexingFailedError);
   });
 
   it('should throw IndexingFailedError when the repository update rejects with a non-Error value', async () => {
-    const repository = makeRepository();
-    const useCase = new IndexPostTagsUseCase(repository, makeDispatcher(), makeLogger());
-
     const postId = uuidv7();
-    (repository.findByPostId as ReturnType<typeof vi.fn>).mockResolvedValue(makeEntry(postId));
-    (repository.update as ReturnType<typeof vi.fn>).mockRejectedValue('raw string error');
+    vi.spyOn(repository, 'findByPostId').mockResolvedValue(makeEntry(postId));
+    vi.spyOn(repository, 'update').mockRejectedValue('raw string error');
 
     await expect(useCase.execute({ postId, tags: ['tag'] })).rejects.toThrow(IndexingFailedError);
   });
 
-  it('should call repository.update before dispatcher.dispatch', async () => {
-    const repository = makeRepository();
-    const dispatcher = makeDispatcher();
-    const useCase = new IndexPostTagsUseCase(repository, dispatcher, makeLogger());
-
+  it('should call repository.findByPostId, then repository.update, then dispatcher.dispatch in order', async () => {
     const postId = uuidv7();
-    (repository.findByPostId as ReturnType<typeof vi.fn>).mockResolvedValue(makeEntry(postId));
 
     const callOrder: string[] = [];
+    vi.spyOn(repository, 'findByPostId').mockImplementation(() => {
+      callOrder.push('repository.findByPostId');
+      return Promise.resolve(makeEntry(postId));
+    });
     vi.spyOn(repository, 'update').mockImplementation(() => {
       callOrder.push('repository.update');
       return Promise.resolve();
@@ -110,6 +114,10 @@ describe('IndexPostTagsUseCase', () => {
 
     await useCase.execute({ postId, tags: ['tag'] });
 
-    expect(callOrder).toEqual(['repository.update', 'dispatcher.dispatch']);
+    expect(callOrder).toEqual([
+      'repository.findByPostId',
+      'repository.update',
+      'dispatcher.dispatch',
+    ]);
   });
 });

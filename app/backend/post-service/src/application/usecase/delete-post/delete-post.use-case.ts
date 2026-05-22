@@ -1,13 +1,10 @@
-import { PostId } from '@drift/shared';
-import { ClientId } from '@drift/shared';
+import { PostId, ClientId, type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
 import type PostRepository from '../../../domain/post/repository/post.repository';
-import { type EventDispatcher } from '@drift/shared';
 import type { DeletePostInputDto } from './delete-post.input-dto';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 import { ForbiddenPostOperationError } from '../../@shared/error/forbidden-post-update.error';
-import { type Logger } from '@drift/shared';
 
-export default class DeletePostUseCase {
+export default class DeletePostUseCase implements UseCase<DeletePostInputDto, void> {
   constructor(
     private readonly postRepository: PostRepository,
     private readonly eventDispatcher: EventDispatcher,

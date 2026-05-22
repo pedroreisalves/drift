@@ -1,9 +1,12 @@
 import type { LockPostForTaggingInputDto } from './lock-post-for-tagging.input-dto';
 import type PostLockRepository from '../../../domain/post/repository/post-lock.repository';
 import { POST_LOCK_TYPE } from '../../@shared/constant/post-lock.constant';
-import { type Logger } from '@drift/shared';
+import { type Logger, type UseCase } from '@drift/shared';
 
-export default class LockPostForTaggingUseCase {
+export default class LockPostForTaggingUseCase implements UseCase<
+  LockPostForTaggingInputDto,
+  void
+> {
   constructor(
     private readonly postLockRepository: PostLockRepository,
     private readonly logger: Logger,

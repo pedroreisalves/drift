@@ -35,8 +35,8 @@ async function main(): Promise<void> {
 
   const executeTaggingUseCase = new ExecuteTaggingUseCase(
     repository,
-    dispatcher,
     tagGenerator,
+    dispatcher,
     logger,
   );
   const tagPostUseCase = new TagPostUseCase(repository, dispatcher, logger);

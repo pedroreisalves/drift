@@ -1,11 +1,11 @@
-import { PostId, type EventDispatcher, type Logger } from '@drift/shared';
+import { PostId, type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
 import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository';
 import type { IndexPostTagsInputDto } from './index-post-tags.input-dto';
 import PostTagsIndexedEvent from '../../../domain/search-entry/event/post-tags-indexed.event';
 import DocumentNotFoundError from '../../@shared/error/document-not-found.error';
 import IndexingFailedError from '../../@shared/error/indexing-failed.error';
 
-export default class IndexPostTagsUseCase {
+export default class IndexPostTagsUseCase implements UseCase<IndexPostTagsInputDto, void> {
   constructor(
     private readonly searchEntryRepository: SearchEntryRepository,
     private readonly eventDispatcher: EventDispatcher,

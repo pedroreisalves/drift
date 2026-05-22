@@ -1,19 +1,15 @@
-import { type EventDispatcher } from '@drift/shared';
+import { type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
 import type TaggingProcessRepository from '../../../domain/tagging-process/repository/tagging-process.repository';
 import type { ExecuteTaggingInputDto } from './execute-tagging.input-dto';
 import type TagGenerator from '../../@shared/interface/tag-generator.interface';
 import TaggingProcessNotFoundError from '../../@shared/error/tagging-process-not-found.error';
 import TaggingProcessId from '../../../domain/tagging-process/value-object/tagging-process-id.value-object';
-import { type Logger } from '@drift/shared';
-import TaggingStatus, {
-  TaggingStatusEnum,
-} from '../../../domain/tagging-process/value-object/tagging-status.value-object';
 
-export default class ExecuteTaggingUseCase {
+export default class ExecuteTaggingUseCase implements UseCase<ExecuteTaggingInputDto, void> {
   constructor(
     private readonly taggingProcessRepository: TaggingProcessRepository,
-    private readonly eventDispatcher: EventDispatcher,
     private readonly tagGenerator: TagGenerator,
+    private readonly eventDispatcher: EventDispatcher,
     private readonly logger: Logger,
   ) {}
 
@@ -48,7 +44,7 @@ export default class ExecuteTaggingUseCase {
       const reason = error instanceof Error ? error.message : String(error);
       taggingProcess.fail({ reason });
 
-      if (taggingProcess.status.equals(new TaggingStatus(TaggingStatusEnum.abandoned))) {
+      if (taggingProcess.isAbandoned) {
         this.logger.warn('Tagging abandoned after max retries', {
           taggingProcessId: taggingProcessId.toString(),
           postId: taggingProcess.postId.toString(),
@@ -67,9 +63,7 @@ export default class ExecuteTaggingUseCase {
 
     await this.taggingProcessRepository.save(taggingProcess);
 
-    const events = taggingProcess.getDomainEvents();
-
-    for (const event of events) {
+    for (const event of taggingProcess.getDomainEvents()) {
       await this.eventDispatcher.dispatch(event);
     }
 
