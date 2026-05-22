@@ -6,7 +6,7 @@ interface PostTagsUpdatedEventPayload extends Record<string, unknown> {
   updatedAt: string;
 }
 
-export default class PostTagsUpdated extends DomainEvent<PostTagsUpdatedEventPayload> {
+export default class PostTagsUpdatedEvent extends DomainEvent<PostTagsUpdatedEventPayload> {
   readonly eventName = 'PostTagsUpdated';
   readonly payload: PostTagsUpdatedEventPayload;
 

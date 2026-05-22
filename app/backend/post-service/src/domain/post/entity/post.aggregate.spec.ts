@@ -6,7 +6,7 @@ import InvalidPostError from '../error/invalid-post.error';
 import PostCreatedEvent from '../event/post-created.event';
 import PostDeletedEvent from '../event/post-deleted.event';
 import PostUpdatedEvent from '../event/post-updated.event';
-import PostTagsUpdated from '../event/post-tags-updated.event';
+import PostTagsUpdatedEvent from '../event/post-tags-updated.event';
 
 describe('Post', () => {
   const makeProps = (overrides: Partial<CreatePostProps> = {}): CreatePostProps => ({
@@ -256,7 +256,7 @@ describe('Post', () => {
     const events = post.getDomainEvents();
 
     expect(events).toHaveLength(2);
-    expect(events[1]).toBeInstanceOf(PostTagsUpdated);
+    expect(events[1]).toBeInstanceOf(PostTagsUpdatedEvent);
     expect(events[1].eventName).toEqual('PostTagsUpdated');
     expect(events[1].payload).toEqual({
       postId: props.id.toString(),

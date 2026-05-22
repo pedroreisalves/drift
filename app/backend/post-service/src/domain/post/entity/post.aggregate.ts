@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { AggregateRoot } from '@drift/shared';
 import PostCreatedEvent from '../event/post-created.event';
 import PostDeletedEvent from '../event/post-deleted.event';
-import PostTagsUpdated from '../event/post-tags-updated.event';
+import PostTagsUpdatedEvent from '../event/post-tags-updated.event';
 import PostUpdatedEvent from '../event/post-updated.event';
 import { type ClientId } from '@drift/shared';
 import { type PostId } from '@drift/shared';
@@ -153,7 +153,7 @@ export default class Post extends AggregateRoot {
     this.props.tags = tags;
     this.props.updatedAt = updatedAt;
 
-    const event = new PostTagsUpdated({
+    const event = new PostTagsUpdatedEvent({
       postId: this.props.id.toString(),
       tags,
       updatedAt: updatedAt.toISOString(),

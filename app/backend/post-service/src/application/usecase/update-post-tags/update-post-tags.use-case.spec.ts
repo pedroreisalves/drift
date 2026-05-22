@@ -6,7 +6,7 @@ import { ClientId } from '@drift/shared';
 import type PostRepository from '../../../domain/post/repository/post.repository';
 import { type EventDispatcher } from '@drift/shared';
 import { type Logger } from '@drift/shared';
-import PostTagsUpdated from '../../../domain/post/event/post-tags-updated.event';
+import PostTagsUpdatedEvent from '../../../domain/post/event/post-tags-updated.event';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 
 describe('UpdatePostTagsUseCase', () => {
@@ -61,7 +61,7 @@ describe('UpdatePostTagsUseCase', () => {
     expect(saveMock.mock.calls[0][0]).toBe(existing);
 
     expect(dispatchMock).toHaveBeenCalledTimes(1);
-    expect(dispatchMock).toHaveBeenCalledWith(expect.any(PostTagsUpdated));
+    expect(dispatchMock).toHaveBeenCalledWith(expect.any(PostTagsUpdatedEvent));
 
     expect(existing.getDomainEvents()).toEqual([]);
   });
