@@ -1,9 +1,6 @@
 x-app-resources: &app-resources
-  deploy:
-    resources:
-      limits:
-        cpus: "0.5"
-        memory: 256M
+  mem_limit: 256m
+  cpus: 0.5
 
 x-ollama-model: &ollama-model qwen2.5:0.5b
 
@@ -13,12 +10,45 @@ x-rabbitmq-env: &rabbitmq-env
 
 x-shared-src-volume: &shared-src-volume ./app/backend/@shared/src:/repo/app/backend/@shared/src
 
-x-healthcheck-defaults: &healthcheck-defaults
+x-backend-build: &backend-build
+  context: .
+  dockerfile: app/backend/Dockerfile
+
+x-hc-fast: &hc-fast
   interval: 5s
-  timeout: 5s
+  timeout: 3s
   retries: 5
+  start_period: 10s
+
+x-base-depends: &base-depends
+  postgres:
+    condition: service_healthy
+  rabbitmq:
+    condition: service_healthy
 
 services:
+  traefik:
+    image: traefik:v3.7.1
+    container_name: drift-traefik
+    command:
+      - --api.dashboard=true
+      - --api.insecure=true
+      - --ping=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:3000
+    ports:
+      - "3000:3000"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    mem_limit: 128m
+    cpus: 0.25
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/ping"]
+      <<: *hc-fast
+
   postgres:
     image: postgres:18-alpine
     container_name: drift-postgres
@@ -29,17 +59,15 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql
-      - ./app/backend/post-service/init.sql:/docker-entrypoint-initdb.d/01-post.sql
-      - ./app/backend/tag-service/init.sql:/docker-entrypoint-initdb.d/02-tag.sql
-      - ./app/backend/analytics-service/init.sql:/docker-entrypoint-initdb.d/03-analytic.sql
-    deploy:
-      resources:
-        limits:
-          cpus: "1.0"
-          memory: 512M
+      - ./app/backend/post-service/init.sql:/docker-entrypoint-initdb.d/01-post.sql:ro
+      - ./app/backend/tag-service/init.sql:/docker-entrypoint-initdb.d/02-tag.sql:ro
+      - ./app/backend/analytics-service/init.sql:/docker-entrypoint-initdb.d/03-analytics.sql:ro
+    mem_limit: 512m
+    cpus: 1.0
+    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U drift"]
-      <<: *healthcheck-defaults
+      <<: *hc-fast
 
   rabbitmq:
     image: rabbitmq:4.3.0-management-alpine
@@ -49,26 +77,26 @@ services:
       - "15672:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-    deploy:
-      resources:
-        limits:
-          cpus: "0.5"
-          memory: 512M
+    mem_limit: 512m
+    cpus: 0.5
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      <<: *healthcheck-defaults
+      <<: *hc-fast
 
   meilisearch:
-    image: getmeili/meilisearch:v1.43.0
+    image: getmeili/meilisearch:v1.44.0
     container_name: drift-meilisearch
     ports:
       - "7700:7700"
     volumes:
       - meilisearch_data:/meili_data
+    mem_limit: 512m
+    cpus: 0.5
+    restart: unless-stopped
     healthcheck:
       test: set -o pipefail;curl -fsS http://localhost:7700/health | grep -q '{"status":"available"}'
-      retries: 3
-      timeout: 5s
+      <<: *hc-fast
 
   ollama:
     build:
@@ -87,13 +115,9 @@ services:
       until ollama list >/dev/null 2>&1; do sleep 1; done;
       ollama pull $$OLLAMA_MODEL;
       wait"
-    deploy:
-      resources:
-        limits:
-          cpus: "2.0"
-          memory: 3G
-        reservations:
-          memory: 1536M
+    mem_limit: 2g
+    cpus: 2.0
+    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "ollama list | grep -qF $$OLLAMA_MODEL"]
       interval: 30s
@@ -103,58 +127,54 @@ services:
 
   post-service:
     build:
-      context: .
-      dockerfile: app/backend/Dockerfile
+      <<: *backend-build
       args:
         SERVICE_NAME: post-service
-        PORT: 3001
     container_name: drift-post-service
-    ports:
-      - "3001:3001"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.post-service.rule=PathPrefix(`/posts`)
+      - traefik.http.services.post-service.loadbalancer.server.port=3000
+    expose:
+      - "3000"
     environment:
-      PORT: 3001
       DB_URL: postgresql://drift:drift@postgres:5432/post_db
       <<: *rabbitmq-env
     volumes:
       - ./app/backend/post-service/src:/repo/app/backend/post-service/src
       - *shared-src-volume
     <<: *app-resources
-    depends_on:
-      postgres:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
+    restart: unless-stopped
+    depends_on: *base-depends
 
   search-service:
     build:
-      context: .
-      dockerfile: app/backend/Dockerfile
+      <<: *backend-build
       args:
         SERVICE_NAME: search-service
-        PORT: 3002
     container_name: drift-search-service
-    ports:
-      - "3002:3002"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.search-service.rule=PathPrefix(`/search`)
+      - traefik.http.services.search-service.loadbalancer.server.port=3000
+    expose:
+      - "3000"
     environment:
-      PORT: 3002
       MEILISEARCH_URL: http://meilisearch:7700
       <<: *rabbitmq-env
     volumes:
       - ./app/backend/search-service/src:/repo/app/backend/search-service/src
       - *shared-src-volume
     <<: *app-resources
+    restart: unless-stopped
     depends_on:
-      postgres:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
+      <<: *base-depends
       meilisearch:
         condition: service_healthy
 
   analytics-service:
     build:
-      context: .
-      dockerfile: app/backend/Dockerfile
+      <<: *backend-build
       args:
         SERVICE_NAME: analytics-service
     container_name: drift-analytics-service
@@ -165,16 +185,12 @@ services:
       - ./app/backend/analytics-service/src:/repo/app/backend/analytics-service/src
       - *shared-src-volume
     <<: *app-resources
-    depends_on:
-      postgres:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
+    restart: unless-stopped
+    depends_on: *base-depends
 
   tag-service:
     build:
-      context: .
-      dockerfile: app/backend/Dockerfile
+      <<: *backend-build
       args:
         SERVICE_NAME: tag-service
     container_name: drift-tag-service
@@ -188,11 +204,9 @@ services:
       - ./app/backend/tag-service/src:/repo/app/backend/tag-service/src
       - *shared-src-volume
     <<: *app-resources
+    restart: unless-stopped
     depends_on:
-      postgres:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
+      <<: *base-depends
       ollama:
         condition: service_healthy
 

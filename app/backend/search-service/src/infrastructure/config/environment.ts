@@ -6,7 +6,7 @@ const envSchema = z.object({
   SERVICE_NAME: z.string().min(1).default('search-service'),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
-  PORT: z.coerce.number().int().positive().default(3002),
+  PORT: z.coerce.number().int().positive().default(3000),
   RABBITMQ_EXCHANGE: z.string().min(1).default('drift.events'),
   RABBITMQ_URL: z.string().min(1),
   MEILISEARCH_URL: z.string().min(1),
