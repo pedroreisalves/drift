@@ -1,5 +1,5 @@
 import type { Pool } from 'pg';
-import type PostLockRepository from '../../application/@shared/interface/post-lock.repository';
+import type PostLockRepository from '../../domain/post/repository/post-lock.repository';
 import type { PostLockType } from '../../application/@shared/constant/post-lock.constant';
 
 export default class PostgresPostLockRepository implements PostLockRepository {

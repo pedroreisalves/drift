@@ -1,5 +1,5 @@
 import { PostId, type EventDispatcher, type Logger } from '@drift/shared';
-import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository.interface';
+import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository';
 import type { RemovePostFromIndexInputDto } from './remove-post-from-index.input-dto';
 import PostRemovedFromIndexEvent from '../../../domain/search-entry/event/post-removed-from-index.event';
 import RemovalFailedError from '../../@shared/error/removal-failed.error';

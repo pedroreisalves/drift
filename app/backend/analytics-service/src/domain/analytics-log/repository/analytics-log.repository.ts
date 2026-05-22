@@ -7,7 +7,7 @@ export interface FindPostIdsWithRecentViewsOptions {
 }
 
 export default interface AnalyticsLogRepository {
-  save: (analyticsLog: AnalyticsLog) => Promise<void>;
+  save(analyticsLog: AnalyticsLog): Promise<void>;
   findPostIdsWithRecentViews(
     windowHours: number,
     options?: FindPostIdsWithRecentViewsOptions,

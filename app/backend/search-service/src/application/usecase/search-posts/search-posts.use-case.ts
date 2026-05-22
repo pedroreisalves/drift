@@ -1,5 +1,5 @@
 import { type EventDispatcher, type Logger } from '@drift/shared';
-import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository.interface';
+import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository';
 import type { SearchPostsInputDto } from './search-posts.input-dto';
 import type SearchPostsOutputDto from './search-posts.output-dto';
 import SearchPostsMapper from './search-posts.mapper';

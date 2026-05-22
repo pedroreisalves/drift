@@ -4,7 +4,7 @@ import Post from '../../../domain/post/entity/post.aggregate';
 import { PostId } from '@drift/shared';
 import { ClientId } from '@drift/shared';
 import type PostRepository from '../../../domain/post/repository/post.repository';
-import type PostLockRepository from '../../@shared/interface/post-lock.repository';
+import type PostLockRepository from '../../../domain/post/repository/post-lock.repository';
 import { type EventDispatcher } from '@drift/shared';
 import { type Logger } from '@drift/shared';
 import PostUpdatedEvent from '../../../domain/post/event/post-updated.event';

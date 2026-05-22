@@ -1,6 +1,6 @@
 import { type Meilisearch, MeilisearchApiError, type Index } from 'meilisearch';
 import { PostId } from '@drift/shared';
-import type SearchEntryRepository from '../../domain/search-entry/repository/search-entry.repository.interface';
+import type SearchEntryRepository from '../../domain/search-entry/repository/search-entry.repository';
 import SearchEntry from '../../domain/search-entry/entity/search-entry.entity';
 
 interface SearchEntryDocument {

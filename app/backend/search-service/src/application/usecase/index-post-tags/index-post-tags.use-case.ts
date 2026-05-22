@@ -1,5 +1,5 @@
 import { PostId, type EventDispatcher, type Logger } from '@drift/shared';
-import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository.interface';
+import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository';
 import type { IndexPostTagsInputDto } from './index-post-tags.input-dto';
 import PostTagsIndexedEvent from '../../../domain/search-entry/event/post-tags-indexed.event';
 import DocumentNotFoundError from '../../@shared/error/document-not-found.error';

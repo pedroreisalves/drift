@@ -2,7 +2,7 @@ import type { UpdatePostInputDto } from './update-post.input-dto';
 import { PostId } from '@drift/shared';
 import { ClientId } from '@drift/shared';
 import type PostRepository from '../../../domain/post/repository/post.repository';
-import type PostLockRepository from '../../@shared/interface/post-lock.repository';
+import type PostLockRepository from '../../../domain/post/repository/post-lock.repository';
 import { POST_LOCK_TYPE } from '../../@shared/constant/post-lock.constant';
 import { type EventDispatcher } from '@drift/shared';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';

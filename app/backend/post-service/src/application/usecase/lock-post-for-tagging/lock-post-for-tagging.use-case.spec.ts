@@ -1,6 +1,6 @@
 import { uuidv7 } from 'uuidv7';
 import LockPostForTaggingUseCase from './lock-post-for-tagging.use-case';
-import type PostLockRepository from '../../@shared/interface/post-lock.repository';
+import type PostLockRepository from '../../../domain/post/repository/post-lock.repository';
 import { POST_LOCK_TYPE } from '../../@shared/constant/post-lock.constant';
 import { type Logger } from '@drift/shared';
 

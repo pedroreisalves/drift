@@ -1,6 +1,6 @@
 import { uuidv7 } from 'uuidv7';
 import SearchPostsUseCase from './search-posts.use-case';
-import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository.interface';
+import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository';
 import type { EventDispatcher, Logger } from '@drift/shared';
 import { PostId } from '@drift/shared';
 import SearchEntry from '../../../domain/search-entry/entity/search-entry.entity';
