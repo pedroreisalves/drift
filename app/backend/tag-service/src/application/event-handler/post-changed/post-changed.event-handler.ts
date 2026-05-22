@@ -1,7 +1,6 @@
 import { z } from 'zod';
-import { type EventHandler } from '@drift/shared';
+import { type EventHandler, type Logger } from '@drift/shared';
 import type TagPostUseCase from '../../usecase/tag-post/tag-post.use-case';
-import { type Logger } from '@drift/shared';
 
 export const postChangedMessageSchema = z.object({
   eventName: z.union([z.literal('PostCreated'), z.literal('PostUpdated')]),

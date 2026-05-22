@@ -1,7 +1,6 @@
 import { z } from 'zod';
-import { type EventHandler } from '@drift/shared';
+import { type EventHandler, type Logger } from '@drift/shared';
 import type ExecuteTaggingUseCase from '../../usecase/execute-tagging/execute-tagging.use-case';
-import { type Logger } from '@drift/shared';
 
 export const taggingFailedMessageSchema = z.object({
   eventName: z.literal('TaggingFailed'),

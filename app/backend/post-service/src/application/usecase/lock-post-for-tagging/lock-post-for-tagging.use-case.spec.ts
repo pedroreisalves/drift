@@ -48,5 +48,4 @@ describe('LockPostForTaggingUseCase', () => {
 
     expect(callOrder).toEqual(['repository.lock']);
   });
-
 });

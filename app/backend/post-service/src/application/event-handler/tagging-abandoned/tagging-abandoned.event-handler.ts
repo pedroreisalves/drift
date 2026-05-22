@@ -1,6 +1,5 @@
 import { z } from 'zod';
-import { type EventHandler } from '@drift/shared';
-import { type Logger } from '@drift/shared';
+import { type EventHandler, type Logger } from '@drift/shared';
 import type UnlockPostForTaggingUseCase from '../../usecase/unlock-post-for-tagging/unlock-post-for-tagging.use-case';
 
 export const taggingAbandonedMessageSchema = z.object({
@@ -27,8 +26,8 @@ export default class TaggingAbandonedEventHandler implements EventHandler {
     const event = taggingAbandonedMessageSchema.parse(raw);
     const { postId } = event.payload;
 
-    await this.unlockPostForTaggingUseCase.execute({ postId });
+    this.logger.info('Received TaggingAbandoned event, unlocking post', { postId });
 
-    this.logger.info('TaggingAbandoned handled', { postId });
+    await this.unlockPostForTaggingUseCase.execute({ postId });
   }
 }

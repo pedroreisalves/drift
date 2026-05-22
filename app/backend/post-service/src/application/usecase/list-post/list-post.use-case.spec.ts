@@ -85,5 +85,4 @@ describe('ListPostUseCase', () => {
 
     expect(callOrder).toEqual(['repository.findAll']);
   });
-
 });

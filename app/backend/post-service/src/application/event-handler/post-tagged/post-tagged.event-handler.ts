@@ -1,6 +1,5 @@
 import { z } from 'zod';
-import { type EventHandler } from '@drift/shared';
-import { type Logger } from '@drift/shared';
+import { type EventHandler, type Logger } from '@drift/shared';
 import type UpdatePostTagsUseCase from '../../usecase/update-post-tags/update-post-tags.use-case';
 import type UnlockPostForTaggingUseCase from '../../usecase/unlock-post-for-tagging/unlock-post-for-tagging.use-case';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';

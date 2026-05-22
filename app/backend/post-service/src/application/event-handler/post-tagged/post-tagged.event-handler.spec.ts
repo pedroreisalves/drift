@@ -44,15 +44,19 @@ describe('PostTaggedEventHandler', () => {
   });
 
   it('should call use case with correct input when message is valid', async () => {
-    const executeSpy = vi.spyOn(updatePostTagsUseCase, 'execute');
+    const updateSpy = vi.spyOn(updatePostTagsUseCase, 'execute');
+    const unlockSpy = vi.spyOn(unlockPostForTaggingUseCase, 'execute');
 
     await handler.handle(makeValidMessage());
 
-    expect(executeSpy).toHaveBeenCalledWith(
+    expect(updateSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         postId: '019682a0-1234-7000-8000-abcdef012346',
         tags: ['tech', 'news'],
       }),
+    );
+    expect(unlockSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ postId: '019682a0-1234-7000-8000-abcdef012346' }),
     );
   });
 
@@ -76,18 +80,16 @@ describe('PostTaggedEventHandler', () => {
   });
 
   it('should unlock the post and drop the event when the post no longer exists', async () => {
-    const updateSpy = vi
-      .spyOn(updatePostTagsUseCase, 'execute')
-      .mockRejectedValue(new PostNotFoundError('019682a0-1234-7000-8000-abcdef012346'));
+    vi.spyOn(updatePostTagsUseCase, 'execute').mockRejectedValue(
+      new PostNotFoundError('019682a0-1234-7000-8000-abcdef012346'),
+    );
     const unlockSpy = vi.spyOn(unlockPostForTaggingUseCase, 'execute');
 
-    await handler.handle(makeValidMessage());
+    await expect(handler.handle(makeValidMessage())).resolves.toBeUndefined();
 
-    expect(updateSpy).toHaveBeenCalledTimes(1);
-    expect(unlockSpy).toHaveBeenCalledTimes(1);
-    expect(unlockSpy.mock.calls[0][0]).toMatchObject({
-      postId: '019682a0-1234-7000-8000-abcdef012346',
-    });
+    expect(unlockSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ postId: '019682a0-1234-7000-8000-abcdef012346' }),
+    );
   });
 
   it('should rethrow unexpected errors without unlocking', async () => {
