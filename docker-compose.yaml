@@ -5,7 +5,7 @@ x-app-resources: &app-resources
         cpus: "0.5"
         memory: 256M
 
-x-ollama-model: &ollama-model qwen2.5:1.5b
+x-ollama-model: &ollama-model qwen2.5:0.5b
 
 x-rabbitmq-env: &rabbitmq-env
   RABBITMQ_URL: amqp://rabbitmq:5672

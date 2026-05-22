@@ -32,7 +32,7 @@ Automatically generates tags for posts using a local LLM, with retry logic for f
 
 - **Database:** PostgreSQL (tagging process state)
 - **Messaging:** RabbitMQ topic exchange (`drift.events`)
-- **LLM:** Ollama (local inference, default model `qwen2.5:1.5b`)
+- **LLM:** Ollama (local inference, default model `qwen2.5:0.5b`)
 - **Key libraries:** `amqp-connection-manager`, `amqplib`, `pg`, `pino`, `zod`, `uuidv7`
 - **Schema:** [`init.sql`](init.sql)
 
@@ -44,7 +44,7 @@ Automatically generates tags for posts using a local LLM, with retry logic for f
 | `RABBITMQ_URL`      | RabbitMQ connection string                 | `amqp://user:pass@localhost:5672`             |
 | `RABBITMQ_EXCHANGE` | RabbitMQ topic exchange name               | `drift.events`                                |
 | `OLLAMA_URL`        | Ollama API base URL                        | `http://localhost:11434`                      |
-| `OLLAMA_MODEL`      | Model to use for tag generation            | `qwen2.5:1.5b`                                |
+| `OLLAMA_MODEL`      | Model to use for tag generation            | `qwen2.5:0.5b`                                |
 | `OLLAMA_TIMEOUT_MS` | LLM request timeout in milliseconds        | `60000`                                       |
 | `SERVICE_NAME`      | Identifies this service in logs and queues | `tag-service`                                 |
 | `NODE_ENV`          | Runtime environment                        | `production`                                  |

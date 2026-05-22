@@ -10,7 +10,7 @@ const envSchema = z.object({
   RABBITMQ_EXCHANGE: z.string().min(1).default('drift.events'),
   RABBITMQ_URL: z.string().min(1),
   OLLAMA_URL: z.string().min(1),
-  OLLAMA_MODEL: z.string().min(1).default('qwen2.5:1.5b'),
+  OLLAMA_MODEL: z.string().min(1).default('qwen2.5:0.5b'),
   OLLAMA_TIMEOUT_MS: z.coerce.number().min(1).default(60000),
 });
 
