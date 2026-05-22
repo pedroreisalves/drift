@@ -1,8 +1,7 @@
 import { type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
 import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository';
-import type { SearchPostsInputDto } from './search-posts.input-dto';
-import type SearchPostsOutputDto from './search-posts.output-dto';
-import SearchPostsMapper from './search-posts.mapper';
+import type { SearchPostsInputDto, SearchPostsOutputDto } from './search-posts.dto';
+import { toSearchPostsOutputDto } from './search-posts.mapper';
 import PostSearchedEvent from '../../../domain/search-entry/event/post-searched.event';
 
 export default class SearchPostsUseCase implements UseCase<
@@ -43,6 +42,6 @@ export default class SearchPostsUseCase implements UseCase<
         });
       });
 
-    return results.map((entry) => SearchPostsMapper.toOutputDto(entry));
+    return results.map((entry) => toSearchPostsOutputDto(entry));
   }
 }

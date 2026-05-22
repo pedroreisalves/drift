@@ -8,7 +8,7 @@ import type TaggingProcessRepository from '../../../domain/tagging-process/repos
 import { type EventDispatcher, type Logger } from '@drift/shared';
 import TaggingInitializedEvent from '../../../domain/tagging-process/event/tagging-initialized.event';
 import TaggingStatus from '../../../domain/tagging-process/value-object/tagging-status.value-object';
-import type { TagPostInputDto } from './tag-post.input-dto';
+import type { TagPostInputDto } from './tag-post.dto';
 
 const makeRepository = (): TaggingProcessRepository => ({
   save: vi.fn().mockResolvedValue(undefined),

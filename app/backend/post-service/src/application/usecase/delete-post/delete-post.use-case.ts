@@ -1,6 +1,6 @@
 import { PostId, ClientId, type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
 import type PostRepository from '../../../domain/post/repository/post.repository';
-import type { DeletePostInputDto } from './delete-post.input-dto';
+import type { DeletePostInputDto } from './delete-post.dto';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 import { ForbiddenPostOperationError } from '../../@shared/error/forbidden-post-update.error';
 

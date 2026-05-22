@@ -1,6 +1,6 @@
 import type Post from '../../../domain/post/entity/post.aggregate';
-import type { CreatePostOutputDto } from './create-post.output-dto';
+import type { CreatePostOutputDto } from './create-post.dto';
 
 export function toCreatePostOutputDto(post: Post): CreatePostOutputDto {
-  return { id: post.id.toString() };
+  return { postId: post.id.toString() };
 }

@@ -49,7 +49,7 @@ describe('GetPostUseCase', () => {
     expect(findByIdSpy).toHaveBeenCalledTimes(1);
     // instance-reference check: the PostId passed to findById round-trips to the input string
     expect(findByIdSpy.mock.calls[0][0].toString()).toEqual(postId);
-    expect(result.id).toEqual(postId);
+    expect(result.postId).toEqual(postId);
   });
 
   it('should throw PostNotFoundError when the post does not exist, without further calls', async () => {

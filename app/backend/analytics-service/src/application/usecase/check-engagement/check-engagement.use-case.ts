@@ -14,7 +14,6 @@ import {
 } from '../../@shared/constant/check-engagement.constant';
 
 export default class CheckEngagementUseCase implements UseCase<void, void> {
-
   constructor(
     private readonly analyticsLogRepository: AnalyticsLogRepository,
     private readonly engagementStateRepository: EngagementStateRepository,
@@ -26,15 +25,13 @@ export default class CheckEngagementUseCase implements UseCase<void, void> {
     const startedAt = Date.now();
     const now = new Date();
 
-    const windowFrom = new Date(
-      now.getTime() - ENGAGEMENT_WINDOW_HOURS * 60 * 60 * 1000,
-    );
+    const windowFrom = new Date(now.getTime() - ENGAGEMENT_WINDOW_HOURS * 60 * 60 * 1000);
 
     const [activeIds, raisedStates] = await Promise.all([
-      this.analyticsLogRepository.findPostIdsWithRecentViews(
-        ENGAGEMENT_WINDOW_HOURS,
-        { excludeDeleted: true, now },
-      ),
+      this.analyticsLogRepository.findPostIdsWithRecentViews(ENGAGEMENT_WINDOW_HOURS, {
+        excludeDeleted: true,
+        now,
+      }),
       this.engagementStateRepository.findAllRaised({ excludeDeleted: true }),
     ]);
 

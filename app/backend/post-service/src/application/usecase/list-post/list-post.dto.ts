@@ -1,5 +1,10 @@
-export default interface GetPostOutputDto {
-  id: string;
+export interface ListPostInputDto {
+  limit?: number;
+  offset?: number;
+}
+
+export interface ListPostOutputDto {
+  postId: string;
   clientId: string;
   clientName: string;
   title: string;

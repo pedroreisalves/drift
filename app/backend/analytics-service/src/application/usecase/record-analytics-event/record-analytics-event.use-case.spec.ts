@@ -162,5 +162,4 @@ describe('RecordAnalyticsEventUseCase', () => {
 
     expect(callOrder).toEqual(['repository.save', 'dispatcher.dispatch']);
   });
-
 });

@@ -1,6 +1,6 @@
 import { PostId, type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
 import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository';
-import type { IndexPostInputDto } from './index-post.input-dto';
+import type { IndexPostInputDto } from './index-post.dto';
 import PostIndexedEvent from '../../../domain/search-entry/event/post-indexed.event';
 import SearchEntry from '../../../domain/search-entry/entity/search-entry.entity';
 import IndexingFailedError from '../../@shared/error/indexing-failed.error';

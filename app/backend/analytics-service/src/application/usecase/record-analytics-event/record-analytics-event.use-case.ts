@@ -1,6 +1,6 @@
 import { ClientId, PostId, type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
 import type AnalyticsLogRepository from '../../../domain/analytics-log/repository/analytics-log.repository';
-import type { RecordAnalyticsEventInputDto } from './record-analytics-event.input-dto';
+import type { RecordAnalyticsEventInputDto } from './record-analytics-event.dto';
 import { EventTypeEnum } from '../../../domain/analytics-log/value-object/event-type.value-object';
 import EventType from '../../../domain/analytics-log/value-object/event-type.value-object';
 import AnalyticsLog from '../../../domain/analytics-log/entity/analytics-log.entity';

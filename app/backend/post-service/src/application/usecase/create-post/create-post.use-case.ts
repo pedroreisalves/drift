@@ -1,7 +1,6 @@
 import { uuidv7 } from 'uuidv7';
 import Post from '../../../domain/post/entity/post.aggregate';
-import type { CreatePostInputDto } from './create-post.input-dto';
-import type { CreatePostOutputDto } from './create-post.output-dto';
+import type { CreatePostInputDto, CreatePostOutputDto } from './create-post.dto';
 import { toCreatePostOutputDto } from './create-post.mapper';
 import { PostId, ClientId, type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
 import type PostRepository from '../../../domain/post/repository/post.repository';

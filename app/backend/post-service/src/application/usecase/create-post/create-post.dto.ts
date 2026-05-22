@@ -4,3 +4,7 @@ export interface CreatePostInputDto {
   title: string;
   body: string;
 }
+
+export interface CreatePostOutputDto {
+  postId: string;
+}

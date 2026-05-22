@@ -37,7 +37,7 @@ export default class PostController {
 
       const result = await this.createPostUseCase.execute({ clientId, clientName, title, body });
 
-      res.status(201).json({ postId: result.id });
+      res.status(201).json({ postId: result.postId });
     } catch (error) {
       next(error);
     }

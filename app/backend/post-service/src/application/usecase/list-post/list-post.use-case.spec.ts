@@ -46,8 +46,8 @@ describe('ListPostUseCase', () => {
     const result = await useCase.execute({ limit: 20, offset: 5 });
 
     expect(result).toHaveLength(2);
-    expect(result[0].id).toEqual(firstId);
-    expect(result[1].id).toEqual(secondId);
+    expect(result[0].postId).toEqual(firstId);
+    expect(result[1].postId).toEqual(secondId);
   });
 
   it('should forward the provided limit and offset to the repository', async () => {
