@@ -5,6 +5,8 @@ x-app-resources: &app-resources
         cpus: "0.5"
         memory: 256M
 
+x-ollama-model: &ollama-model qwen2.5:1.5b
+
 x-rabbitmq-env: &rabbitmq-env
   RABBITMQ_URL: amqp://rabbitmq:5672
   RABBITMQ_EXCHANGE: drift.events
@@ -69,18 +71,22 @@ services:
       timeout: 5s
 
   ollama:
-    image: ollama/ollama:latest
+    build:
+      context: .
+      dockerfile: config/ollama/Dockerfile
     container_name: drift-ollama
-    ports:
-      - "11434:11434"
+    environment:
+      OLLAMA_MODEL: *ollama-model
+    expose:
+      - "11434"
     volumes:
       - ollama_data:/root/.ollama
     entrypoint: ["/bin/sh", "-c"]
     command: >
-      "ollama serve & pid=$$!;
+      "ollama serve &
       until ollama list >/dev/null 2>&1; do sleep 1; done;
-      ollama pull qwen2.5:1.5b;
-      wait $$pid"
+      ollama pull $$OLLAMA_MODEL;
+      wait"
     deploy:
       resources:
         limits:
@@ -89,11 +95,11 @@ services:
         reservations:
           memory: 1536M
     healthcheck:
-      test: ["CMD-SHELL", "ollama list | grep -q 'qwen2.5:1.5b'"]
+      test: ["CMD-SHELL", "ollama list | grep -qF $$OLLAMA_MODEL"]
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 60s
+      start_period: 120s
 
   post-service:
     build:
@@ -175,7 +181,7 @@ services:
     environment:
       DB_URL: postgresql://drift:drift@postgres:5432/tag_db
       OLLAMA_URL: http://ollama:11434
-      OLLAMA_MODEL: qwen2.5:1.5b
+      OLLAMA_MODEL: *ollama-model
       OLLAMA_TIMEOUT_MS: 60000
       <<: *rabbitmq-env
     volumes:
