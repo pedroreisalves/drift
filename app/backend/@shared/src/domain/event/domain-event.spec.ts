@@ -24,7 +24,7 @@ describe('DomainEvent', () => {
   });
 
   it('should set occurredAt to current date on construction', () => {
-    const now = new Date('2024-01-01T00:00:00.000Z');
+    const now = new Date('2026-01-01T00:00:00.000Z');
     vi.setSystemTime(now);
 
     const event = new StubEvent({ id: '1' });
@@ -45,10 +45,10 @@ describe('DomainEvent', () => {
   });
 
   it('should have different occurredAt for events created at different times', () => {
-    vi.setSystemTime(new Date('2024-01-01T00:00:00.000Z'));
+    vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
     const first = new StubEvent({ id: '1' });
 
-    vi.setSystemTime(new Date('2024-01-01T00:00:00.001Z'));
+    vi.setSystemTime(new Date('2026-01-01T00:00:00.001Z'));
     const second = new StubEvent({ id: '2' });
 
     expect(second.occurredAt.getTime()).toBeGreaterThan(first.occurredAt.getTime());

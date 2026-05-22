@@ -18,6 +18,14 @@ describe('Post', () => {
     ...overrides,
   });
 
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('should create a post aggregate', () => {
     const props = makeProps();
 
@@ -100,19 +108,14 @@ describe('Post', () => {
   });
 
   it('should refresh updatedAt when updating a post aggregate', () => {
-    vi.useFakeTimers();
-    try {
-      const post = Post.create(makeProps());
-      const previousUpdatedAt = post.updatedAt;
+    const post = Post.create(makeProps());
+    const previousUpdatedAt = post.updatedAt;
 
-      vi.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(1000);
 
-      post.update({ title: 'My Updated Post' });
+    post.update({ title: 'My Updated Post' });
 
-      expect(post.updatedAt.getTime()).toBeGreaterThan(previousUpdatedAt.getTime());
-    } finally {
-      vi.useRealTimers();
-    }
+    expect(post.updatedAt.getTime()).toBeGreaterThan(previousUpdatedAt.getTime());
   });
 
   it('should reset tags when updating a post aggregate', () => {
@@ -131,6 +134,17 @@ describe('Post', () => {
     post.applyTags(tags);
 
     expect(post.tags).toEqual(tags);
+  });
+
+  it('should refresh updatedAt when applying tags to a post aggregate', () => {
+    const post = Post.create(makeProps());
+    const previousUpdatedAt = post.updatedAt;
+
+    vi.advanceTimersByTime(1000);
+
+    post.applyTags(['tag1']);
+
+    expect(post.updatedAt.getTime()).toBeGreaterThan(previousUpdatedAt.getTime());
   });
 
   it('should throw an error when applying a tag exceeding 45 characters', () => {
@@ -280,28 +294,23 @@ describe('Post', () => {
   });
 
   it('should add a PostDeletedEvent when deleting a post aggregate', () => {
-    vi.useFakeTimers();
-    try {
-      const props = makeProps();
-      const post = Post.create(props);
-      post.clearDomainEvents();
+    const props = makeProps();
+    const post = Post.create(props);
+    post.clearDomainEvents();
 
-      const deletedAt = new Date();
-      post.delete();
+    const deletedAt = new Date();
+    post.delete();
 
-      const events = post.getDomainEvents();
+    const events = post.getDomainEvents();
 
-      expect(events).toHaveLength(1);
-      expect(events[0]).toBeInstanceOf(PostDeletedEvent);
-      expect(events[0].eventName).toEqual('PostDeleted');
-      expect(events[0].payload).toEqual({
-        postId: props.id.toString(),
-        clientId: props.clientId.toString(),
-        deletedAt: deletedAt.toISOString(),
-      });
-    } finally {
-      vi.useRealTimers();
-    }
+    expect(events).toHaveLength(1);
+    expect(events[0]).toBeInstanceOf(PostDeletedEvent);
+    expect(events[0].eventName).toEqual('PostDeleted');
+    expect(events[0].payload).toEqual({
+      postId: props.id.toString(),
+      clientId: props.clientId.toString(),
+      deletedAt: deletedAt.toISOString(),
+    });
   });
 
   it('should clear all domain events when calling clearDomainEvents', () => {

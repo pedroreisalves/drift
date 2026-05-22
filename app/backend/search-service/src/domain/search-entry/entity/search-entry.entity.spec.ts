@@ -1,15 +1,15 @@
 import { uuidv7 } from 'uuidv7';
 import { PostId } from '@drift/shared';
-import type { SearchEntryProps } from './search-entry.entity';
-import SearchEntry from './search-entry.entity';
+import SearchEntry, { type CreateSearchEntryProps } from './search-entry.entity';
 import InvalidSearchEntryError from '../error/invalid-search-entry.error';
 
 describe('SearchEntry', () => {
-  const makeProps = (): SearchEntryProps => ({
+  const makeProps = (overrides: Partial<CreateSearchEntryProps> = {}): CreateSearchEntryProps => ({
     postId: new PostId(uuidv7()),
     title: 'My First Post',
     body: 'This is the body of my first post.',
     tags: ['tag1', 'tag2'],
+    ...overrides,
   });
 
   it('should create a search entry', () => {
@@ -25,59 +25,59 @@ describe('SearchEntry', () => {
   });
 
   it('should throw an error when creating with an empty title', () => {
-    const props = { ...makeProps(), title: '' };
+    const props = makeProps({ title: '' });
 
     expect(() => SearchEntry.create(props)).toThrow(InvalidSearchEntryError);
-    expect(() => SearchEntry.create(props)).toThrow(/Title cannot be empty/);
+    expect(() => SearchEntry.create(props)).toThrow('Title cannot be empty');
   });
 
   it('should throw an error when creating with a title exceeding 45 characters', () => {
-    const props = { ...makeProps(), title: 'a'.repeat(46) };
+    const props = makeProps({ title: 'a'.repeat(46) });
 
     expect(() => SearchEntry.create(props)).toThrow(InvalidSearchEntryError);
-    expect(() => SearchEntry.create(props)).toThrow(/Title cannot exceed 45 characters/);
+    expect(() => SearchEntry.create(props)).toThrow('Title cannot exceed 45 characters');
   });
 
   it('should throw an error when creating with an empty body', () => {
-    const props = { ...makeProps(), body: '' };
+    const props = makeProps({ body: '' });
 
     expect(() => SearchEntry.create(props)).toThrow(InvalidSearchEntryError);
-    expect(() => SearchEntry.create(props)).toThrow(/Body cannot be empty/);
+    expect(() => SearchEntry.create(props)).toThrow('Body cannot be empty');
   });
 
   it('should throw an error when creating with a body exceeding 2000 characters', () => {
-    const props = { ...makeProps(), body: 'a'.repeat(2001) };
+    const props = makeProps({ body: 'a'.repeat(2001) });
 
     expect(() => SearchEntry.create(props)).toThrow(InvalidSearchEntryError);
-    expect(() => SearchEntry.create(props)).toThrow(/Body cannot exceed 2000 characters/);
+    expect(() => SearchEntry.create(props)).toThrow('Body cannot exceed 2000 characters');
   });
 
   it('should throw an error when creating with more than 10 tags', () => {
-    const props = { ...makeProps(), tags: Array.from({ length: 11 }, (_, i) => `tag${i}`) };
+    const props = makeProps({ tags: Array.from({ length: 11 }, (_, i) => `tag${i}`) });
 
     expect(() => SearchEntry.create(props)).toThrow(InvalidSearchEntryError);
-    expect(() => SearchEntry.create(props)).toThrow(/Cannot have more than 10 tags/);
+    expect(() => SearchEntry.create(props)).toThrow('Cannot have more than 10 tags');
   });
 
   it('should throw an error when creating with an empty tag', () => {
-    const props = { ...makeProps(), tags: [''] };
+    const props = makeProps({ tags: [''] });
 
     expect(() => SearchEntry.create(props)).toThrow(InvalidSearchEntryError);
-    expect(() => SearchEntry.create(props)).toThrow(/Tag cannot be empty/);
+    expect(() => SearchEntry.create(props)).toThrow('Tag cannot be empty');
   });
 
   it('should throw an error when creating with a tag exceeding 45 characters', () => {
-    const props = { ...makeProps(), tags: ['a'.repeat(46)] };
+    const props = makeProps({ tags: ['a'.repeat(46)] });
 
     expect(() => SearchEntry.create(props)).toThrow(InvalidSearchEntryError);
-    expect(() => SearchEntry.create(props)).toThrow(/Tag cannot exceed 45 characters/);
+    expect(() => SearchEntry.create(props)).toThrow('Tag cannot exceed 45 characters');
   });
 
   it('should throw an error when creating with duplicate tags', () => {
-    const props = { ...makeProps(), tags: ['tag', 'tag'] };
+    const props = makeProps({ tags: ['tag', 'tag'] });
 
     expect(() => SearchEntry.create(props)).toThrow(InvalidSearchEntryError);
-    expect(() => SearchEntry.create(props)).toThrow(/Tags cannot be duplicated/);
+    expect(() => SearchEntry.create(props)).toThrow('Tags cannot be duplicated');
   });
 
   it('should reconstruct a search entry from existing properties', () => {
@@ -108,7 +108,7 @@ describe('SearchEntry', () => {
       InvalidSearchEntryError,
     );
     expect(() => entry.updateContent({ title: '', body: 'Updated body.' })).toThrow(
-      /Title cannot be empty/,
+      'Title cannot be empty',
     );
   });
 
@@ -119,7 +119,7 @@ describe('SearchEntry', () => {
       InvalidSearchEntryError,
     );
     expect(() => entry.updateContent({ title: 'a'.repeat(46), body: 'Updated body.' })).toThrow(
-      /Title cannot exceed 45 characters/,
+      'Title cannot exceed 45 characters',
     );
   });
 
@@ -130,7 +130,7 @@ describe('SearchEntry', () => {
       InvalidSearchEntryError,
     );
     expect(() => entry.updateContent({ title: 'Updated Title', body: '' })).toThrow(
-      /Body cannot be empty/,
+      'Body cannot be empty',
     );
   });
 
@@ -141,7 +141,7 @@ describe('SearchEntry', () => {
       InvalidSearchEntryError,
     );
     expect(() => entry.updateContent({ title: 'Updated Title', body: 'a'.repeat(2001) })).toThrow(
-      /Body cannot exceed 2000 characters/,
+      'Body cannot exceed 2000 characters',
     );
   });
 
@@ -168,14 +168,14 @@ describe('SearchEntry', () => {
     const tooManyTags = Array.from({ length: 11 }, (_, i) => `tag${i}`);
 
     expect(() => entry.updateTags({ tags: tooManyTags })).toThrow(InvalidSearchEntryError);
-    expect(() => entry.updateTags({ tags: tooManyTags })).toThrow(/Cannot have more than 10 tags/);
+    expect(() => entry.updateTags({ tags: tooManyTags })).toThrow('Cannot have more than 10 tags');
   });
 
   it('should throw an error when updating with an empty tag', () => {
     const entry = SearchEntry.create(makeProps());
 
     expect(() => entry.updateTags({ tags: [''] })).toThrow(InvalidSearchEntryError);
-    expect(() => entry.updateTags({ tags: [''] })).toThrow(/Tag cannot be empty/);
+    expect(() => entry.updateTags({ tags: [''] })).toThrow('Tag cannot be empty');
   });
 
   it('should throw an error when updating with a tag exceeding 45 characters', () => {
@@ -183,7 +183,7 @@ describe('SearchEntry', () => {
 
     expect(() => entry.updateTags({ tags: ['a'.repeat(46)] })).toThrow(InvalidSearchEntryError);
     expect(() => entry.updateTags({ tags: ['a'.repeat(46)] })).toThrow(
-      /Tag cannot exceed 45 characters/,
+      'Tag cannot exceed 45 characters',
     );
   });
 
@@ -191,7 +191,7 @@ describe('SearchEntry', () => {
     const entry = SearchEntry.create(makeProps());
 
     expect(() => entry.updateTags({ tags: ['tag', 'tag'] })).toThrow(InvalidSearchEntryError);
-    expect(() => entry.updateTags({ tags: ['tag', 'tag'] })).toThrow(/Tags cannot be duplicated/);
+    expect(() => entry.updateTags({ tags: ['tag', 'tag'] })).toThrow('Tags cannot be duplicated');
   });
 
   it('should not mutate tags when updateTags fails validation', () => {

@@ -91,7 +91,7 @@ export default class Post extends AggregateRoot {
 
     const tags: string[] = [];
     const createdAt = new Date();
-    const updatedAt = new Date();
+    const updatedAt = createdAt;
 
     const post = new Post({ ...props, tags, createdAt, updatedAt });
 
@@ -123,9 +123,8 @@ export default class Post extends AggregateRoot {
 
     this.props.title = props.title ?? this.props.title;
     this.props.body = props.body ?? this.props.body;
-    this.props.updatedAt = updatedAt;
-
     this.resetTags();
+    this.props.updatedAt = updatedAt;
 
     const event = new PostUpdatedEvent({
       postId: this.props.id.toString(),

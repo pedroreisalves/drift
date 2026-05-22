@@ -89,7 +89,7 @@ export default class TaggingProcess extends AggregateRoot {
     }
 
     const createdAt = new Date();
-    const updatedAt = new Date();
+    const updatedAt = createdAt;
 
     const taggingProcess = new TaggingProcess({
       ...props,
@@ -131,10 +131,10 @@ export default class TaggingProcess extends AggregateRoot {
 
     const updatedAt = new Date();
 
-    this.props.updatedAt = updatedAt;
     this.props.status = new TaggingStatus(TaggingStatusEnum.tagged);
     this.props.reason = null;
     this.props.tags = props.tags;
+    this.props.updatedAt = updatedAt;
 
     const event = new PostTaggedEvent({
       taggingProcessId: this.props.id.toString(),
@@ -164,11 +164,11 @@ export default class TaggingProcess extends AggregateRoot {
 
     const updatedAt = new Date();
 
-    this.props.updatedAt = updatedAt;
     this.props.reason = props.reason;
 
     if (!this.hasRetryAttemptsLeft) {
       this.props.status = new TaggingStatus(TaggingStatusEnum.abandoned);
+      this.props.updatedAt = updatedAt;
 
       const taggingAbandonedEvent = new TaggingAbandonedEvent({
         taggingProcessId: this.props.id.toString(),
@@ -186,6 +186,7 @@ export default class TaggingProcess extends AggregateRoot {
     this.increaseRetryCounter();
 
     this.props.status = new TaggingStatus(TaggingStatusEnum.failed);
+    this.props.updatedAt = updatedAt;
 
     const taggingFailedEvent = new TaggingFailedEvent({
       taggingProcessId: this.props.id.toString(),

@@ -21,6 +21,14 @@ describe('TaggingProcess', () => {
     ...overrides,
   });
 
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('should create a tagging process with initialized status and retryCount 0', () => {
     const props = makeProps();
 
@@ -114,19 +122,14 @@ describe('TaggingProcess', () => {
   });
 
   it('should set status to tagged and refresh updatedAt on succeed', () => {
-    vi.useFakeTimers();
-    try {
-      const tp = TaggingProcess.create(makeProps());
-      const previousUpdatedAt = tp.updatedAt;
+    const tp = TaggingProcess.create(makeProps());
+    const previousUpdatedAt = tp.updatedAt;
 
-      vi.advanceTimersByTime(1000);
-      tp.succeed({ tags: ['tech', 'news'] });
+    vi.advanceTimersByTime(1000);
+    tp.succeed({ tags: ['tech', 'news'] });
 
-      expect(tp.status.toString()).toBe('tagged');
-      expect(tp.updatedAt.getTime()).toBeGreaterThan(previousUpdatedAt.getTime());
-    } finally {
-      vi.useRealTimers();
-    }
+    expect(tp.status.toString()).toBe('tagged');
+    expect(tp.updatedAt.getTime()).toBeGreaterThan(previousUpdatedAt.getTime());
   });
 
   it('should reset reason to null on succeed', () => {
@@ -193,18 +196,13 @@ describe('TaggingProcess', () => {
   });
 
   it('should refresh updatedAt on fail', () => {
-    vi.useFakeTimers();
-    try {
-      const tp = TaggingProcess.create(makeProps());
-      const previousUpdatedAt = tp.updatedAt;
+    const tp = TaggingProcess.create(makeProps());
+    const previousUpdatedAt = tp.updatedAt;
 
-      vi.advanceTimersByTime(1000);
-      tp.fail({ reason: 'AI service unavailable' });
+    vi.advanceTimersByTime(1000);
+    tp.fail({ reason: 'AI service unavailable' });
 
-      expect(tp.updatedAt.getTime()).toBeGreaterThan(previousUpdatedAt.getTime());
-    } finally {
-      vi.useRealTimers();
-    }
+    expect(tp.updatedAt.getTime()).toBeGreaterThan(previousUpdatedAt.getTime());
   });
 
   it('should set status to abandoned and store reason when retryCount has reached 3', () => {

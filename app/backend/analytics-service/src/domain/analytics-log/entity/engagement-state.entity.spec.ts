@@ -22,6 +22,14 @@ describe('EngagementState', () => {
     ...overrides,
   });
 
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('should create an engagement state entity', () => {
     const props = makeProps();
 
@@ -34,17 +42,12 @@ describe('EngagementState', () => {
   });
 
   it('should set updatedAt to current time on create', () => {
-    vi.useFakeTimers();
-    try {
-      const now = new Date('2026-01-01T00:00:00.000Z');
-      vi.setSystemTime(now);
+    const now = new Date('2026-01-01T00:00:00.000Z');
+    vi.setSystemTime(now);
 
-      const engagementState = EngagementState.create(makeProps());
+    const engagementState = EngagementState.create(makeProps());
 
-      expect(engagementState.updatedAt).toEqual(now);
-    } finally {
-      vi.useRealTimers();
-    }
+    expect(engagementState.updatedAt).toEqual(now);
   });
 
   it('should update the signal', () => {
@@ -57,36 +60,26 @@ describe('EngagementState', () => {
   });
 
   it('should refresh updatedAt when updating signal', () => {
-    vi.useFakeTimers();
-    try {
-      const engagementState = EngagementState.create(makeProps());
-      const previousUpdatedAt = engagementState.updatedAt;
+    const engagementState = EngagementState.create(makeProps());
+    const previousUpdatedAt = engagementState.updatedAt;
 
-      vi.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(1000);
 
-      engagementState.update({ lastSignal: new Signal(SignalEnum.raised) });
+    engagementState.update({ lastSignal: new Signal(SignalEnum.raised) });
 
-      expect(engagementState.updatedAt.getTime()).toBeGreaterThan(previousUpdatedAt.getTime());
-    } finally {
-      vi.useRealTimers();
-    }
+    expect(engagementState.updatedAt.getTime()).toBeGreaterThan(previousUpdatedAt.getTime());
   });
 
   it('should not mutate state when update is called with the same signal', () => {
-    vi.useFakeTimers();
-    try {
-      const signal = new Signal(SignalEnum.raised);
-      const engagementState = EngagementState.create(makeProps({ lastSignal: signal }));
-      const updatedAtBefore = engagementState.updatedAt;
+    const signal = new Signal(SignalEnum.raised);
+    const engagementState = EngagementState.create(makeProps({ lastSignal: signal }));
+    const updatedAtBefore = engagementState.updatedAt;
 
-      vi.advanceTimersByTime(1000);
-      engagementState.update({ lastSignal: new Signal(SignalEnum.raised) });
+    vi.advanceTimersByTime(1000);
+    engagementState.update({ lastSignal: new Signal(SignalEnum.raised) });
 
-      expect(engagementState.lastSignal.toString()).toBe(SignalEnum.raised);
-      expect(engagementState.updatedAt).toEqual(updatedAtBefore);
-    } finally {
-      vi.useRealTimers();
-    }
+    expect(engagementState.lastSignal.toString()).toBe(SignalEnum.raised);
+    expect(engagementState.updatedAt).toEqual(updatedAtBefore);
   });
 
   it('should update signal with different values', () => {

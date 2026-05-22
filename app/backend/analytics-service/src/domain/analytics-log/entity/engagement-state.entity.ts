@@ -37,8 +37,8 @@ export default class EngagementState {
 
   update(props: UpdateEngagementStateProps): void {
     if (this.props.lastSignal.equals(props.lastSignal)) return;
-    this.props.updatedAt = new Date();
     this.props.lastSignal = props.lastSignal;
+    this.props.updatedAt = new Date();
   }
 
   get postId(): PostId {
