@@ -2,6 +2,10 @@ x-app-resources: &app-resources
   mem_limit: 256m
   cpus: 0.5
 
+x-monitoring-resources: &monitoring-resources
+  mem_limit: 256m
+  cpus: 0.5
+
 x-ollama-model: &ollama-model qwen2.5:0.5b
 
 x-rabbitmq-env: &rabbitmq-env
@@ -19,6 +23,12 @@ x-hc-fast: &hc-fast
   timeout: 3s
   retries: 5
   start_period: 10s
+
+x-hc-slow: &hc-slow
+  interval: 15s
+  timeout: 5s
+  retries: 5
+  start_period: 30s
 
 x-base-depends: &base-depends
   postgres:
@@ -48,6 +58,51 @@ services:
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/ping"]
       <<: *hc-fast
+
+  loki:
+    image: grafana/loki:3.7.2
+    container_name: drift-loki
+    command: -config.file=/etc/loki/local-config.yaml
+    expose:
+      - "3100"
+    volumes:
+      - loki_data:/loki
+    <<: *monitoring-resources
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:3.6.11
+    container_name: drift-promtail
+    command: -config.file=/etc/promtail/config.yaml
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./config/promtail/config.yaml:/etc/promtail/config.yaml:ro
+    mem_limit: 128m
+    cpus: 0.25
+    restart: unless-stopped
+    depends_on:
+      loki:
+        condition: service_started
+
+  grafana:
+    image: grafana/grafana:13.0.1
+    container_name: drift-grafana
+    ports:
+      - "3005:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml:ro
+    mem_limit: 512m
+    cpus: 0.5
+    restart: unless-stopped
+    depends_on:
+      loki:
+        condition: service_started
+    healthcheck:
+      test:
+        ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
+      <<: *hc-slow
 
   postgres:
     image: postgres:18-alpine
@@ -215,3 +270,5 @@ volumes:
   rabbitmq_data:
   ollama_data:
   meilisearch_data:
+  loki_data:
+  grafana_data:
