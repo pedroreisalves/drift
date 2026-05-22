@@ -5,14 +5,13 @@ import type EngagementStateRepository from '../../domain/analytics-log/repositor
 import type { FindAllRaisedOptions } from '../../domain/analytics-log/repository/engagement-state.repository';
 import Signal, { SignalEnum } from '../../domain/analytics-log/value-object/signal.value-object';
 import { chunk } from '@drift/shared';
+import { ID_CHUNK_SIZE } from './constants';
 
 interface EngagementStateRow {
   post_id: string;
   last_signal: string;
   updated_at: Date;
 }
-
-const ID_CHUNK_SIZE = 1000;
 
 export default class PostgresEngagementStateRepository implements EngagementStateRepository {
   constructor(private readonly pool: Pool) {}

@@ -5,8 +5,16 @@ import type { FindPostIdsWithRecentViewsOptions } from '../../domain/analytics-l
 import { EventTypeEnum } from '../../domain/analytics-log/value-object/event-type.value-object';
 import type AnalyticsLog from '../../domain/analytics-log/entity/analytics-log.entity';
 import { chunk } from '@drift/shared';
+import { ID_CHUNK_SIZE } from './constants';
 
-const ID_CHUNK_SIZE = 1000;
+interface PostIdRow {
+  post_id: string;
+}
+
+interface ViewCountRow {
+  post_id: string;
+  count: string;
+}
 
 export default class PostgresAnalyticsLogRepository implements AnalyticsLogRepository {
   constructor(private readonly pool: Pool) {}
@@ -45,13 +53,13 @@ export default class PostgresAnalyticsLogRepository implements AnalyticsLogRepos
         }
     `;
 
-    const result = await this.pool.query<{ post_id: string }>(query, [
+    const result = await this.pool.query<PostIdRow>(query, [
       EventTypeEnum.PostViewed,
       now,
       windowHours,
     ]);
 
-    return result.rows.map((row) => new PostId(row.post_id));
+    return result.rows.map((row) => this.toPostId(row));
   }
 
   async countViewsInRangeBatch(
@@ -75,7 +83,7 @@ export default class PostgresAnalyticsLogRepository implements AnalyticsLogRepos
         GROUP BY post_id
       `;
 
-      const result = await this.pool.query<{ post_id: string; count: string }>(query, [
+      const result = await this.pool.query<ViewCountRow>(query, [
         EventTypeEnum.PostViewed,
         idChunk,
         from,
@@ -88,5 +96,9 @@ export default class PostgresAnalyticsLogRepository implements AnalyticsLogRepos
     }
 
     return counts;
+  }
+
+  private toPostId(row: PostIdRow): PostId {
+    return new PostId(row.post_id);
   }
 }
