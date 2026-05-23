@@ -57,7 +57,7 @@ describe('UpdatePostIndexUseCase', () => {
     const updated = updateSpy.mock.calls[0][0];
     expect(updated.title).toBe('New Title');
     expect(updated.body).toBe('New body content.');
-    expect(updated.tags).toEqual(['existing-tag']);
+    expect(updated.tags).toEqual([]);
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledWith(expect.any(PostIndexedEvent));

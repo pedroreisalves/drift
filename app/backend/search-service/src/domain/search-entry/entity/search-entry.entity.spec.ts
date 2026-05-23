@@ -92,13 +92,14 @@ describe('SearchEntry', () => {
     expect(entry.tags).toEqual(props.tags);
   });
 
-  it('should update content', () => {
+  it('should update content and reset tags', () => {
     const entry = SearchEntry.create(makeProps());
 
     entry.updateContent({ title: 'Updated Title', body: 'Updated body.' });
 
     expect(entry.title).toEqual('Updated Title');
     expect(entry.body).toEqual('Updated body.');
+    expect(entry.tags).toEqual([]);
   });
 
   it('should throw an error when updating content with an empty title', () => {

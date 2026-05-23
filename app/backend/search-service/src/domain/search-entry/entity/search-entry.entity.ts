@@ -103,6 +103,11 @@ export default class SearchEntry {
 
     this.props.title = props.title;
     this.props.body = props.body;
+    this.resetTags();
+  }
+
+  private resetTags(): void {
+    this.props.tags = [];
   }
 
   updateTags(props: UpdateSearchEntryTagsProps): void {
