@@ -70,7 +70,7 @@ const failedTaggingProcessSchema = z
   .strict();
 
 export default class TaggingProcess extends AggregateRoot {
-  private constructor(private props: TaggingProcessProps) {
+  private constructor(private readonly props: TaggingProcessProps) {
     super();
   }
 

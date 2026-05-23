@@ -16,7 +16,7 @@ export interface UpdateEngagementStateProps {
 }
 
 export default class EngagementState {
-  private constructor(private props: EngagementStateProps) {}
+  private constructor(private readonly props: EngagementStateProps) {}
 
   static reconstruct(props: EngagementStateProps): EngagementState {
     return new EngagementState(props);

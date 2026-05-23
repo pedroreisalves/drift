@@ -6,7 +6,7 @@ import type EventHandler from '../../application/interface/event-handler.interfa
 import type Logger from '../../application/interface/logger.interface';
 
 export default class RabbitMQEventConsumer implements EventConsumer {
-  private channelWrapper: ChannelWrapper;
+  private readonly channelWrapper: ChannelWrapper;
   private readonly handlers: Map<string, EventHandler> = new Map();
 
   constructor(

@@ -5,7 +5,7 @@ import type EventDispatcher from '../../application/interface/event-dispatcher.i
 import type { DomainEvent } from '../../domain/event/domain-event';
 
 export default class RabbitMQEventDispatcher implements EventDispatcher {
-  private channelWrapper: ChannelWrapper;
+  private readonly channelWrapper: ChannelWrapper;
 
   constructor(
     private readonly url: string,

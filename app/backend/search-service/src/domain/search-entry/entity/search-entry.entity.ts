@@ -69,7 +69,7 @@ const updateSearchEntryTagsSchema = z
   .strict();
 
 export default class SearchEntry {
-  private constructor(private props: SearchEntryProps) {}
+  private constructor(private readonly props: SearchEntryProps) {}
 
   static reconstruct(props: SearchEntryProps): SearchEntry {
     return new SearchEntry(props);

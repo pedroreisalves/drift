@@ -33,7 +33,7 @@ const createAnalyticsLogSchema = z
   });
 
 export default class AnalyticsLog {
-  private constructor(private props: AnalyticsLogProps) {}
+  private constructor(private readonly props: AnalyticsLogProps) {}
 
   static reconstruct(props: AnalyticsLogProps): AnalyticsLog {
     return new AnalyticsLog(props);

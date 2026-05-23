@@ -78,7 +78,7 @@ const applyTagsSchema = z
   });
 
 export default class Post extends AggregateRoot {
-  private constructor(private props: PostProps) {
+  private constructor(private readonly props: PostProps) {
     super();
   }
 
