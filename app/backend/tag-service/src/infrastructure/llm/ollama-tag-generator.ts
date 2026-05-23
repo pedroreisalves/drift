@@ -69,13 +69,13 @@ export default class OllamaTagGenerator implements TagGenerator {
 
       Tag formatting rules:
       - lowercase only
-      - use only letters, numbers, hyphens, and spaces
+      - use only letters, numbers and hyphens
       - concise and semantically precise
       - no duplicate tags
 
       Tag style rules:
       - Prefer single-word tags whenever possible: "postgresql", "indexing", "performance"
-      - Use multi-word tags only when a single word would lose essential meaning: "strength training", "high protein diet"
+      - Use multi-word tags only when a single word would lose essential meaning: "strength-training", "high-protein-diet"
       - Never use more than 3 words in a tag
       - Avoid generic or vague tags: prefer "postgresql" over "database", "hypertrophy" over "fitness"
 
