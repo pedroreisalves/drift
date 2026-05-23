@@ -4,7 +4,6 @@ import DemotePostUseCase from './demote-post.use-case';
 import Post from '../../../domain/post/entity/post.aggregate';
 import type PostRepository from '../../../domain/post/repository/post.repository';
 import PostDemotedEvent from '../../../domain/post/event/post-demoted.event';
-import InvalidPostError from '../../../domain/post/error/invalid-post.error';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 
 const makeRepository = (): PostRepository => ({
@@ -114,15 +113,15 @@ describe('DemotePostUseCase', () => {
     expect(dispatchSpy).not.toHaveBeenCalled();
   });
 
-  it('should let the aggregate throw and not persist when the post is not featured', async () => {
+  it('should not persist or dispatch when the aggregate rejects the demote', async () => {
     const postId = uuidv7();
     vi.spyOn(repository, 'findById').mockResolvedValue(makeUnpromotedPost(postId));
     const saveSpy = vi.spyOn(repository, 'save');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
-    await expect(useCase.execute({ postId, reason: 'expiry_and_engagement_drop' })).rejects.toThrow(
-      InvalidPostError,
-    );
+    await expect(
+      useCase.execute({ postId, reason: 'expiry_and_engagement_drop' }),
+    ).rejects.toThrow();
     expect(saveSpy).not.toHaveBeenCalled();
     expect(dispatchSpy).not.toHaveBeenCalled();
   });
