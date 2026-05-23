@@ -89,7 +89,7 @@ services:
     image: grafana/grafana:13.0.1
     container_name: drift-grafana
     ports:
-      - "3005:3000"
+      - "3001:3000"
     volumes:
       - grafana_data:/var/lib/grafana
       - ./config/grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml:ro
