@@ -4,6 +4,7 @@ import Post from '../../../domain/post/entity/post.aggregate';
 import { PostId, ClientId, type EventDispatcher, type Logger } from '@drift/shared';
 import type PostRepository from '../../../domain/post/repository/post.repository';
 import PostDeletedEvent from '../../../domain/post/event/post-deleted.event';
+import FeaturedPostRemovedEvent from '../../../domain/post/event/featured-post-removed.event';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 import { ForbiddenPostOperationError } from '../../@shared/error/forbidden-post-update.error';
 
@@ -12,6 +13,7 @@ const makeRepository = (): PostRepository => ({
   delete: vi.fn().mockResolvedValue(undefined),
   findById: vi.fn().mockResolvedValue(null),
   findAll: vi.fn().mockResolvedValue([]),
+  findAllFeatured: vi.fn().mockResolvedValue([]),
 });
 
 const makeDispatcher = (): EventDispatcher => ({
@@ -99,6 +101,35 @@ describe('DeletePostUseCase', () => {
     );
     expect(deleteSpy).not.toHaveBeenCalled();
     expect(dispatchSpy).not.toHaveBeenCalled();
+  });
+
+  it('should also remove featured state and dispatch FeaturedPostRemovedEvent when deleting a featured post', async () => {
+    const postId = uuidv7();
+    const clientId = uuidv7();
+    const existing = makeExistingPost(postId, clientId);
+    existing.promote();
+    existing.clearDomainEvents();
+    vi.spyOn(repository, 'findById').mockResolvedValue(existing);
+    const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
+
+    await useCase.execute({ postId, clientId });
+
+    expect(existing.isFeatured).toBe(false);
+
+    const dispatchedTypes = dispatchSpy.mock.calls.map((call) => call[0].constructor);
+    expect(dispatchedTypes).toEqual([FeaturedPostRemovedEvent, PostDeletedEvent]);
+  });
+
+  it('should not emit FeaturedPostRemovedEvent when deleting a non-featured post', async () => {
+    const postId = uuidv7();
+    const clientId = uuidv7();
+    vi.spyOn(repository, 'findById').mockResolvedValue(makeExistingPost(postId, clientId));
+    const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
+
+    await useCase.execute({ postId, clientId });
+
+    expect(dispatchSpy).toHaveBeenCalledTimes(1);
+    expect(dispatchSpy).toHaveBeenCalledWith(expect.any(PostDeletedEvent));
   });
 
   it('should throw ForbiddenPostOperationError when the post belongs to a different client', async () => {

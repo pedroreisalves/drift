@@ -9,7 +9,6 @@ import { ID_CHUNK_SIZE } from './constants';
 interface EngagementStateRow {
   post_id: string;
   last_signal: string;
-  updated_at: Date;
 }
 
 export default class PostgresEngagementStateRepository implements EngagementStateRepository {
@@ -38,17 +37,16 @@ export default class PostgresEngagementStateRepository implements EngagementStat
     const params: unknown[] = [];
 
     states.forEach((state, index) => {
-      const offset = index * 3;
-      values.push(`($${offset + 1}, $${offset + 2}, $${offset + 3})`);
-      params.push(state.postId.toString(), state.lastSignal.toString(), state.updatedAt);
+      const offset = index * 2;
+      values.push(`($${offset + 1}, $${offset + 2})`);
+      params.push(state.postId.toString(), state.lastSignal.toString());
     });
 
     const query = `
-      INSERT INTO engagement_state (post_id, last_signal, updated_at)
+      INSERT INTO engagement_state (post_id, last_signal)
       VALUES ${values.join(', ')}
       ON CONFLICT (post_id) DO UPDATE SET
-        last_signal = EXCLUDED.last_signal,
-        updated_at = EXCLUDED.updated_at
+        last_signal = EXCLUDED.last_signal
     `;
 
     await client.query(query, params);
@@ -62,7 +60,7 @@ export default class PostgresEngagementStateRepository implements EngagementStat
 
     for (const idChunk of chunk(ids, ID_CHUNK_SIZE)) {
       const result = await this.pool.query<EngagementStateRow>(
-        'SELECT post_id, last_signal, updated_at FROM engagement_state WHERE post_id = ANY($1::uuid[])',
+        'SELECT post_id, last_signal FROM engagement_state WHERE post_id = ANY($1::uuid[])',
         [idChunk],
       );
       states.push(...result.rows.map((row) => this.toDomain(row)));
@@ -73,7 +71,7 @@ export default class PostgresEngagementStateRepository implements EngagementStat
 
   async findAllRaised(options: FindAllRaisedOptions = {}): Promise<EngagementState[]> {
     const query = `
-      SELECT post_id, last_signal, updated_at
+      SELECT post_id, last_signal
       FROM engagement_state
       WHERE last_signal = $1
         ${
@@ -89,12 +87,9 @@ export default class PostgresEngagementStateRepository implements EngagementStat
   }
 
   private toDomain(row: EngagementStateRow): EngagementState {
-    const state = EngagementState.reconstruct({
+    return EngagementState.reconstruct({
       postId: new PostId(row.post_id),
       lastSignal: new Signal(row.last_signal as SignalEnum),
-      updatedAt: row.updated_at,
     });
-
-    return state;
   }
 }

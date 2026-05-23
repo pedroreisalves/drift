@@ -7,6 +7,11 @@ import PostCreatedEvent from '../event/post-created.event';
 import PostDeletedEvent from '../event/post-deleted.event';
 import PostUpdatedEvent from '../event/post-updated.event';
 import PostTagsUpdatedEvent from '../event/post-tags-updated.event';
+import PostPromotedEvent from '../event/post-promoted.event';
+import EngagementDropFlaggedEvent from '../event/engagement-drop-flagged.event';
+import EngagementDropRecoveredEvent from '../event/engagement-drop-recovered.event';
+import PostDemotedEvent from '../event/post-demoted.event';
+import FeaturedPostRemovedEvent from '../event/featured-post-removed.event';
 
 describe('Post', () => {
   const makeProps = (overrides: Partial<CreatePostProps> = {}): CreatePostProps => ({
@@ -38,6 +43,9 @@ describe('Post', () => {
     expect(post.title).toEqual(props.title);
     expect(post.body).toEqual(props.body);
     expect(post.tags).toEqual([]);
+    expect(post.isFeatured).toBe(false);
+    expect(post.featuredAt).toBeNull();
+    expect(post.engagementDropFlagged).toBe(false);
     expect(post.createdAt).toBeInstanceOf(Date);
     expect(post.updatedAt).toBeInstanceOf(Date);
   });
@@ -187,6 +195,9 @@ describe('Post', () => {
       title: 'My First Post',
       body: 'This is the body of my first post.',
       tags: ['tag1', 'tag2'],
+      isFeatured: true,
+      featuredAt: new Date('2026-01-03T00:00:00.000Z'),
+      engagementDropFlagged: true,
       createdAt,
       updatedAt,
     };
@@ -200,6 +211,9 @@ describe('Post', () => {
     expect(post.title).toEqual(props.title);
     expect(post.body).toEqual(props.body);
     expect(post.tags).toEqual(props.tags);
+    expect(post.isFeatured).toBe(true);
+    expect(post.featuredAt).toEqual(props.featuredAt);
+    expect(post.engagementDropFlagged).toBe(true);
     expect(post.createdAt).toEqual(createdAt);
     expect(post.updatedAt).toEqual(updatedAt);
   });
@@ -232,6 +246,9 @@ describe('Post', () => {
       title: 'My First Post',
       body: 'This is the body of my first post.',
       tags: ['tag1'],
+      isFeatured: false,
+      featuredAt: null,
+      engagementDropFlagged: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -311,6 +328,198 @@ describe('Post', () => {
       clientId: props.clientId.toString(),
       deletedAt: deletedAt.toISOString(),
     });
+  });
+
+  it('should promote a post and emit PostPromotedEvent', () => {
+    const props = makeProps();
+    const post = Post.create(props);
+    post.clearDomainEvents();
+
+    post.promote();
+
+    expect(post.isFeatured).toBe(true);
+    expect(post.featuredAt).toEqual(post.updatedAt);
+    const events = post.getDomainEvents();
+    expect(events).toHaveLength(1);
+    expect(events[0]).toBeInstanceOf(PostPromotedEvent);
+    expect(events[0].eventName).toEqual('PostPromoted');
+    expect(events[0].payload).toEqual({
+      postId: props.id.toString(),
+      promotedAt: post.updatedAt.toISOString(),
+    });
+  });
+
+  it('should refresh updatedAt when promoting a post', () => {
+    const post = Post.create(makeProps());
+    const previousUpdatedAt = post.updatedAt;
+
+    vi.advanceTimersByTime(1000);
+    post.promote();
+
+    expect(post.updatedAt.getTime()).toBeGreaterThan(previousUpdatedAt.getTime());
+  });
+
+  it('should be a no-op when promoting an already-featured post', () => {
+    const post = Post.create(makeProps());
+    post.promote();
+    const featuredAt = post.featuredAt;
+    post.clearDomainEvents();
+
+    vi.advanceTimersByTime(1000);
+    post.promote();
+
+    expect(post.isFeatured).toBe(true);
+    expect(post.featuredAt).toEqual(featuredAt);
+    expect(post.getDomainEvents()).toEqual([]);
+  });
+
+  it('should flag engagement drop on a featured post and emit EngagementDropFlaggedEvent', () => {
+    const props = makeProps();
+    const post = Post.create(props);
+    post.promote();
+    post.clearDomainEvents();
+
+    post.flagEngagementDrop();
+
+    expect(post.engagementDropFlagged).toBe(true);
+    const events = post.getDomainEvents();
+    expect(events).toHaveLength(1);
+    expect(events[0]).toBeInstanceOf(EngagementDropFlaggedEvent);
+    expect(events[0].eventName).toEqual('EngagementDropFlagged');
+    expect(events[0].payload).toEqual({
+      postId: props.id.toString(),
+      flaggedAt: post.updatedAt.toISOString(),
+    });
+  });
+
+  it('should be a no-op when flagging engagement drop on a non-featured post', () => {
+    const post = Post.create(makeProps());
+    post.clearDomainEvents();
+
+    post.flagEngagementDrop();
+
+    expect(post.engagementDropFlagged).toBe(false);
+    expect(post.getDomainEvents()).toEqual([]);
+  });
+
+  it('should be a no-op when flagging engagement drop on an already-flagged post', () => {
+    const post = Post.create(makeProps());
+    post.promote();
+    post.flagEngagementDrop();
+    post.clearDomainEvents();
+
+    post.flagEngagementDrop();
+
+    expect(post.engagementDropFlagged).toBe(true);
+    expect(post.getDomainEvents()).toEqual([]);
+  });
+
+  it('should clear the engagement drop flag and emit EngagementDropRecoveredEvent', () => {
+    const props = makeProps();
+    const post = Post.create(props);
+    post.promote();
+    post.flagEngagementDrop();
+    post.clearDomainEvents();
+
+    vi.setSystemTime(new Date('2026-03-01T12:00:00.000Z'));
+    post.recoverEngagement();
+
+    expect(post.engagementDropFlagged).toBe(false);
+    expect(post.isFeatured).toBe(true);
+
+    const events = post.getDomainEvents();
+    expect(events).toHaveLength(1);
+    expect(events[0]).toBeInstanceOf(EngagementDropRecoveredEvent);
+    expect(events[0].payload).toEqual({
+      postId: props.id.toString(),
+      recoveredAt: '2026-03-01T12:00:00.000Z',
+    });
+  });
+
+  it('should be a no-op when recovering engagement on a non-featured post', () => {
+    const post = Post.create(makeProps());
+    post.clearDomainEvents();
+
+    post.recoverEngagement();
+
+    expect(post.getDomainEvents()).toEqual([]);
+  });
+
+  it('should be a no-op when recovering engagement on a featured post that was never flagged', () => {
+    const post = Post.create(makeProps());
+    post.promote();
+    post.clearDomainEvents();
+
+    post.recoverEngagement();
+
+    expect(post.engagementDropFlagged).toBe(false);
+    expect(post.getDomainEvents()).toEqual([]);
+  });
+
+  it('should demote a featured post and emit PostDemotedEvent with the given reason', () => {
+    const props = makeProps();
+    const post = Post.create(props);
+    post.promote();
+    post.flagEngagementDrop();
+    post.clearDomainEvents();
+
+    post.demote('expiry_and_engagement_drop');
+
+    expect(post.isFeatured).toBe(false);
+    expect(post.featuredAt).toBeNull();
+    expect(post.engagementDropFlagged).toBe(false);
+    const events = post.getDomainEvents();
+    expect(events).toHaveLength(1);
+    expect(events[0]).toBeInstanceOf(PostDemotedEvent);
+    expect(events[0].eventName).toEqual('PostDemoted');
+    expect(events[0].payload).toEqual({
+      postId: props.id.toString(),
+      demotedAt: post.updatedAt.toISOString(),
+      reason: 'expiry_and_engagement_drop',
+    });
+  });
+
+  it('should throw when demoting a non-featured post', () => {
+    const post = Post.create(makeProps());
+
+    expect(() => post.demote('expiry_and_engagement_drop')).toThrow(InvalidPostError);
+    expect(() => post.demote('expiry_and_engagement_drop')).toThrow(
+      'Cannot demote a non-featured post',
+    );
+    expect(post.getDomainEvents()).toHaveLength(1);
+  });
+
+  it('should remove featured state and emit FeaturedPostRemovedEvent', () => {
+    const props = makeProps();
+    const post = Post.create(props);
+    post.promote();
+    post.flagEngagementDrop();
+    post.clearDomainEvents();
+
+    post.removeFeatured();
+
+    expect(post.isFeatured).toBe(false);
+    expect(post.featuredAt).toBeNull();
+    expect(post.engagementDropFlagged).toBe(false);
+    const events = post.getDomainEvents();
+    expect(events).toHaveLength(1);
+    expect(events[0]).toBeInstanceOf(FeaturedPostRemovedEvent);
+    expect(events[0].eventName).toEqual('FeaturedPostRemoved');
+    expect(events[0].payload).toEqual({
+      postId: props.id.toString(),
+      removedAt: post.updatedAt.toISOString(),
+    });
+  });
+
+  it('should be a no-op when removing featured from a non-featured post', () => {
+    const post = Post.create(makeProps());
+    post.clearDomainEvents();
+
+    post.removeFeatured();
+
+    expect(post.isFeatured).toBe(false);
+    expect(post.featuredAt).toBeNull();
+    expect(post.getDomainEvents()).toEqual([]);
   });
 
   it('should clear all domain events when calling clearDomainEvents', () => {

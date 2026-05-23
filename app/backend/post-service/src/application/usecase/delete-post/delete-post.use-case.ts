@@ -30,6 +30,8 @@ export default class DeletePostUseCase implements UseCase<DeletePostInputDto, vo
       throw new ForbiddenPostOperationError(clientId.toString(), postId.toString(), 'delete');
     }
 
+    post.removeFeatured();
+
     post.delete();
 
     await this.postRepository.delete(postId);

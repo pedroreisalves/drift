@@ -21,5 +21,4 @@ CREATE TABLE deleted_posts (
 CREATE TABLE engagement_state (
 	post_id UUID PRIMARY KEY
 	,last_signal VARCHAR NOT NULL
-	,updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 	);

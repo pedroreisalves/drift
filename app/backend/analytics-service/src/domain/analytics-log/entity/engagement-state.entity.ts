@@ -4,7 +4,6 @@ import type Signal from '../value-object/signal.value-object';
 interface EngagementStateProps {
   postId: PostId;
   lastSignal: Signal;
-  updatedAt: Date;
 }
 
 export interface CreateEngagementStateProps {
@@ -24,21 +23,15 @@ export default class EngagementState {
   }
 
   static create(props: CreateEngagementStateProps): EngagementState {
-    const updatedAt = new Date();
-
-    const engagementState = new EngagementState({
+    return new EngagementState({
       postId: props.postId,
       lastSignal: props.lastSignal,
-      updatedAt,
     });
-
-    return engagementState;
   }
 
   update(props: UpdateEngagementStateProps): void {
     if (this.props.lastSignal.equals(props.lastSignal)) return;
     this.props.lastSignal = props.lastSignal;
-    this.props.updatedAt = new Date();
   }
 
   get postId(): PostId {
@@ -47,9 +40,5 @@ export default class EngagementState {
 
   get lastSignal(): Signal {
     return this.props.lastSignal;
-  }
-
-  get updatedAt(): Date {
-    return this.props.updatedAt;
   }
 }

@@ -8,9 +8,8 @@ Tracks post interactions and monitors engagement trends, emitting signals when p
 - Registers deleted posts in a `deleted_posts` table so they can be excluded from engagement evaluation
 - Runs an hourly scheduled job that evaluates two candidate sets:
   - **Raise candidates** — posts with views in the last 24h that are not already in `raised` state; emits `PostEngagementRaised` if views > 10
-  - **Drop candidates** — posts currently in `raised` state; emits `PostEngagementDropped` if views < 5 in the last 24h and the post has been raised for ≥ 48h
+  - **Drop candidates** — posts currently in `raised` state; emits `PostEngagementDropped` if views < 5 in the last 24h
 - Persists the last engagement signal per post so raise/drop events are only emitted on state transition
-- Publishes domain events when a post's engagement level changes
 
 ## Events consumed
 
@@ -24,11 +23,11 @@ Tracks post interactions and monitors engagement trends, emitting signals when p
 
 ## Events produced
 
-| Event                    | Consumed by      |
-| ------------------------ | ---------------- |
-| `AnalyticsEventRecorded` | none             |
-| `PostEngagementRaised`   | featured-service |
-| `PostEngagementDropped`  | featured-service |
+| Event                    | Consumed by  |
+| ------------------------ | ------------ |
+| `AnalyticsEventRecorded` | none         |
+| `PostEngagementRaised`   | post-service |
+| `PostEngagementDropped`  | post-service |
 
 ## Tech
 

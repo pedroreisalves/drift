@@ -9,7 +9,6 @@ import {
   ENGAGEMENT_WINDOW_HOURS,
   RAISE_THRESHOLD,
   DROP_THRESHOLD,
-  PROMOTION_MIN_AGE_MS,
 } from '../../@shared/constant/check-engagement.constant';
 
 export default class CheckEngagementUseCase implements UseCase<void, void> {
@@ -95,9 +94,7 @@ export default class CheckEngagementUseCase implements UseCase<void, void> {
     for (const raisedState of dropCandidates) {
       const key = raisedState.postId.toString();
       const recentViews = viewCounts.get(key) ?? 0;
-      const elapsed = now.getTime() - raisedState.updatedAt.getTime();
 
-      if (elapsed < PROMOTION_MIN_AGE_MS) continue;
       if (recentViews >= DROP_THRESHOLD) continue;
 
       statesToSave.push(this.transition(raisedState.postId, stateByPostId, SignalEnum.dropped));

@@ -6,4 +6,5 @@ export default interface PostRepository {
   delete(postId: PostId): Promise<void>;
   findById(postId: PostId): Promise<Post | null>;
   findAll(options?: { limit: number; offset: number }): Promise<Post[]>;
+  findAllFeatured(): Promise<Post[]>;
 }

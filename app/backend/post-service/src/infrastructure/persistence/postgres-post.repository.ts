@@ -10,21 +10,30 @@ interface PostRow {
   title: string;
   body: string;
   tags: string[];
+  is_featured: boolean;
+  featured_at: Date | null;
+  engagement_drop_flagged: boolean;
   created_at: Date;
   updated_at: Date;
 }
+
+const POST_COLUMNS =
+  'id, client_id, client_name, title, body, tags, is_featured, featured_at, engagement_drop_flagged, created_at, updated_at';
 
 export default class PostgresPostRepository implements PostRepository {
   constructor(private readonly pool: Pool) {}
 
   async save(post: Post): Promise<void> {
     const query = `
-      INSERT INTO posts (id, client_id, client_name, title, body, tags, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      INSERT INTO posts (${POST_COLUMNS})
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       ON CONFLICT (id) DO UPDATE SET
         title = EXCLUDED.title,
         body = EXCLUDED.body,
         tags = EXCLUDED.tags,
+        is_featured = EXCLUDED.is_featured,
+        featured_at = EXCLUDED.featured_at,
+        engagement_drop_flagged = EXCLUDED.engagement_drop_flagged,
         updated_at = EXCLUDED.updated_at
     `;
 
@@ -35,6 +44,9 @@ export default class PostgresPostRepository implements PostRepository {
       post.title,
       post.body,
       post.tags,
+      post.isFeatured,
+      post.featuredAt,
+      post.engagementDropFlagged,
       post.createdAt,
       post.updatedAt,
     ]);
@@ -46,7 +58,7 @@ export default class PostgresPostRepository implements PostRepository {
 
   async findById(postId: PostId): Promise<Post | null> {
     const result = await this.pool.query<PostRow>(
-      'SELECT id, client_id, client_name, title, body, tags, created_at, updated_at FROM posts WHERE id = $1',
+      `SELECT ${POST_COLUMNS} FROM posts WHERE id = $1`,
       [postId.toString()],
     );
 
@@ -56,8 +68,7 @@ export default class PostgresPostRepository implements PostRepository {
   }
 
   async findAll(options?: { limit: number; offset: number }): Promise<Post[]> {
-    let query =
-      'SELECT id, client_id, client_name, title, body, tags, created_at, updated_at FROM posts ORDER BY created_at DESC';
+    let query = `SELECT ${POST_COLUMNS} FROM posts ORDER BY created_at DESC`;
     const params: unknown[] = [];
 
     if (options) {
@@ -70,6 +81,14 @@ export default class PostgresPostRepository implements PostRepository {
     return result.rows.map((row) => this.toDomain(row));
   }
 
+  async findAllFeatured(): Promise<Post[]> {
+    const result = await this.pool.query<PostRow>(
+      `SELECT ${POST_COLUMNS} FROM posts WHERE is_featured = TRUE`,
+    );
+
+    return result.rows.map((row) => this.toDomain(row));
+  }
+
   private toDomain(row: PostRow): Post {
     return Post.reconstruct({
       id: new PostId(row.id),
@@ -78,6 +97,9 @@ export default class PostgresPostRepository implements PostRepository {
       title: row.title,
       body: row.body,
       tags: row.tags,
+      isFeatured: row.is_featured,
+      featuredAt: row.featured_at,
+      engagementDropFlagged: row.engagement_drop_flagged,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     });

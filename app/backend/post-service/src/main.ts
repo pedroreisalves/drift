@@ -2,7 +2,12 @@ import express from 'express';
 import { Pool } from 'pg';
 import Environment from './infrastructure/config/environment';
 
-import { RabbitMQEventDispatcher, RabbitMQEventConsumer, PinoLogger } from '@drift/shared';
+import {
+  RabbitMQEventDispatcher,
+  RabbitMQEventConsumer,
+  PinoLogger,
+  NodeCronScheduler,
+} from '@drift/shared';
 
 import CreatePostUseCase from './application/usecase/create-post/create-post.use-case';
 import UpdatePostUseCase from './application/usecase/update-post/update-post.use-case';
@@ -10,10 +15,15 @@ import DeletePostUseCase from './application/usecase/delete-post/delete-post.use
 import UpdatePostTagsUseCase from './application/usecase/update-post-tags/update-post-tags.use-case';
 import LockPostForTaggingUseCase from './application/usecase/lock-post-for-tagging/lock-post-for-tagging.use-case';
 import UnlockPostForTaggingUseCase from './application/usecase/unlock-post-for-tagging/unlock-post-for-tagging.use-case';
+import PromotePostUseCase from './application/usecase/promote-post/promote-post.use-case';
+import FlagPostEngagementDropUseCase from './application/usecase/flag-post-engagement-drop/flag-post-engagement-drop.use-case';
+import CheckFeaturedExpiryUseCase from './application/usecase/check-featured-expiry/check-featured-expiry.use-case';
 
 import PostTaggedEventHandler from './application/event-handler/post-tagged/post-tagged.event-handler';
 import TaggingInitializedEventHandler from './application/event-handler/tagging-initialized/tagging-initialized.event-handler';
 import TaggingAbandonedEventHandler from './application/event-handler/tagging-abandoned/tagging-abandoned.event-handler';
+import PostEngagementRaisedEventHandler from './application/event-handler/post-engagement-raised/post-engagement-raised.event-handler';
+import PostEngagementDroppedEventHandler from './application/event-handler/post-engagement-dropped/post-engagement-dropped.event-handler';
 
 import PostgresPostLockRepository from './infrastructure/persistence/postgres-post-lock.repository';
 
@@ -57,6 +67,14 @@ async function main(): Promise<void> {
   const getPostUseCase = new GetPostUseCase(repository, logger);
   const listPostUseCase = new ListPostUseCase(repository, logger);
 
+  const promotePostUseCase = new PromotePostUseCase(repository, dispatcher, logger);
+  const flagPostEngagementDropUseCase = new FlagPostEngagementDropUseCase(
+    repository,
+    dispatcher,
+    logger,
+  );
+  const checkFeaturedExpiryUseCase = new CheckFeaturedExpiryUseCase(repository, dispatcher, logger);
+
   const postTaggedEventHandler = new PostTaggedEventHandler(
     updatePostTagsUseCase,
     unlockPostForTaggingUseCase,
@@ -70,10 +88,32 @@ async function main(): Promise<void> {
     unlockPostForTaggingUseCase,
     logger,
   );
+  const postEngagementRaisedEventHandler = new PostEngagementRaisedEventHandler(
+    promotePostUseCase,
+    logger,
+  );
+  const postEngagementDroppedEventHandler = new PostEngagementDroppedEventHandler(
+    flagPostEngagementDropUseCase,
+    logger,
+  );
 
   await consumer.subscribe('PostTagged', postTaggedEventHandler);
   await consumer.subscribe('TaggingInitialized', taggingInitializedEventHandler);
   await consumer.subscribe('TaggingAbandoned', taggingAbandonedEventHandler);
+  await consumer.subscribe('PostEngagementRaised', postEngagementRaisedEventHandler);
+  await consumer.subscribe('PostEngagementDropped', postEngagementDroppedEventHandler);
+
+  const scheduler = new NodeCronScheduler();
+  scheduler.schedule(
+    '0 * * * *',
+    () =>
+      checkFeaturedExpiryUseCase.execute().catch((err) =>
+        logger.error('CheckFeaturedExpiry scheduled run failed', {
+          error: err instanceof Error ? err.message : String(err),
+        }),
+      ),
+    { runAtStartup: true },
+  );
 
   const controller = new PostController(
     createPostUseCase,
@@ -91,7 +131,14 @@ async function main(): Promise<void> {
   app.use(createErrorMiddleware(logger));
 
   logger.info(`${Environment.SERVICE_NAME} started`, {
-    subscriptions: ['PostTagged', 'TaggingInitialized', 'TaggingAbandoned'],
+    subscriptions: [
+      'PostTagged',
+      'TaggingInitialized',
+      'TaggingAbandoned',
+      'PostEngagementRaised',
+      'PostEngagementDropped',
+    ],
+    scheduler: 'CheckFeaturedExpiry @ 0 * * * *',
   });
 
   app.listen(Environment.PORT, () => {

@@ -11,6 +11,7 @@ const makeRepository = (): PostRepository => ({
   delete: vi.fn().mockResolvedValue(undefined),
   findById: vi.fn().mockResolvedValue(null),
   findAll: vi.fn().mockResolvedValue([]),
+  findAllFeatured: vi.fn().mockResolvedValue([]),
 });
 
 const makeDispatcher = (): EventDispatcher => ({

@@ -4,6 +4,11 @@ import PostCreatedEvent from '../event/post-created.event';
 import PostDeletedEvent from '../event/post-deleted.event';
 import PostTagsUpdatedEvent from '../event/post-tags-updated.event';
 import PostUpdatedEvent from '../event/post-updated.event';
+import PostPromotedEvent from '../event/post-promoted.event';
+import EngagementDropFlaggedEvent from '../event/engagement-drop-flagged.event';
+import EngagementDropRecoveredEvent from '../event/engagement-drop-recovered.event';
+import PostDemotedEvent from '../event/post-demoted.event';
+import FeaturedPostRemovedEvent from '../event/featured-post-removed.event';
 import InvalidPostError from '../error/invalid-post.error';
 
 interface PostProps {
@@ -13,6 +18,9 @@ interface PostProps {
   title: string;
   body: string;
   tags: string[];
+  isFeatured: boolean;
+  featuredAt: Date | null;
+  engagementDropFlagged: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -93,7 +101,15 @@ export default class Post extends AggregateRoot {
     const createdAt = new Date();
     const updatedAt = createdAt;
 
-    const post = new Post({ ...props, tags, createdAt, updatedAt });
+    const post = new Post({
+      ...props,
+      tags,
+      isFeatured: false,
+      featuredAt: null,
+      engagementDropFlagged: false,
+      createdAt,
+      updatedAt,
+    });
 
     const event = new PostCreatedEvent({
       postId: props.id.toString(),
@@ -159,6 +175,91 @@ export default class Post extends AggregateRoot {
     this.addDomainEvent(event);
   }
 
+  promote(): void {
+    if (this.props.isFeatured) return;
+
+    const updatedAt = new Date();
+    this.props.isFeatured = true;
+    this.props.featuredAt = updatedAt;
+    this.props.updatedAt = updatedAt;
+
+    this.addDomainEvent(
+      new PostPromotedEvent({
+        postId: this.props.id.toString(),
+        promotedAt: updatedAt.toISOString(),
+      }),
+    );
+  }
+
+  recoverEngagement(): void {
+    if (!this.props.isFeatured) return;
+    if (!this.props.engagementDropFlagged) return;
+
+    const updatedAt = new Date();
+    this.props.engagementDropFlagged = false;
+    this.props.updatedAt = updatedAt;
+
+    this.addDomainEvent(
+      new EngagementDropRecoveredEvent({
+        postId: this.props.id.toString(),
+        recoveredAt: updatedAt.toISOString(),
+      }),
+    );
+  }
+
+  flagEngagementDrop(): void {
+    if (!this.props.isFeatured) return;
+    if (this.props.engagementDropFlagged) return;
+
+    const updatedAt = new Date();
+    this.props.engagementDropFlagged = true;
+    this.props.updatedAt = updatedAt;
+
+    this.addDomainEvent(
+      new EngagementDropFlaggedEvent({
+        postId: this.props.id.toString(),
+        flaggedAt: updatedAt.toISOString(),
+      }),
+    );
+  }
+
+  demote(reason: string): void {
+    if (!this.props.isFeatured) {
+      throw new InvalidPostError(['Cannot demote a non-featured post']);
+    }
+
+    const updatedAt = new Date();
+    this.props.isFeatured = false;
+    this.props.featuredAt = null;
+    this.props.engagementDropFlagged = false;
+    this.props.updatedAt = updatedAt;
+
+    this.addDomainEvent(
+      new PostDemotedEvent({
+        postId: this.props.id.toString(),
+        demotedAt: updatedAt.toISOString(),
+        reason,
+      }),
+    );
+  }
+
+  removeFeatured(): void {
+    if (!this.props.isFeatured) return;
+
+    const updatedAt = new Date();
+    this.props.isFeatured = false;
+    this.props.featuredAt = null;
+    this.props.engagementDropFlagged = false;
+    this.props.updatedAt = updatedAt;
+
+    this.addDomainEvent(
+      new FeaturedPostRemovedEvent({
+        postId: this.props.id.toString(),
+        removedAt: updatedAt.toISOString(),
+      }),
+    );
+  }
+
   delete(): void {
     const event = new PostDeletedEvent({
       postId: this.props.id.toString(),
@@ -195,6 +296,18 @@ export default class Post extends AggregateRoot {
 
   get tags(): string[] {
     return [...this.props.tags];
+  }
+
+  get isFeatured(): boolean {
+    return this.props.isFeatured;
+  }
+
+  get featuredAt(): Date | null {
+    return this.props.featuredAt;
+  }
+
+  get engagementDropFlagged(): boolean {
+    return this.props.engagementDropFlagged;
   }
 
   get createdAt(): Date {

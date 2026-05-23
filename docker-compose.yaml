@@ -154,9 +154,7 @@ services:
       <<: *hc-fast
 
   ollama:
-    build:
-      context: .
-      dockerfile: config/ollama/Dockerfile
+    image: ollama/ollama:0.24.0
     container_name: drift-ollama
     environment:
       OLLAMA_MODEL: *ollama-model
