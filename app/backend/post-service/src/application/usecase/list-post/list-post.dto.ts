@@ -1,6 +1,7 @@
 export interface ListPostInputDto {
   limit?: number;
   offset?: number;
+  featured?: boolean;
 }
 
 export interface ListPostOutputDto {
@@ -10,6 +11,7 @@ export interface ListPostOutputDto {
   title: string;
   body: string;
   tags: string[];
+  isFeatured: boolean;
   createdAt: string;
   updatedAt: string;
 }

@@ -13,7 +13,7 @@ export default class ListPostUseCase implements UseCase<ListPostInputDto, ListPo
     const limit = input.limit ?? 10;
     const offset = input.offset ?? 0;
 
-    const posts = await this.postRepository.findAll({ limit, offset });
+    const posts = await this.postRepository.findAll({ limit, offset, featured: input.featured });
 
     this.logger.info('Posts listed', { count: posts.length, limit, offset });
 

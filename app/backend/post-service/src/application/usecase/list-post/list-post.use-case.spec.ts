@@ -56,7 +56,7 @@ describe('ListPostUseCase', () => {
 
     await useCase.execute({ limit: 20, offset: 5 });
 
-    expect(findAllSpy).toHaveBeenCalledWith({ limit: 20, offset: 5 });
+    expect(findAllSpy).toHaveBeenCalledWith({ limit: 20, offset: 5, featured: undefined });
   });
 
   it('should default to limit 10 and offset 0 when both are omitted', async () => {
@@ -64,7 +64,7 @@ describe('ListPostUseCase', () => {
 
     await useCase.execute({});
 
-    expect(findAllSpy).toHaveBeenCalledWith({ limit: 10, offset: 0 });
+    expect(findAllSpy).toHaveBeenCalledWith({ limit: 10, offset: 0, featured: undefined });
   });
 
   it('should default only the omitted field when one is provided', async () => {
@@ -72,7 +72,31 @@ describe('ListPostUseCase', () => {
 
     await useCase.execute({ limit: 50 });
 
-    expect(findAllSpy).toHaveBeenCalledWith({ limit: 50, offset: 0 });
+    expect(findAllSpy).toHaveBeenCalledWith({ limit: 50, offset: 0, featured: undefined });
+  });
+
+  it('should include isFeatured in the returned DTOs', async () => {
+    vi.spyOn(repository, 'findAll').mockResolvedValue([makePost()]);
+
+    const result = await useCase.execute({});
+
+    expect(result[0].isFeatured).toBe(false);
+  });
+
+  it('should forward featured: true to the repository', async () => {
+    const findAllSpy = vi.spyOn(repository, 'findAll');
+
+    await useCase.execute({ featured: true });
+
+    expect(findAllSpy).toHaveBeenCalledWith({ limit: 10, offset: 0, featured: true });
+  });
+
+  it('should forward featured: false to the repository', async () => {
+    const findAllSpy = vi.spyOn(repository, 'findAll');
+
+    await useCase.execute({ featured: false });
+
+    expect(findAllSpy).toHaveBeenCalledWith({ limit: 10, offset: 0, featured: false });
   });
 
   it('should call repository.findAll before returning results', async () => {

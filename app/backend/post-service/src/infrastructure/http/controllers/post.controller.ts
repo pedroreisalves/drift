@@ -85,8 +85,11 @@ export default class PostController {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined;
       const offset = req.query.offset ? parseInt(req.query.offset as string, 10) : undefined;
+      const featuredParam = req.query.featured as string | undefined;
+      const featured =
+        featuredParam === 'true' ? true : featuredParam === 'false' ? false : undefined;
 
-      const posts = await this.listPostUseCase.execute({ limit, offset });
+      const posts = await this.listPostUseCase.execute({ limit, offset, featured });
 
       res.status(200).json({ posts });
     } catch (error) {

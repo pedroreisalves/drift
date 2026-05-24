@@ -67,13 +67,21 @@ export default class PostgresPostRepository implements PostRepository {
     return this.toDomain(result.rows[0]);
   }
 
-  async findAll(options?: { limit: number; offset: number }): Promise<Post[]> {
-    let query = `SELECT ${POST_COLUMNS} FROM posts ORDER BY created_at DESC`;
+  async findAll(options?: { limit: number; offset: number; featured?: boolean }): Promise<Post[]> {
     const params: unknown[] = [];
+    let query = `SELECT ${POST_COLUMNS} FROM posts`;
+
+    if (options?.featured !== undefined) {
+      params.push(options.featured);
+      query += ` WHERE is_featured = $${params.length}`;
+    }
+
+    query += ' ORDER BY created_at DESC';
 
     if (options) {
-      query += ' LIMIT $1 OFFSET $2';
       params.push(options.limit, options.offset);
+      const len = params.length;
+      query += ` LIMIT $${len - 1} OFFSET $${len}`;
     }
 
     const result = await this.pool.query<PostRow>(query, params);

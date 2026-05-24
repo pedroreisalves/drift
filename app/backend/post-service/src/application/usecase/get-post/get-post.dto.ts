@@ -9,6 +9,7 @@ export interface GetPostOutputDto {
   title: string;
   body: string;
   tags: string[];
+  isFeatured: boolean;
   createdAt: string;
   updatedAt: string;
 }

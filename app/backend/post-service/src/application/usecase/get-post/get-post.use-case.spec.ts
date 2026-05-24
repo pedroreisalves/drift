@@ -50,6 +50,7 @@ describe('GetPostUseCase', () => {
     expect(findByIdSpy).toHaveBeenCalledTimes(1);
     expect(findByIdSpy.mock.calls[0][0].toString()).toEqual(postId);
     expect(result.postId).toEqual(postId);
+    expect(result.isFeatured).toBe(false);
   });
 
   it('should throw PostNotFoundError when the post does not exist, without further calls', async () => {
