@@ -13,12 +13,18 @@ interface PostRow {
   is_featured: boolean;
   featured_at: Date | null;
   engagement_drop_flagged: boolean;
+  is_tagging_in_progress: boolean;
   created_at: Date;
   updated_at: Date;
 }
 
 const POST_COLUMNS =
-  'id, client_id, client_name, title, body, tags, is_featured, featured_at, engagement_drop_flagged, created_at, updated_at';
+  'posts.id, posts.client_id, posts.client_name, posts.title, posts.body, posts.tags, posts.is_featured, posts.featured_at, posts.engagement_drop_flagged, posts.created_at, posts.updated_at';
+
+const TAGGING_LOCK_JOIN =
+  "LEFT JOIN post_locks ON posts.id = post_locks.post_id AND post_locks.lock_type = 'tagging'";
+
+const TAGGING_LOCK_COLUMN = '(post_locks.post_id IS NOT NULL) AS is_tagging_in_progress';
 
 export default class PostgresPostRepository implements PostRepository {
   constructor(private readonly pool: Pool) {}
@@ -58,7 +64,7 @@ export default class PostgresPostRepository implements PostRepository {
 
   async findById(postId: PostId): Promise<Post | null> {
     const result = await this.pool.query<PostRow>(
-      `SELECT ${POST_COLUMNS} FROM posts WHERE id = $1`,
+      `SELECT ${POST_COLUMNS}, ${TAGGING_LOCK_COLUMN} FROM posts ${TAGGING_LOCK_JOIN} WHERE posts.id = $1`,
       [postId.toString()],
     );
 
@@ -69,14 +75,14 @@ export default class PostgresPostRepository implements PostRepository {
 
   async findAll(options?: { limit: number; offset: number; featured?: boolean }): Promise<Post[]> {
     const params: unknown[] = [];
-    let query = `SELECT ${POST_COLUMNS} FROM posts`;
+    let query = `SELECT ${POST_COLUMNS}, ${TAGGING_LOCK_COLUMN} FROM posts ${TAGGING_LOCK_JOIN}`;
 
     if (options?.featured !== undefined) {
       params.push(options.featured);
-      query += ` WHERE is_featured = $${params.length}`;
+      query += ` WHERE posts.is_featured = $${params.length}`;
     }
 
-    query += ' ORDER BY created_at DESC';
+    query += ' ORDER BY posts.created_at DESC';
 
     if (options) {
       params.push(options.limit, options.offset);
@@ -91,7 +97,7 @@ export default class PostgresPostRepository implements PostRepository {
 
   async findAllFeatured(): Promise<Post[]> {
     const result = await this.pool.query<PostRow>(
-      `SELECT ${POST_COLUMNS} FROM posts WHERE is_featured = TRUE`,
+      `SELECT ${POST_COLUMNS}, ${TAGGING_LOCK_COLUMN} FROM posts ${TAGGING_LOCK_JOIN} WHERE posts.is_featured = TRUE`,
     );
 
     return result.rows.map((row) => this.toDomain(row));
@@ -108,6 +114,7 @@ export default class PostgresPostRepository implements PostRepository {
       isFeatured: row.is_featured,
       featuredAt: row.featured_at,
       engagementDropFlagged: row.engagement_drop_flagged,
+      isTaggingInProgress: row.is_tagging_in_progress,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     });

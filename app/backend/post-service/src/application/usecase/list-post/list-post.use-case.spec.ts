@@ -83,6 +83,14 @@ describe('ListPostUseCase', () => {
     expect(result[0].isFeatured).toBe(false);
   });
 
+  it('should include isTaggingInProgress: false for unlocked posts', async () => {
+    vi.spyOn(repository, 'findAll').mockResolvedValue([makePost()]);
+
+    const result = await useCase.execute({});
+
+    expect(result[0].isTaggingInProgress).toBe(false);
+  });
+
   it('should forward featured: true to the repository', async () => {
     const findAllSpy = vi.spyOn(repository, 'findAll');
 

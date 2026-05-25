@@ -21,6 +21,7 @@ interface PostProps {
   isFeatured: boolean;
   featuredAt: Date | null;
   engagementDropFlagged: boolean;
+  isTaggingInProgress: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -107,6 +108,7 @@ export default class Post extends AggregateRoot {
       isFeatured: false,
       featuredAt: null,
       engagementDropFlagged: false,
+      isTaggingInProgress: false,
       createdAt,
       updatedAt,
     });
@@ -308,6 +310,10 @@ export default class Post extends AggregateRoot {
 
   get engagementDropFlagged(): boolean {
     return this.props.engagementDropFlagged;
+  }
+
+  get isTaggingInProgress(): boolean {
+    return this.props.isTaggingInProgress;
   }
 
   get createdAt(): Date {

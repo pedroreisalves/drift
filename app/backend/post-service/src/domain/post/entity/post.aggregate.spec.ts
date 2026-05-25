@@ -46,6 +46,7 @@ describe('Post', () => {
     expect(post.isFeatured).toBe(false);
     expect(post.featuredAt).toBeNull();
     expect(post.engagementDropFlagged).toBe(false);
+    expect(post.isTaggingInProgress).toBe(false);
     expect(post.createdAt).toBeInstanceOf(Date);
     expect(post.updatedAt).toBeInstanceOf(Date);
   });
@@ -198,6 +199,7 @@ describe('Post', () => {
       isFeatured: true,
       featuredAt: new Date('2026-01-03T00:00:00.000Z'),
       engagementDropFlagged: true,
+      isTaggingInProgress: true,
       createdAt,
       updatedAt,
     };
@@ -214,6 +216,7 @@ describe('Post', () => {
     expect(post.isFeatured).toBe(true);
     expect(post.featuredAt).toEqual(props.featuredAt);
     expect(post.engagementDropFlagged).toBe(true);
+    expect(post.isTaggingInProgress).toBe(true);
     expect(post.createdAt).toEqual(createdAt);
     expect(post.updatedAt).toEqual(updatedAt);
   });
@@ -249,6 +252,7 @@ describe('Post', () => {
       isFeatured: false,
       featuredAt: null,
       engagementDropFlagged: false,
+      isTaggingInProgress: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     });

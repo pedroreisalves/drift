@@ -8,6 +8,7 @@ export function toPostOutputFields(post: Post): {
   body: string;
   tags: string[];
   isFeatured: boolean;
+  isTaggingInProgress: boolean;
   createdAt: string;
   updatedAt: string;
 } {
@@ -19,6 +20,7 @@ export function toPostOutputFields(post: Post): {
     body: post.body,
     tags: post.tags,
     isFeatured: post.isFeatured,
+    isTaggingInProgress: post.isTaggingInProgress,
     createdAt: post.createdAt.toISOString(),
     updatedAt: post.updatedAt.toISOString(),
   };

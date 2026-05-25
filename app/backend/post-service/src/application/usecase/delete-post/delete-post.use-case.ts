@@ -3,6 +3,7 @@ import type PostRepository from '../../../domain/post/repository/post.repository
 import type { DeletePostInputDto } from './delete-post.dto';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 import { ForbiddenPostOperationError } from '../../@shared/error/forbidden-post-update.error';
+import TaggingInProgressError from '../../@shared/error/tagging-in-progress.error';
 
 export default class DeletePostUseCase implements UseCase<DeletePostInputDto, void> {
   constructor(
@@ -28,6 +29,11 @@ export default class DeletePostUseCase implements UseCase<DeletePostInputDto, vo
         clientId: clientId.toString(),
       });
       throw new ForbiddenPostOperationError(clientId.toString(), postId.toString(), 'delete');
+    }
+
+    if (post.isTaggingInProgress) {
+      this.logger.warn('Post delete rejected: tagging in progress', { postId: postId.toString() });
+      throw new TaggingInProgressError(postId.toString());
     }
 
     post.removeFeatured();

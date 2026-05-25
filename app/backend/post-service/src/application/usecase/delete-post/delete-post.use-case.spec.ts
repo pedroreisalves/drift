@@ -7,6 +7,7 @@ import PostDeletedEvent from '../../../domain/post/event/post-deleted.event';
 import FeaturedPostRemovedEvent from '../../../domain/post/event/featured-post-removed.event';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 import { ForbiddenPostOperationError } from '../../@shared/error/forbidden-post-update.error';
+import TaggingInProgressError from '../../@shared/error/tagging-in-progress.error';
 
 const makeRepository = (): PostRepository => ({
   save: vi.fn().mockResolvedValue(undefined),
@@ -37,6 +38,22 @@ const makeExistingPost = (postId: string, clientId: string): Post => {
   post.clearDomainEvents();
   return post;
 };
+
+const makeLockedPost = (postId: string, clientId: string): Post =>
+  Post.reconstruct({
+    id: new PostId(postId),
+    clientId: new ClientId(clientId),
+    clientName: 'John Doe',
+    title: 'Original Title',
+    body: 'Original body content.',
+    tags: [],
+    isFeatured: false,
+    featuredAt: null,
+    engagementDropFlagged: false,
+    isTaggingInProgress: true,
+    createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+  });
 
 describe('DeletePostUseCase', () => {
   let repository: PostRepository;
@@ -130,6 +147,18 @@ describe('DeletePostUseCase', () => {
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledWith(expect.any(PostDeletedEvent));
+  });
+
+  it('should throw TaggingInProgressError when a tagging lock is active', async () => {
+    const postId = uuidv7();
+    const clientId = uuidv7();
+    vi.spyOn(repository, 'findById').mockResolvedValue(makeLockedPost(postId, clientId));
+    const deleteSpy = vi.spyOn(repository, 'delete');
+    const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
+
+    await expect(useCase.execute({ postId, clientId })).rejects.toThrow(TaggingInProgressError);
+    expect(deleteSpy).not.toHaveBeenCalled();
+    expect(dispatchSpy).not.toHaveBeenCalled();
   });
 
   it('should throw ForbiddenPostOperationError when the post belongs to a different client', async () => {

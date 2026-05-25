@@ -12,6 +12,7 @@ export interface ListPostOutputDto {
   body: string;
   tags: string[];
   isFeatured: boolean;
+  isTaggingInProgress: boolean;
   createdAt: string;
   updatedAt: string;
 }

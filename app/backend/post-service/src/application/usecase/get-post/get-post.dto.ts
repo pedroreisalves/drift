@@ -10,6 +10,7 @@ export interface GetPostOutputDto {
   body: string;
   tags: string[];
   isFeatured: boolean;
+  isTaggingInProgress: boolean;
   createdAt: string;
   updatedAt: string;
 }
