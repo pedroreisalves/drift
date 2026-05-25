@@ -2,6 +2,7 @@ import { uuidv7 } from 'uuidv7';
 import RecordAnalyticsEventUseCase from './record-analytics-event.use-case';
 import type AnalyticsLogRepository from '../../../domain/analytics-log/repository/analytics-log.repository';
 import type DeletedPostRepository from '../../../domain/analytics-log/repository/deleted-post.repository';
+import type PostOwnerRepository from '../../../domain/analytics-log/repository/post-owner.repository';
 import type { EventDispatcher, Logger } from '@drift/shared';
 import AnalyticsLog from '../../../domain/analytics-log/entity/analytics-log.entity';
 import { EventTypeEnum } from '../../../domain/analytics-log/value-object/event-type.value-object';
@@ -13,6 +14,10 @@ const makeAnalyticsLogRepository = (): AnalyticsLogRepository => ({
 });
 
 const makeDeletedPostRepository = (): DeletedPostRepository => ({
+  save: vi.fn().mockResolvedValue(undefined),
+});
+
+const makePostOwnerRepository = (): PostOwnerRepository => ({
   save: vi.fn().mockResolvedValue(undefined),
 });
 
@@ -29,16 +34,19 @@ const makeLogger = (): Logger => ({
 describe('RecordAnalyticsEventUseCase', () => {
   let analyticsLogRepository: AnalyticsLogRepository;
   let deletedPostRepository: DeletedPostRepository;
+  let postOwnerRepository: PostOwnerRepository;
   let dispatcher: EventDispatcher;
   let useCase: RecordAnalyticsEventUseCase;
 
   beforeEach(() => {
     analyticsLogRepository = makeAnalyticsLogRepository();
     deletedPostRepository = makeDeletedPostRepository();
+    postOwnerRepository = makePostOwnerRepository();
     dispatcher = makeDispatcher();
     useCase = new RecordAnalyticsEventUseCase(
       analyticsLogRepository,
       deletedPostRepository,
+      postOwnerRepository,
       dispatcher,
       makeLogger(),
     );
@@ -159,5 +167,64 @@ describe('RecordAnalyticsEventUseCase', () => {
     });
 
     expect(callOrder).toEqual(['repository.save', 'dispatcher.dispatch']);
+  });
+
+  it('should save to postOwnerRepository when eventType is PostCreated', async () => {
+    const postId = uuidv7();
+    const clientId = uuidv7();
+    const ownerSaveSpy = vi.spyOn(postOwnerRepository, 'save');
+
+    await useCase.execute({
+      eventType: EventTypeEnum.PostCreated,
+      postId,
+      clientId,
+      timestamp: new Date().toISOString(),
+    });
+
+    expect(ownerSaveSpy).toHaveBeenCalledTimes(1);
+    expect(ownerSaveSpy.mock.calls[0][0].toString()).toBe(postId);
+    expect(ownerSaveSpy.mock.calls[0][1].toString()).toBe(clientId);
+  });
+
+  it('should not save to postOwnerRepository for non-PostCreated events', async () => {
+    const ownerSaveSpy = vi.spyOn(postOwnerRepository, 'save');
+
+    await useCase.execute({
+      eventType: EventTypeEnum.PostViewed,
+      postId: uuidv7(),
+      clientId: uuidv7(),
+      timestamp: new Date().toISOString(),
+    });
+
+    expect(ownerSaveSpy).not.toHaveBeenCalled();
+  });
+
+  it('should call analyticsLogRepository.save before postOwnerRepository.save before dispatcher.dispatch for PostCreated events', async () => {
+    const callOrder: string[] = [];
+    vi.spyOn(analyticsLogRepository, 'save').mockImplementation(() => {
+      callOrder.push('analyticsLogRepository.save');
+      return Promise.resolve();
+    });
+    vi.spyOn(postOwnerRepository, 'save').mockImplementation(() => {
+      callOrder.push('postOwnerRepository.save');
+      return Promise.resolve();
+    });
+    vi.spyOn(dispatcher, 'dispatch').mockImplementation(() => {
+      callOrder.push('dispatcher.dispatch');
+      return Promise.resolve();
+    });
+
+    await useCase.execute({
+      eventType: EventTypeEnum.PostCreated,
+      postId: uuidv7(),
+      clientId: uuidv7(),
+      timestamp: new Date().toISOString(),
+    });
+
+    expect(callOrder).toEqual([
+      'analyticsLogRepository.save',
+      'postOwnerRepository.save',
+      'dispatcher.dispatch',
+    ]);
   });
 });

@@ -18,6 +18,11 @@ CREATE TABLE deleted_posts (
 	,deleted_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 	);
 
+CREATE TABLE post_owners (
+	post_id UUID PRIMARY KEY
+	,owner_client_id UUID NOT NULL
+	);
+
 CREATE TABLE engagement_state (
 	post_id UUID PRIMARY KEY
 	,last_signal VARCHAR NOT NULL

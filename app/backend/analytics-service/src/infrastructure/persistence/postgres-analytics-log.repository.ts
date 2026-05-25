@@ -40,14 +40,16 @@ export default class PostgresAnalyticsLogRepository implements AnalyticsLogRepos
     const now = options.now ?? new Date();
 
     const query = `
-      SELECT DISTINCT post_id
-      FROM analytics_log
-      WHERE event_type = $1
-        AND post_id IS NOT NULL
-        AND timestamp >= $2::timestamptz - make_interval(hours => $3)
+      SELECT DISTINCT al.post_id
+      FROM analytics_log al
+      LEFT JOIN post_owners po ON al.post_id = po.post_id
+      WHERE al.event_type = $1
+        AND al.post_id IS NOT NULL
+        AND al.timestamp >= $2::timestamptz - make_interval(hours => $3)
+        AND (po.owner_client_id IS NULL OR al.client_id != po.owner_client_id)
         ${
           options.excludeDeleted
-            ? 'AND NOT EXISTS (SELECT 1 FROM deleted_posts d WHERE d.post_id = analytics_log.post_id)'
+            ? 'AND NOT EXISTS (SELECT 1 FROM deleted_posts d WHERE d.post_id = al.post_id)'
             : ''
         }
     `;
@@ -73,13 +75,15 @@ export default class PostgresAnalyticsLogRepository implements AnalyticsLogRepos
 
     for (const idChunk of chunk(ids, ID_CHUNK_SIZE)) {
       const query = `
-        SELECT post_id, COUNT(*) AS count
-        FROM analytics_log
-        WHERE event_type = $1
-          AND post_id = ANY($2::uuid[])
-          AND timestamp >= $3::timestamptz
-          AND timestamp < $4::timestamptz
-        GROUP BY post_id
+        SELECT al.post_id, COUNT(*) AS count
+        FROM analytics_log al
+        LEFT JOIN post_owners po ON al.post_id = po.post_id
+        WHERE al.event_type = $1
+          AND al.post_id = ANY($2::uuid[])
+          AND al.timestamp >= $3::timestamptz
+          AND al.timestamp < $4::timestamptz
+          AND (po.owner_client_id IS NULL OR al.client_id != po.owner_client_id)
+        GROUP BY al.post_id
       `;
 
       const result = await this.pool.query<ViewCountRow>(query, [

@@ -10,6 +10,7 @@ import {
 import PostgresAnalyticsLogRepository from './infrastructure/persistence/postgres-analytics-log.repository';
 import PostgresEngagementStateRepository from './infrastructure/persistence/postgres-engagement-state.repository';
 import PostgresDeletedPostRepository from './infrastructure/persistence/postgres-deleted-post.repository';
+import PostgresPostOwnerRepository from './infrastructure/persistence/postgres-post-owner.repository';
 import RecordAnalyticsEventUseCase from './application/usecase/record-analytics-event/record-analytics-event.use-case';
 import CheckEngagementUseCase from './application/usecase/check-engagement/check-engagement.use-case';
 import PostCreatedEventHandler from './application/event-handler/post-created/post-created.event-handler';
@@ -26,6 +27,7 @@ async function main(): Promise<void> {
   const analyticsLogRepository = new PostgresAnalyticsLogRepository(pool);
   const engagementStateRepository = new PostgresEngagementStateRepository(pool);
   const deletedPostRepository = new PostgresDeletedPostRepository(pool);
+  const postOwnerRepository = new PostgresPostOwnerRepository(pool);
 
   const dispatcher = new RabbitMQEventDispatcher(
     Environment.RABBITMQ_URL,
@@ -41,6 +43,7 @@ async function main(): Promise<void> {
   const recordAnalyticsEventUseCase = new RecordAnalyticsEventUseCase(
     analyticsLogRepository,
     deletedPostRepository,
+    postOwnerRepository,
     dispatcher,
     logger,
   );

@@ -31,7 +31,7 @@ export default class PostgresPostRepository implements PostRepository {
 
   async save(post: Post): Promise<void> {
     const query = `
-      INSERT INTO posts (${POST_COLUMNS})
+      INSERT INTO posts (id, client_id, client_name, title, body, tags, is_featured, featured_at, engagement_drop_flagged, created_at, updated_at)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       ON CONFLICT (id) DO UPDATE SET
         title = EXCLUDED.title,

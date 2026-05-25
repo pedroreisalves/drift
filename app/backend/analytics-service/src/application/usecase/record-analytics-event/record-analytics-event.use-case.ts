@@ -8,6 +8,7 @@ import AnalyticsLogId from '../../../domain/analytics-log/value-object/analytics
 import { uuidv7 } from 'uuidv7';
 import AnalyticsEventRecordedEvent from '../../../domain/analytics-log/event/analytics-event-recorded.event';
 import type DeletedPostRepository from '../../../domain/analytics-log/repository/deleted-post.repository';
+import type PostOwnerRepository from '../../../domain/analytics-log/repository/post-owner.repository';
 
 export default class RecordAnalyticsEventUseCase implements UseCase<
   RecordAnalyticsEventInputDto,
@@ -16,6 +17,7 @@ export default class RecordAnalyticsEventUseCase implements UseCase<
   constructor(
     private readonly analyticsLogRepository: AnalyticsLogRepository,
     private readonly deletedPostRepository: DeletedPostRepository,
+    private readonly postOwnerRepository: PostOwnerRepository,
     private readonly eventDispatcher: EventDispatcher,
     private readonly logger: Logger,
   ) {}
@@ -39,6 +41,10 @@ export default class RecordAnalyticsEventUseCase implements UseCase<
 
     if (eventType.equals(new EventType(EventTypeEnum.PostDeleted))) {
       await this.deletedPostRepository.save(postId as PostId, timestamp);
+    }
+
+    if (eventType.equals(new EventType(EventTypeEnum.PostCreated)) && postId) {
+      await this.postOwnerRepository.save(postId, clientId);
     }
 
     this.logger.info('Analytics event recorded', {
