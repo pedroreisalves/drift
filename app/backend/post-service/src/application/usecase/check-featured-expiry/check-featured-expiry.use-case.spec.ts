@@ -38,6 +38,7 @@ const makeFeaturedPost = (opts: { featuredAt: Date; flagged: boolean }): Post =>
     isFeatured: true,
     featuredAt: opts.featuredAt,
     engagementDropFlagged: opts.flagged,
+    isTaggingInProgress: true,
     createdAt: opts.featuredAt,
     updatedAt: opts.featuredAt,
   });
