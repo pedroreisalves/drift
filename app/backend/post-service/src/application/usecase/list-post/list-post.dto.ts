@@ -9,7 +9,7 @@ export interface ListPostOutputDto {
   clientId: string;
   clientName: string;
   title: string;
-  body: string;
+  bodyPreview: string;
   tags: string[];
   isFeatured: boolean;
   isTaggingInProgress: boolean;

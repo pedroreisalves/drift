@@ -8,6 +8,6 @@ export interface SearchPostsInputDto {
 export interface SearchPostsOutputDto {
   postId: string;
   title: string;
-  body: string;
+  bodyPreview: string;
   tags: string[];
 }

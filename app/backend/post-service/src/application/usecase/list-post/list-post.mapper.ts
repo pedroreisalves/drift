@@ -1,23 +1,14 @@
+import { truncateText, POST_BODY_PREVIEW_LENGTH } from '@drift/shared';
 import type Post from '../../../domain/post/entity/post.aggregate';
+import type { ListPostOutputDto } from './list-post.dto';
 
-export function toPostOutputFields(post: Post): {
-  postId: string;
-  clientId: string;
-  clientName: string;
-  title: string;
-  body: string;
-  tags: string[];
-  isFeatured: boolean;
-  isTaggingInProgress: boolean;
-  createdAt: string;
-  updatedAt: string;
-} {
+export function toListPostOutputDto(post: Post): ListPostOutputDto {
   return {
     postId: post.id.toString(),
     clientId: post.clientId.toString(),
     clientName: post.clientName,
     title: post.title,
-    body: post.body,
+    bodyPreview: truncateText(post.body, POST_BODY_PREVIEW_LENGTH),
     tags: post.tags,
     isFeatured: post.isFeatured,
     isTaggingInProgress: post.isTaggingInProgress,

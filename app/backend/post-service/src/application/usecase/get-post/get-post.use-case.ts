@@ -2,7 +2,7 @@ import type { GetPostInputDto, GetPostOutputDto } from './get-post.dto';
 import { PostId, type Logger, type UseCase } from '@drift/shared';
 import type PostRepository from '../../../domain/post/repository/post.repository';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
-import { toPostOutputFields } from '../../@shared/dto/post-output.mapper';
+import { toGetPostOutputDto } from './get-post.mapper';
 
 export default class GetPostUseCase implements UseCase<GetPostInputDto, GetPostOutputDto> {
   constructor(
@@ -19,6 +19,6 @@ export default class GetPostUseCase implements UseCase<GetPostInputDto, GetPostO
       throw new PostNotFoundError(input.postId);
     }
 
-    return toPostOutputFields(post);
+    return toGetPostOutputDto(post);
   }
 }

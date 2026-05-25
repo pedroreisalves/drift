@@ -1,0 +1,1 @@
+export const POST_BODY_PREVIEW_LENGTH = 200;

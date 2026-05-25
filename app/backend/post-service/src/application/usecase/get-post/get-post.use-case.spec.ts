@@ -50,6 +50,7 @@ describe('GetPostUseCase', () => {
     expect(findByIdSpy).toHaveBeenCalledTimes(1);
     expect(findByIdSpy.mock.calls[0][0].toString()).toEqual(postId);
     expect(result.postId).toEqual(postId);
+    expect(result.body).toBe('Body content.');
     expect(result.isFeatured).toBe(false);
     expect(result.isTaggingInProgress).toBe(false);
   });

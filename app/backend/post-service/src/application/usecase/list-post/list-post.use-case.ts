@@ -1,7 +1,7 @@
 import type PostRepository from '../../../domain/post/repository/post.repository';
 import type { ListPostInputDto, ListPostOutputDto } from './list-post.dto';
 import { type Logger, type UseCase } from '@drift/shared';
-import { toPostOutputFields } from '../../@shared/dto/post-output.mapper';
+import { toListPostOutputDto } from './list-post.mapper';
 
 export default class ListPostUseCase implements UseCase<ListPostInputDto, ListPostOutputDto[]> {
   constructor(
@@ -17,6 +17,6 @@ export default class ListPostUseCase implements UseCase<ListPostInputDto, ListPo
 
     this.logger.info('Posts listed', { count: posts.length, limit, offset });
 
-    return posts.map((post) => toPostOutputFields(post));
+    return posts.map((post) => toListPostOutputDto(post));
   }
 }

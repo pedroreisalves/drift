@@ -20,3 +20,5 @@ export type {
 export { default as NodeCronScheduler } from './infrastructure/scheduler/node-cron-scheduler';
 
 export { chunk } from './utils/array/chunk';
+export { truncateText } from './utils/text/truncate-text';
+export { POST_BODY_PREVIEW_LENGTH } from './application/constants/post.constants';

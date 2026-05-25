@@ -91,6 +91,14 @@ describe('ListPostUseCase', () => {
     expect(result[0].isTaggingInProgress).toBe(false);
   });
 
+  it('should include bodyPreview in the returned DTOs equal to the body when body is within the limit', async () => {
+    vi.spyOn(repository, 'findAll').mockResolvedValue([makePost()]);
+
+    const result = await useCase.execute({});
+
+    expect(result[0].bodyPreview).toBe('Body content.');
+  });
+
   it('should forward featured: true to the repository', async () => {
     const findAllSpy = vi.spyOn(repository, 'findAll');
 

@@ -55,6 +55,7 @@ describe('SearchPostsUseCase', () => {
 
     expect(result).toHaveLength(2);
     expect(result[0].postId).toBe(firstId);
+    expect(result[0].bodyPreview).toBe('Post body content.');
     expect(result[1].postId).toBe(secondId);
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
