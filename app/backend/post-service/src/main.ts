@@ -26,6 +26,7 @@ import PostEngagementRaisedEventHandler from './application/event-handler/post-e
 import PostEngagementDroppedEventHandler from './application/event-handler/post-engagement-dropped/post-engagement-dropped.event-handler';
 
 import PostgresPostLockRepository from './infrastructure/persistence/postgres-post-lock.repository';
+import PostgresPostFeaturedRepository from './infrastructure/persistence/postgres-post-featured.repository';
 
 import PostViewedMiddleware from './infrastructure/http/middleware/post-viewed.middleware';
 import PostgresPostRepository from './infrastructure/persistence/postgres-post.repository';
@@ -41,6 +42,7 @@ async function main(): Promise<void> {
   const pool = new Pool({ connectionString: Environment.DB_URL });
   const repository = new PostgresPostRepository(pool);
   const postLockRepository = new PostgresPostLockRepository(pool);
+  const postFeaturedRepository = new PostgresPostFeaturedRepository(pool);
   const dispatcher = new RabbitMQEventDispatcher(
     Environment.RABBITMQ_URL,
     Environment.RABBITMQ_EXCHANGE,
@@ -67,13 +69,23 @@ async function main(): Promise<void> {
   const getPostUseCase = new GetPostUseCase(repository, logger);
   const listPostUseCase = new ListPostUseCase(repository, logger);
 
-  const promotePostUseCase = new PromotePostUseCase(repository, dispatcher, logger);
+  const promotePostUseCase = new PromotePostUseCase(
+    repository,
+    postFeaturedRepository,
+    dispatcher,
+    logger,
+  );
   const flagPostEngagementDropUseCase = new FlagPostEngagementDropUseCase(
     repository,
     dispatcher,
     logger,
   );
-  const checkFeaturedExpiryUseCase = new CheckFeaturedExpiryUseCase(repository, dispatcher, logger);
+  const checkFeaturedExpiryUseCase = new CheckFeaturedExpiryUseCase(
+    repository,
+    postFeaturedRepository,
+    dispatcher,
+    logger,
+  );
 
   const postTaggedEventHandler = new PostTaggedEventHandler(
     updatePostTagsUseCase,

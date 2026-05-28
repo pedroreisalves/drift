@@ -1,11 +1,13 @@
 import { PostId, type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
 import type PostRepository from '../../../domain/post/repository/post.repository';
+import type PostFeaturedRepository from '../../../domain/post/repository/post-featured.repository';
 import type { PromotePostInputDto } from './promote-post.dto';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 
 export default class PromotePostUseCase implements UseCase<PromotePostInputDto, void> {
   constructor(
     private readonly postRepository: PostRepository,
+    private readonly postFeaturedRepository: PostFeaturedRepository,
     private readonly eventDispatcher: EventDispatcher,
     private readonly logger: Logger,
   ) {}
@@ -24,6 +26,7 @@ export default class PromotePostUseCase implements UseCase<PromotePostInputDto, 
     post.recoverEngagement();
 
     await this.postRepository.save(post);
+    await this.postFeaturedRepository.save(postId);
 
     this.logger.info('Post promoted', { postId: postId.toString() });
 

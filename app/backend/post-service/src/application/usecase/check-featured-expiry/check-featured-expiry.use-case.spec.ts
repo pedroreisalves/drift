@@ -3,6 +3,7 @@ import { PostId, ClientId, type EventDispatcher, type Logger } from '@drift/shar
 import CheckFeaturedExpiryUseCase from './check-featured-expiry.use-case';
 import Post from '../../../domain/post/entity/post.aggregate';
 import type PostRepository from '../../../domain/post/repository/post.repository';
+import type PostFeaturedRepository from '../../../domain/post/repository/post-featured.repository';
 import PostDemotedEvent from '../../../domain/post/event/post-demoted.event';
 import {
   FEATURED_MAX_AGE_MS,
@@ -15,6 +16,11 @@ const makeRepository = (): PostRepository => ({
   findById: vi.fn().mockResolvedValue(null),
   findAll: vi.fn().mockResolvedValue([]),
   findAllFeatured: vi.fn().mockResolvedValue([]),
+});
+
+const makePostFeaturedRepository = (): PostFeaturedRepository => ({
+  save: vi.fn().mockResolvedValue(undefined),
+  delete: vi.fn().mockResolvedValue(undefined),
 });
 
 const makeDispatcher = (): EventDispatcher => ({
@@ -45,24 +51,33 @@ const makeFeaturedPost = (opts: { featuredAt: Date; flagged: boolean }): Post =>
 
 describe('CheckFeaturedExpiryUseCase', () => {
   let repository: PostRepository;
+  let postFeaturedRepository: PostFeaturedRepository;
   let dispatcher: EventDispatcher;
   let logger: Logger;
   let useCase: CheckFeaturedExpiryUseCase;
 
   beforeEach(() => {
     repository = makeRepository();
+    postFeaturedRepository = makePostFeaturedRepository();
     dispatcher = makeDispatcher();
     logger = makeLogger();
-    useCase = new CheckFeaturedExpiryUseCase(repository, dispatcher, logger);
+    useCase = new CheckFeaturedExpiryUseCase(
+      repository,
+      postFeaturedRepository,
+      dispatcher,
+      logger,
+    );
   });
 
   it('does nothing when there are no featured posts', async () => {
     const saveSpy = vi.spyOn(repository, 'save');
+    const deleteFeaturedSpy = vi.spyOn(postFeaturedRepository, 'delete');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
     await useCase.execute();
 
     expect(saveSpy).not.toHaveBeenCalled();
+    expect(deleteFeaturedSpy).not.toHaveBeenCalled();
     expect(dispatchSpy).not.toHaveBeenCalled();
   });
 
@@ -71,12 +86,14 @@ describe('CheckFeaturedExpiryUseCase', () => {
     const post = makeFeaturedPost({ featuredAt, flagged: true });
     vi.spyOn(repository, 'findAllFeatured').mockResolvedValue([post]);
     const saveSpy = vi.spyOn(repository, 'save');
+    const deleteFeaturedSpy = vi.spyOn(postFeaturedRepository, 'delete');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
     await useCase.execute();
 
     expect(post.isFeatured).toBe(false);
     expect(saveSpy).toHaveBeenCalledTimes(1);
+    expect(deleteFeaturedSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledWith(expect.any(PostDemotedEvent));
     const dispatched = dispatchSpy.mock.calls[0][0] as PostDemotedEvent;
@@ -89,11 +106,13 @@ describe('CheckFeaturedExpiryUseCase', () => {
     const post = makeFeaturedPost({ featuredAt, flagged: false });
     vi.spyOn(repository, 'findAllFeatured').mockResolvedValue([post]);
     const saveSpy = vi.spyOn(repository, 'save');
+    const deleteFeaturedSpy = vi.spyOn(postFeaturedRepository, 'delete');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
     await useCase.execute();
 
     expect(saveSpy).not.toHaveBeenCalled();
+    expect(deleteFeaturedSpy).not.toHaveBeenCalled();
     expect(dispatchSpy).not.toHaveBeenCalled();
   });
 
@@ -102,11 +121,13 @@ describe('CheckFeaturedExpiryUseCase', () => {
     const post = makeFeaturedPost({ featuredAt, flagged: true });
     vi.spyOn(repository, 'findAllFeatured').mockResolvedValue([post]);
     const saveSpy = vi.spyOn(repository, 'save');
+    const deleteFeaturedSpy = vi.spyOn(postFeaturedRepository, 'delete');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
     await useCase.execute();
 
     expect(saveSpy).not.toHaveBeenCalled();
+    expect(deleteFeaturedSpy).not.toHaveBeenCalled();
     expect(dispatchSpy).not.toHaveBeenCalled();
   });
 
@@ -116,6 +137,7 @@ describe('CheckFeaturedExpiryUseCase', () => {
     const postB = makeFeaturedPost({ featuredAt: old, flagged: true });
     vi.spyOn(repository, 'findAllFeatured').mockResolvedValue([postA, postB]);
     const saveSpy = vi.spyOn(repository, 'save');
+    const deleteFeaturedSpy = vi.spyOn(postFeaturedRepository, 'delete');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
     await useCase.execute();
@@ -123,6 +145,7 @@ describe('CheckFeaturedExpiryUseCase', () => {
     expect(postA.isFeatured).toBe(false);
     expect(postB.isFeatured).toBe(false);
     expect(saveSpy).toHaveBeenCalledTimes(2);
+    expect(deleteFeaturedSpy).toHaveBeenCalledTimes(2);
     expect(dispatchSpy).toHaveBeenCalledTimes(2);
     const dispatchedTypes = dispatchSpy.mock.calls.map((c) => c[0].constructor);
     expect(dispatchedTypes).toEqual([PostDemotedEvent, PostDemotedEvent]);

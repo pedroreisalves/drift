@@ -51,14 +51,16 @@ Manages post lifecycle (create, update, delete, read), featured post promotion, 
 
 ## Tech
 
-- **Database:** PostgreSQL (`posts` table, `post_locks` table)
+- **Database:** PostgreSQL (`posts` table, `post_featured` table, `post_locks` table)
 - **Messaging:** RabbitMQ topic exchange (`drift.events`)
 - **Scheduler:** node-cron (`CheckFeaturedExpiry` runs every hour with `runAtStartup: true`)
 - **HTTP:** Express 5
 - **Key libraries:** `amqp-connection-manager`, `amqplib`, `pg`, `pino`, `zod`, `uuidv7`
 - **Schema:** [`init.sql`](init.sql)
 
-## Database schema (posts table)
+## Database schema
+
+### `posts` table
 
 | Column                    | Type          | Notes                                                           |
 | ------------------------- | ------------- | --------------------------------------------------------------- |
@@ -68,11 +70,32 @@ Manages post lifecycle (create, update, delete, read), featured post promotion, 
 | `title`                   | `TEXT`        | Max 45 chars                                                    |
 | `body`                    | `TEXT`        | Max 2000 chars                                                  |
 | `tags`                    | `TEXT[]`      | Max 10 tags, reset on update                                    |
-| `is_featured`             | `BOOLEAN`     | Partial index `WHERE is_featured`                               |
-| `featured_at`             | `TIMESTAMPTZ` | Set when promoted, cleared on demotion                          |
 | `engagement_drop_flagged` | `BOOLEAN`     | Set by `PostEngagementDropped`, cleared on recovery or demotion |
 | `created_at`              | `TIMESTAMPTZ` |                                                                 |
 | `updated_at`              | `TIMESTAMPTZ` |                                                                 |
+
+### `post_featured` table
+
+Sparse table: a row is present only while a post is featured. Presence = featured; absence = not featured.
+
+| Column        | Type          | Notes                                              |
+| ------------- | ------------- | -------------------------------------------------- |
+| `post_id`     | `UUID`        | Primary key; FK → `posts(id) ON DELETE CASCADE`    |
+| `featured_at` | `TIMESTAMPTZ` | Set to `NOW()` when the post is promoted           |
+
+`isFeatured` and `featuredAt` on the Post aggregate are hydrated via `LEFT JOIN post_featured` on every read.
+
+### `post_locks` table
+
+Sparse table: a row is present only while a post is locked for a given operation. Presence = locked; absence = not locked.
+
+| Column      | Type          | Notes                                                        |
+| ----------- | ------------- | ------------------------------------------------------------ |
+| `post_id`   | `UUID`        | Composite PK with `lock_type`; FK → `posts(id) ON DELETE CASCADE` |
+| `lock_type` | `TEXT`        | Currently only `'tagging'`; extensible to other lock types   |
+| `locked_at` | `TIMESTAMPTZ` | Set to `NOW()` when the lock is acquired                     |
+
+`isTaggingInProgress` on the Post aggregate is hydrated via `LEFT JOIN post_locks` on every read.
 
 ## Environment variables
 

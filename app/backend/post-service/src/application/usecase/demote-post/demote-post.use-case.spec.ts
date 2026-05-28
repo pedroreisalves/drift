@@ -3,6 +3,7 @@ import { PostId, ClientId, type EventDispatcher, type Logger } from '@drift/shar
 import DemotePostUseCase from './demote-post.use-case';
 import Post from '../../../domain/post/entity/post.aggregate';
 import type PostRepository from '../../../domain/post/repository/post.repository';
+import type PostFeaturedRepository from '../../../domain/post/repository/post-featured.repository';
 import PostDemotedEvent from '../../../domain/post/event/post-demoted.event';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 
@@ -12,6 +13,11 @@ const makeRepository = (): PostRepository => ({
   findById: vi.fn().mockResolvedValue(null),
   findAll: vi.fn().mockResolvedValue([]),
   findAllFeatured: vi.fn().mockResolvedValue([]),
+});
+
+const makePostFeaturedRepository = (): PostFeaturedRepository => ({
+  save: vi.fn().mockResolvedValue(undefined),
+  delete: vi.fn().mockResolvedValue(undefined),
 });
 
 const makeDispatcher = (): EventDispatcher => ({
@@ -51,26 +57,31 @@ const makeUnpromotedPost = (postId: string): Post => {
 
 describe('DemotePostUseCase', () => {
   let repository: PostRepository;
+  let postFeaturedRepository: PostFeaturedRepository;
   let dispatcher: EventDispatcher;
   let useCase: DemotePostUseCase;
 
   beforeEach(() => {
     repository = makeRepository();
+    postFeaturedRepository = makePostFeaturedRepository();
     dispatcher = makeDispatcher();
-    useCase = new DemotePostUseCase(repository, dispatcher, makeLogger());
+    useCase = new DemotePostUseCase(repository, postFeaturedRepository, dispatcher, makeLogger());
   });
 
-  it('should demote the post, save it and dispatch PostDemotedEvent with the given reason', async () => {
+  it('should demote the post, save it, remove featured state and dispatch PostDemotedEvent with the given reason', async () => {
     const postId = uuidv7();
     const existing = makeFeaturedPost(postId);
     vi.spyOn(repository, 'findById').mockResolvedValue(existing);
     const saveSpy = vi.spyOn(repository, 'save');
+    const deleteFeaturedSpy = vi.spyOn(postFeaturedRepository, 'delete');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
     await useCase.execute({ postId, reason: 'expiry_and_engagement_drop' });
 
     expect(saveSpy).toHaveBeenCalledTimes(1);
     expect(existing.isFeatured).toBe(false);
+
+    expect(deleteFeaturedSpy).toHaveBeenCalledTimes(1);
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledWith(expect.any(PostDemotedEvent));
@@ -79,7 +90,7 @@ describe('DemotePostUseCase', () => {
     expect(dispatched.payload.reason).toBe('expiry_and_engagement_drop');
   });
 
-  it('should call findById, then save, then dispatch in order', async () => {
+  it('should call findById, then save, then deleteFeatured, then dispatch in order', async () => {
     const postId = uuidv7();
     const existing = makeFeaturedPost(postId);
 
@@ -92,6 +103,10 @@ describe('DemotePostUseCase', () => {
       callOrder.push('save');
       return Promise.resolve();
     });
+    vi.spyOn(postFeaturedRepository, 'delete').mockImplementation(() => {
+      callOrder.push('deleteFeatured');
+      return Promise.resolve();
+    });
     vi.spyOn(dispatcher, 'dispatch').mockImplementation(() => {
       callOrder.push('dispatch');
       return Promise.resolve();
@@ -99,17 +114,19 @@ describe('DemotePostUseCase', () => {
 
     await useCase.execute({ postId, reason: 'expiry_and_engagement_drop' });
 
-    expect(callOrder).toEqual(['findById', 'save', 'dispatch']);
+    expect(callOrder).toEqual(['findById', 'save', 'deleteFeatured', 'dispatch']);
   });
 
   it('should throw PostNotFoundError when the post does not exist', async () => {
     const saveSpy = vi.spyOn(repository, 'save');
+    const deleteFeaturedSpy = vi.spyOn(postFeaturedRepository, 'delete');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
     await expect(
       useCase.execute({ postId: uuidv7(), reason: 'expiry_and_engagement_drop' }),
     ).rejects.toThrow(PostNotFoundError);
     expect(saveSpy).not.toHaveBeenCalled();
+    expect(deleteFeaturedSpy).not.toHaveBeenCalled();
     expect(dispatchSpy).not.toHaveBeenCalled();
   });
 
@@ -117,12 +134,14 @@ describe('DemotePostUseCase', () => {
     const postId = uuidv7();
     vi.spyOn(repository, 'findById').mockResolvedValue(makeUnpromotedPost(postId));
     const saveSpy = vi.spyOn(repository, 'save');
+    const deleteFeaturedSpy = vi.spyOn(postFeaturedRepository, 'delete');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
     await expect(
       useCase.execute({ postId, reason: 'expiry_and_engagement_drop' }),
     ).rejects.toThrow();
     expect(saveSpy).not.toHaveBeenCalled();
+    expect(deleteFeaturedSpy).not.toHaveBeenCalled();
     expect(dispatchSpy).not.toHaveBeenCalled();
   });
 });

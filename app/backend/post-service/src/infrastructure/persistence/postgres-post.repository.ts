@@ -19,26 +19,29 @@ interface PostRow {
 }
 
 const POST_COLUMNS =
-  'posts.id, posts.client_id, posts.client_name, posts.title, posts.body, posts.tags, posts.is_featured, posts.featured_at, posts.engagement_drop_flagged, posts.created_at, posts.updated_at';
+  'posts.id, posts.client_id, posts.client_name, posts.title, posts.body, posts.tags, posts.engagement_drop_flagged, posts.created_at, posts.updated_at';
 
 const TAGGING_LOCK_JOIN =
   "LEFT JOIN post_locks ON posts.id = post_locks.post_id AND post_locks.lock_type = 'tagging'";
 
 const TAGGING_LOCK_COLUMN = '(post_locks.post_id IS NOT NULL) AS is_tagging_in_progress';
 
+const FEATURED_JOIN = 'LEFT JOIN post_featured ON posts.id = post_featured.post_id';
+
+const FEATURED_COLUMNS =
+  '(post_featured.post_id IS NOT NULL) AS is_featured, post_featured.featured_at';
+
 export default class PostgresPostRepository implements PostRepository {
   constructor(private readonly pool: Pool) {}
 
   async save(post: Post): Promise<void> {
     const query = `
-      INSERT INTO posts (id, client_id, client_name, title, body, tags, is_featured, featured_at, engagement_drop_flagged, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      INSERT INTO posts (id, client_id, client_name, title, body, tags, engagement_drop_flagged, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       ON CONFLICT (id) DO UPDATE SET
         title = EXCLUDED.title,
         body = EXCLUDED.body,
         tags = EXCLUDED.tags,
-        is_featured = EXCLUDED.is_featured,
-        featured_at = EXCLUDED.featured_at,
         engagement_drop_flagged = EXCLUDED.engagement_drop_flagged,
         updated_at = EXCLUDED.updated_at
     `;
@@ -50,8 +53,6 @@ export default class PostgresPostRepository implements PostRepository {
       post.title,
       post.body,
       post.tags,
-      post.isFeatured,
-      post.featuredAt,
       post.engagementDropFlagged,
       post.createdAt,
       post.updatedAt,
@@ -64,7 +65,7 @@ export default class PostgresPostRepository implements PostRepository {
 
   async findById(postId: PostId): Promise<Post | null> {
     const result = await this.pool.query<PostRow>(
-      `SELECT ${POST_COLUMNS}, ${TAGGING_LOCK_COLUMN} FROM posts ${TAGGING_LOCK_JOIN} WHERE posts.id = $1`,
+      `SELECT ${POST_COLUMNS}, ${TAGGING_LOCK_COLUMN}, ${FEATURED_COLUMNS} FROM posts ${TAGGING_LOCK_JOIN} ${FEATURED_JOIN} WHERE posts.id = $1`,
       [postId.toString()],
     );
 
@@ -75,11 +76,12 @@ export default class PostgresPostRepository implements PostRepository {
 
   async findAll(options?: { limit: number; offset: number; featured?: boolean }): Promise<Post[]> {
     const params: unknown[] = [];
-    let query = `SELECT ${POST_COLUMNS}, ${TAGGING_LOCK_COLUMN} FROM posts ${TAGGING_LOCK_JOIN}`;
+    let query = `SELECT ${POST_COLUMNS}, ${TAGGING_LOCK_COLUMN}, ${FEATURED_COLUMNS} FROM posts ${TAGGING_LOCK_JOIN} ${FEATURED_JOIN}`;
 
     if (options?.featured !== undefined) {
-      params.push(options.featured);
-      query += ` WHERE posts.is_featured = $${params.length}`;
+      query += options.featured
+        ? ' WHERE post_featured.post_id IS NOT NULL'
+        : ' WHERE post_featured.post_id IS NULL';
     }
 
     query += ' ORDER BY posts.created_at DESC';
@@ -97,7 +99,7 @@ export default class PostgresPostRepository implements PostRepository {
 
   async findAllFeatured(): Promise<Post[]> {
     const result = await this.pool.query<PostRow>(
-      `SELECT ${POST_COLUMNS}, ${TAGGING_LOCK_COLUMN} FROM posts ${TAGGING_LOCK_JOIN} WHERE posts.is_featured = TRUE`,
+      `SELECT ${POST_COLUMNS}, ${TAGGING_LOCK_COLUMN}, ${FEATURED_COLUMNS} FROM posts ${TAGGING_LOCK_JOIN} ${FEATURED_JOIN} WHERE post_featured.post_id IS NOT NULL`,
     );
 
     return result.rows.map((row) => this.toDomain(row));

@@ -3,6 +3,7 @@ import { PostId, ClientId, type EventDispatcher, type Logger } from '@drift/shar
 import PromotePostUseCase from './promote-post.use-case';
 import Post from '../../../domain/post/entity/post.aggregate';
 import type PostRepository from '../../../domain/post/repository/post.repository';
+import type PostFeaturedRepository from '../../../domain/post/repository/post-featured.repository';
 import PostPromotedEvent from '../../../domain/post/event/post-promoted.event';
 import EngagementDropRecoveredEvent from '../../../domain/post/event/engagement-drop-recovered.event';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
@@ -13,6 +14,11 @@ const makeRepository = (): PostRepository => ({
   findById: vi.fn().mockResolvedValue(null),
   findAll: vi.fn().mockResolvedValue([]),
   findAllFeatured: vi.fn().mockResolvedValue([]),
+});
+
+const makePostFeaturedRepository = (): PostFeaturedRepository => ({
+  save: vi.fn().mockResolvedValue(undefined),
+  delete: vi.fn().mockResolvedValue(undefined),
 });
 
 const makeDispatcher = (): EventDispatcher => ({
@@ -39,20 +45,23 @@ const makeExistingPost = (postId: string): Post => {
 
 describe('PromotePostUseCase', () => {
   let repository: PostRepository;
+  let postFeaturedRepository: PostFeaturedRepository;
   let dispatcher: EventDispatcher;
   let useCase: PromotePostUseCase;
 
   beforeEach(() => {
     repository = makeRepository();
+    postFeaturedRepository = makePostFeaturedRepository();
     dispatcher = makeDispatcher();
-    useCase = new PromotePostUseCase(repository, dispatcher, makeLogger());
+    useCase = new PromotePostUseCase(repository, postFeaturedRepository, dispatcher, makeLogger());
   });
 
-  it('should promote the post, save it and dispatch PostPromotedEvent', async () => {
+  it('should promote the post, save it, persist featured state and dispatch PostPromotedEvent', async () => {
     const postId = uuidv7();
     const existing = makeExistingPost(postId);
     vi.spyOn(repository, 'findById').mockResolvedValue(existing);
     const saveSpy = vi.spyOn(repository, 'save');
+    const saveFeaturedSpy = vi.spyOn(postFeaturedRepository, 'save');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
     await useCase.execute({ postId });
@@ -61,13 +70,15 @@ describe('PromotePostUseCase', () => {
     expect(saveSpy).toHaveBeenCalledWith(existing);
     expect(existing.isFeatured).toBe(true);
 
+    expect(saveFeaturedSpy).toHaveBeenCalledTimes(1);
+
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledWith(expect.any(PostPromotedEvent));
     const dispatched = dispatchSpy.mock.calls[0][0] as PostPromotedEvent;
     expect(dispatched.payload.postId).toBe(postId);
   });
 
-  it('should call findById, then save, then dispatch in order', async () => {
+  it('should call findById, then save, then saveFeatured, then dispatch in order', async () => {
     const postId = uuidv7();
     const existing = makeExistingPost(postId);
 
@@ -80,6 +91,10 @@ describe('PromotePostUseCase', () => {
       callOrder.push('save');
       return Promise.resolve();
     });
+    vi.spyOn(postFeaturedRepository, 'save').mockImplementation(() => {
+      callOrder.push('saveFeatured');
+      return Promise.resolve();
+    });
     vi.spyOn(dispatcher, 'dispatch').mockImplementation(() => {
       callOrder.push('dispatch');
       return Promise.resolve();
@@ -87,15 +102,17 @@ describe('PromotePostUseCase', () => {
 
     await useCase.execute({ postId });
 
-    expect(callOrder).toEqual(['findById', 'save', 'dispatch']);
+    expect(callOrder).toEqual(['findById', 'save', 'saveFeatured', 'dispatch']);
   });
 
   it('should throw PostNotFoundError when the post does not exist', async () => {
     const saveSpy = vi.spyOn(repository, 'save');
+    const saveFeaturedSpy = vi.spyOn(postFeaturedRepository, 'save');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
     await expect(useCase.execute({ postId: uuidv7() })).rejects.toThrow(PostNotFoundError);
     expect(saveSpy).not.toHaveBeenCalled();
+    expect(saveFeaturedSpy).not.toHaveBeenCalled();
     expect(dispatchSpy).not.toHaveBeenCalled();
   });
 
@@ -105,10 +122,12 @@ describe('PromotePostUseCase', () => {
     existing.promote();
     existing.clearDomainEvents();
     vi.spyOn(repository, 'findById').mockResolvedValue(existing);
+    const saveFeaturedSpy = vi.spyOn(postFeaturedRepository, 'save');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
     await useCase.execute({ postId });
 
+    expect(saveFeaturedSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).not.toHaveBeenCalled();
   });
 
@@ -119,12 +138,14 @@ describe('PromotePostUseCase', () => {
     existing.flagEngagementDrop();
     existing.clearDomainEvents();
     vi.spyOn(repository, 'findById').mockResolvedValue(existing);
+    const saveFeaturedSpy = vi.spyOn(postFeaturedRepository, 'save');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
     await useCase.execute({ postId });
 
     expect(existing.isFeatured).toBe(true);
     expect(existing.engagementDropFlagged).toBe(false);
+    expect(saveFeaturedSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledWith(expect.any(EngagementDropRecoveredEvent));
     const dispatched = dispatchSpy.mock.calls[0][0] as EngagementDropRecoveredEvent;

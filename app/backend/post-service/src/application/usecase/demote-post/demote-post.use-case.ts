@@ -1,11 +1,13 @@
 import { PostId, type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
 import type PostRepository from '../../../domain/post/repository/post.repository';
+import type PostFeaturedRepository from '../../../domain/post/repository/post-featured.repository';
 import type { DemotePostInputDto } from './demote-post.dto';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 
 export default class DemotePostUseCase implements UseCase<DemotePostInputDto, void> {
   constructor(
     private readonly postRepository: PostRepository,
+    private readonly postFeaturedRepository: PostFeaturedRepository,
     private readonly eventDispatcher: EventDispatcher,
     private readonly logger: Logger,
   ) {}
@@ -23,6 +25,7 @@ export default class DemotePostUseCase implements UseCase<DemotePostInputDto, vo
     post.demote(input.reason);
 
     await this.postRepository.save(post);
+    await this.postFeaturedRepository.delete(postId);
 
     this.logger.info('Post demoted', { postId: postId.toString(), reason: input.reason });
 

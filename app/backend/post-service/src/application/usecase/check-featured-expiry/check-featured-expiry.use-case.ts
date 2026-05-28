@@ -1,5 +1,6 @@
 import type { DomainEvent, EventDispatcher, Logger, UseCase } from '@drift/shared';
 import type PostRepository from '../../../domain/post/repository/post.repository';
+import type PostFeaturedRepository from '../../../domain/post/repository/post-featured.repository';
 import {
   FEATURED_MAX_AGE_MS,
   FEATURED_EXPIRY_DEMOTION_REASON,
@@ -8,6 +9,7 @@ import {
 export default class CheckFeaturedExpiryUseCase implements UseCase<void, void> {
   constructor(
     private readonly postRepository: PostRepository,
+    private readonly postFeaturedRepository: PostFeaturedRepository,
     private readonly eventDispatcher: EventDispatcher,
     private readonly logger: Logger,
   ) {}
@@ -46,6 +48,7 @@ export default class CheckFeaturedExpiryUseCase implements UseCase<void, void> {
     }
 
     await Promise.all(expired.map((post) => this.postRepository.save(post)));
+    await Promise.all(expired.map((post) => this.postFeaturedRepository.delete(post.id)));
     await Promise.all(events.map((event) => this.eventDispatcher.dispatch(event)));
 
     for (const post of expired) {
