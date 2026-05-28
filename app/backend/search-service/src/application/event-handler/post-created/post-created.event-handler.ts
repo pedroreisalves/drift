@@ -24,10 +24,10 @@ export default class PostCreatedEventHandler implements EventHandler {
 
   async handle(raw: unknown): Promise<void> {
     const event = postCreatedMessageSchema.parse(raw);
-    const { postId, title, body } = event.payload;
+    const { postId, title, body, createdAt } = event.payload;
 
     this.logger.info('Received PostCreated event, indexing post', { postId });
 
-    await this.indexPostUseCase.execute({ postId, title, body });
+    await this.indexPostUseCase.execute({ postId, title, body, createdAt });
   }
 }

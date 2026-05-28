@@ -9,11 +9,16 @@ import RemovePostFromIndexUseCase from './application/usecase/remove-post-from-i
 import UpdatePostIndexUseCase from './application/usecase/update-post-index/update-post-index.use-case';
 import IndexPostTagsUseCase from './application/usecase/index-post-tags/index-post-tags.use-case';
 import SearchPostsUseCase from './application/usecase/search-posts/search-posts.use-case';
+import UpdateSearchEntryFeaturedStatusUseCase from './application/usecase/update-search-entry-featured-status/update-search-entry-featured-status.use-case';
+import UpdateSearchEntryTaggingStatusUseCase from './application/usecase/update-search-entry-tagging-status/update-search-entry-tagging-status.use-case';
 
 import PostCreatedEventHandler from './application/event-handler/post-created/post-created.event-handler';
 import PostUpdatedEventHandler from './application/event-handler/post-updated/post-updated.event-handler';
 import PostDeletedEventHandler from './application/event-handler/post-deleted/post-deleted.event-handler';
 import PostTagsUpdatedEventHandler from './application/event-handler/post-tags-updated/post-tags-updated.event-handler';
+import PostPromotedEventHandler from './application/event-handler/post-promoted/post-promoted.event-handler';
+import PostDemotedEventHandler from './application/event-handler/post-demoted/post-demoted.event-handler';
+import TaggingAbandonedEventHandler from './application/event-handler/tagging-abandoned/tagging-abandoned.event-handler';
 
 import MeilisearchSearchEntryRepository from './infrastructure/persistence/meilisearch-search-entry.repository';
 import SearchController from './infrastructure/http/controllers/search.controller';
@@ -42,16 +47,39 @@ async function main(): Promise<void> {
   const updatePostIndexUseCase = new UpdatePostIndexUseCase(repository, dispatcher, logger);
   const indexPostTagsUseCase = new IndexPostTagsUseCase(repository, dispatcher, logger);
   const searchPostsUseCase = new SearchPostsUseCase(repository, dispatcher, logger);
+  const updateSearchEntryFeaturedStatusUseCase = new UpdateSearchEntryFeaturedStatusUseCase(
+    repository,
+    logger,
+  );
+  const updateSearchEntryTaggingStatusUseCase = new UpdateSearchEntryTaggingStatusUseCase(
+    repository,
+    logger,
+  );
 
   const postCreatedEventHandler = new PostCreatedEventHandler(indexPostUseCase, logger);
   const postUpdatedEventHandler = new PostUpdatedEventHandler(updatePostIndexUseCase, logger);
   const postDeletedEventHandler = new PostDeletedEventHandler(removePostFromIndexUseCase, logger);
   const postTagsUpdatedEventHandler = new PostTagsUpdatedEventHandler(indexPostTagsUseCase, logger);
+  const postPromotedEventHandler = new PostPromotedEventHandler(
+    updateSearchEntryFeaturedStatusUseCase,
+    logger,
+  );
+  const postDemotedEventHandler = new PostDemotedEventHandler(
+    updateSearchEntryFeaturedStatusUseCase,
+    logger,
+  );
+  const taggingAbandonedEventHandler = new TaggingAbandonedEventHandler(
+    updateSearchEntryTaggingStatusUseCase,
+    logger,
+  );
 
   await consumer.subscribe('PostCreated', postCreatedEventHandler);
   await consumer.subscribe('PostUpdated', postUpdatedEventHandler);
   await consumer.subscribe('PostDeleted', postDeletedEventHandler);
   await consumer.subscribe('PostTagsUpdated', postTagsUpdatedEventHandler);
+  await consumer.subscribe('PostPromoted', postPromotedEventHandler);
+  await consumer.subscribe('PostDemoted', postDemotedEventHandler);
+  await consumer.subscribe('TaggingAbandoned', taggingAbandonedEventHandler);
 
   const controller = new SearchController(searchPostsUseCase);
   const routes = createSearchRoutes(controller);
@@ -62,7 +90,15 @@ async function main(): Promise<void> {
   app.use(createErrorMiddleware(logger));
 
   logger.info(`${Environment.SERVICE_NAME} started`, {
-    subscriptions: ['PostCreated', 'PostUpdated', 'PostDeleted', 'PostTagsUpdated'],
+    subscriptions: [
+      'PostCreated',
+      'PostUpdated',
+      'PostDeleted',
+      'PostTagsUpdated',
+      'PostPromoted',
+      'PostDemoted',
+      'TaggingAbandoned',
+    ],
   });
 
   app.listen(Environment.PORT, () => {

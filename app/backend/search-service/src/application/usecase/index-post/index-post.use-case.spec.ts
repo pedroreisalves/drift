@@ -40,7 +40,13 @@ describe('IndexPostUseCase', () => {
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
     const postId = uuidv7();
-    await useCase.execute({ postId, title: 'My Post Title', body: 'Body content for the post.' });
+    const createdAt = '2026-05-01T12:00:00.000Z';
+    await useCase.execute({
+      postId,
+      title: 'My Post Title',
+      body: 'Body content for the post.',
+      createdAt,
+    });
 
     expect(indexSpy).toHaveBeenCalledTimes(1);
     const persisted = indexSpy.mock.calls[0][0];
@@ -49,6 +55,9 @@ describe('IndexPostUseCase', () => {
     expect(persisted.title).toBe('My Post Title');
     expect(persisted.body).toBe('Body content for the post.');
     expect(persisted.tags).toEqual([]);
+    expect(persisted.isFeatured).toBe(false);
+    expect(persisted.createdAt.toISOString()).toBe(createdAt);
+    expect(persisted.isTaggingInProgress).toBe(true);
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledWith(expect.any(PostIndexedEvent));
@@ -59,7 +68,12 @@ describe('IndexPostUseCase', () => {
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
     await expect(
-      useCase.execute({ postId: uuidv7(), title: 'Title', body: 'Body content.' }),
+      useCase.execute({
+        postId: uuidv7(),
+        title: 'Title',
+        body: 'Body content.',
+        createdAt: '2026-05-01T12:00:00.000Z',
+      }),
     ).rejects.toThrow(IndexingFailedError);
 
     expect(dispatchSpy).not.toHaveBeenCalled();
@@ -70,7 +84,12 @@ describe('IndexPostUseCase', () => {
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
     await expect(
-      useCase.execute({ postId: uuidv7(), title: 'Title', body: 'Body content.' }),
+      useCase.execute({
+        postId: uuidv7(),
+        title: 'Title',
+        body: 'Body content.',
+        createdAt: '2026-05-01T12:00:00.000Z',
+      }),
     ).rejects.toThrow(IndexingFailedError);
 
     expect(dispatchSpy).not.toHaveBeenCalled();
@@ -87,7 +106,12 @@ describe('IndexPostUseCase', () => {
       return Promise.resolve();
     });
 
-    await useCase.execute({ postId: uuidv7(), title: 'Title', body: 'Body content.' });
+    await useCase.execute({
+      postId: uuidv7(),
+      title: 'Title',
+      body: 'Body content.',
+      createdAt: '2026-05-01T12:00:00.000Z',
+    });
 
     expect(callOrder).toEqual(['repository.index', 'dispatcher.dispatch']);
   });

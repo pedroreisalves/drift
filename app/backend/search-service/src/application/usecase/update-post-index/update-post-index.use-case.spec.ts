@@ -32,6 +32,9 @@ const makeEntry = (postId = uuidv7()): SearchEntry =>
     title: 'Old Title',
     body: 'Old body content.',
     tags: ['existing-tag'],
+    isFeatured: false,
+    createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    isTaggingInProgress: false,
   });
 
 describe('UpdatePostIndexUseCase', () => {
@@ -58,6 +61,7 @@ describe('UpdatePostIndexUseCase', () => {
     expect(updated.title).toBe('New Title');
     expect(updated.body).toBe('New body content.');
     expect(updated.tags).toEqual([]);
+    expect(updated.isTaggingInProgress).toBe(true);
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledWith(expect.any(PostIndexedEvent));

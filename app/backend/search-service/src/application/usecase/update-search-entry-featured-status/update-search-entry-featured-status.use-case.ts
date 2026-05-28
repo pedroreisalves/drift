@@ -1,18 +1,19 @@
-import { PostId, type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
+import { PostId, type Logger, type UseCase } from '@drift/shared';
 import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository';
-import type { UpdatePostIndexInputDto } from './update-post-index.dto';
-import PostIndexedEvent from '../../../domain/search-entry/event/post-indexed.event';
+import type { UpdateSearchEntryFeaturedStatusInputDto } from './update-search-entry-featured-status.dto';
 import DocumentNotFoundError from '../../@shared/error/document-not-found.error';
 import IndexingFailedError from '../../@shared/error/indexing-failed.error';
 
-export default class UpdatePostIndexUseCase implements UseCase<UpdatePostIndexInputDto, void> {
+export default class UpdateSearchEntryFeaturedStatusUseCase implements UseCase<
+  UpdateSearchEntryFeaturedStatusInputDto,
+  void
+> {
   constructor(
     private readonly searchEntryRepository: SearchEntryRepository,
-    private readonly eventDispatcher: EventDispatcher,
     private readonly logger: Logger,
   ) {}
 
-  async execute(input: UpdatePostIndexInputDto): Promise<void> {
+  async execute(input: UpdateSearchEntryFeaturedStatusInputDto): Promise<void> {
     const postId = new PostId(input.postId);
     const entry = await this.searchEntryRepository.findByPostId(postId);
 
@@ -21,8 +22,7 @@ export default class UpdatePostIndexUseCase implements UseCase<UpdatePostIndexIn
       throw new DocumentNotFoundError(input.postId);
     }
 
-    entry.updateContent({ title: input.title, body: input.body });
-    entry.setTaggingInProgress(true);
+    entry.setFeatured(input.isFeatured);
 
     try {
       await this.searchEntryRepository.update(entry);
@@ -31,10 +31,9 @@ export default class UpdatePostIndexUseCase implements UseCase<UpdatePostIndexIn
       throw new IndexingFailedError(reason);
     }
 
-    const indexedAt = new Date().toISOString();
-
-    this.logger.info('Post index updated', { postId: input.postId });
-
-    await this.eventDispatcher.dispatch(new PostIndexedEvent({ postId: input.postId, indexedAt }));
+    this.logger.info('Search entry featured status updated', {
+      postId: input.postId,
+      isFeatured: input.isFeatured,
+    });
   }
 }

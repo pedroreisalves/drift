@@ -8,6 +8,9 @@ interface SearchEntryDocument {
   title: string;
   body: string;
   tags: string[];
+  isFeatured: boolean;
+  createdAt: string;
+  isTaggingInProgress: boolean;
 }
 
 export default class MeilisearchSearchEntryRepository implements SearchEntryRepository {
@@ -55,6 +58,9 @@ export default class MeilisearchSearchEntryRepository implements SearchEntryRepo
       title: entry.title,
       body: entry.body,
       tags: entry.tags,
+      isFeatured: entry.isFeatured,
+      createdAt: entry.createdAt.toISOString(),
+      isTaggingInProgress: entry.isTaggingInProgress,
     };
   }
 
@@ -64,6 +70,9 @@ export default class MeilisearchSearchEntryRepository implements SearchEntryRepo
       title: doc.title,
       body: doc.body,
       tags: doc.tags,
+      isFeatured: doc.isFeatured,
+      createdAt: new Date(doc.createdAt),
+      isTaggingInProgress: doc.isTaggingInProgress,
     });
   }
 }

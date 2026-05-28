@@ -20,7 +20,10 @@ export default class IndexPostUseCase implements UseCase<IndexPostInputDto, void
       title: input.title,
       body: input.body,
       tags: [],
+      createdAt: new Date(input.createdAt),
     });
+
+    entry.setTaggingInProgress(true);
 
     try {
       await this.searchEntryRepository.index(entry);

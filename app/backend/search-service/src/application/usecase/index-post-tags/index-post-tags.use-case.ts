@@ -22,6 +22,7 @@ export default class IndexPostTagsUseCase implements UseCase<IndexPostTagsInputD
     }
 
     entry.updateTags({ tags: input.tags });
+    entry.setTaggingInProgress(false);
 
     try {
       await this.searchEntryRepository.update(entry);

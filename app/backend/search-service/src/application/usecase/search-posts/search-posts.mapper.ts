@@ -8,5 +8,8 @@ export function toSearchPostsOutputDto(entry: SearchEntry): SearchPostsOutputDto
     title: entry.title,
     bodyPreview: truncateText(entry.body, POST_BODY_PREVIEW_LENGTH),
     tags: entry.tags,
+    isFeatured: entry.isFeatured,
+    createdAt: entry.createdAt.toISOString(),
+    isTaggingInProgress: entry.isTaggingInProgress,
   };
 }

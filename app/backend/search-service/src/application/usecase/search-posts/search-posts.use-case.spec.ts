@@ -24,12 +24,15 @@ const makeLogger = (): Logger => ({
   error: vi.fn(),
 });
 
-const makeEntry = (postId = uuidv7()): SearchEntry =>
+const makeEntry = (postId = uuidv7(), overrides: Partial<SearchEntry> = {}): SearchEntry =>
   SearchEntry.reconstruct({
     postId: new PostId(postId),
     title: 'A Post Title',
     body: 'Post body content.',
     tags: ['tag-a'],
+    isFeatured: overrides.isFeatured ?? false,
+    createdAt: overrides.createdAt ?? new Date('2026-01-01T00:00:00.000Z'),
+    isTaggingInProgress: overrides.isTaggingInProgress ?? false,
   });
 
 describe('SearchPostsUseCase', () => {
@@ -46,7 +49,15 @@ describe('SearchPostsUseCase', () => {
   it('should return search results as DTOs and dispatch PostSearchedEvent', async () => {
     const firstId = uuidv7();
     const secondId = uuidv7();
-    vi.spyOn(repository, 'search').mockResolvedValue([makeEntry(firstId), makeEntry(secondId)]);
+    const firstCreatedAt = new Date('2026-02-15T10:00:00.000Z');
+    vi.spyOn(repository, 'search').mockResolvedValue([
+      makeEntry(firstId, {
+        isFeatured: true,
+        createdAt: firstCreatedAt,
+        isTaggingInProgress: true,
+      }),
+      makeEntry(secondId),
+    ]);
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
     const result = await useCase.execute({ q: 'drift', clientId: uuidv7() });
@@ -56,7 +67,12 @@ describe('SearchPostsUseCase', () => {
     expect(result).toHaveLength(2);
     expect(result[0].postId).toBe(firstId);
     expect(result[0].bodyPreview).toBe('Post body content.');
+    expect(result[0].isFeatured).toBe(true);
+    expect(result[0].createdAt).toBe(firstCreatedAt.toISOString());
+    expect(result[0].isTaggingInProgress).toBe(true);
     expect(result[1].postId).toBe(secondId);
+    expect(result[1].isFeatured).toBe(false);
+    expect(result[1].isTaggingInProgress).toBe(false);
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledWith(expect.any(PostSearchedEvent));

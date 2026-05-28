@@ -10,4 +10,7 @@ export interface SearchPostsOutputDto {
   title: string;
   bodyPreview: string;
   tags: string[];
+  isFeatured: boolean;
+  createdAt: string;
+  isTaggingInProgress: boolean;
 }

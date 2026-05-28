@@ -31,6 +31,9 @@ const makeEntry = (postId = uuidv7()): SearchEntry =>
     title: 'A Post',
     body: 'Body content.',
     tags: [],
+    isFeatured: false,
+    createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    isTaggingInProgress: false,
   });
 
 describe('RemovePostFromIndexUseCase', () => {

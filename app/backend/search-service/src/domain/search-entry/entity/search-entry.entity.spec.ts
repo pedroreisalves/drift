@@ -9,6 +9,7 @@ describe('SearchEntry', () => {
     title: 'My First Post',
     body: 'This is the body of my first post.',
     tags: ['tag1', 'tag2'],
+    createdAt: new Date('2026-01-01T00:00:00.000Z'),
     ...overrides,
   });
 
@@ -22,6 +23,9 @@ describe('SearchEntry', () => {
     expect(entry.title).toEqual(props.title);
     expect(entry.body).toEqual(props.body);
     expect(entry.tags).toEqual(props.tags);
+    expect(entry.isFeatured).toBe(false);
+    expect(entry.createdAt).toEqual(props.createdAt);
+    expect(entry.isTaggingInProgress).toBe(false);
   });
 
   it('should throw an error when creating with an empty title', () => {
@@ -80,8 +84,16 @@ describe('SearchEntry', () => {
     expect(() => SearchEntry.create(props)).toThrow('Tags cannot be duplicated');
   });
 
+  it('should throw an error when creating with an invalid createdAt', () => {
+    const props = makeProps({ createdAt: new Date('invalid') });
+
+    expect(() => SearchEntry.create(props)).toThrow(InvalidSearchEntryError);
+    expect(() => SearchEntry.create(props)).toThrow('createdAt must be a valid date');
+  });
+
   it('should reconstruct a search entry from existing properties', () => {
-    const props = makeProps();
+    const base = makeProps();
+    const props = { ...base, isFeatured: true, isTaggingInProgress: true };
 
     const entry = SearchEntry.reconstruct(props);
 
@@ -90,6 +102,9 @@ describe('SearchEntry', () => {
     expect(entry.title).toEqual(props.title);
     expect(entry.body).toEqual(props.body);
     expect(entry.tags).toEqual(props.tags);
+    expect(entry.isFeatured).toBe(true);
+    expect(entry.createdAt).toEqual(props.createdAt);
+    expect(entry.isTaggingInProgress).toBe(true);
   });
 
   it('should update content and reset tags', () => {
@@ -100,6 +115,19 @@ describe('SearchEntry', () => {
     expect(entry.title).toEqual('Updated Title');
     expect(entry.body).toEqual('Updated body.');
     expect(entry.tags).toEqual([]);
+  });
+
+  it('should preserve isFeatured, createdAt and isTaggingInProgress when updating content', () => {
+    const props = makeProps();
+    const entry = SearchEntry.create(props);
+    entry.setFeatured(true);
+    entry.setTaggingInProgress(true);
+
+    entry.updateContent({ title: 'Updated Title', body: 'Updated body.' });
+
+    expect(entry.isFeatured).toBe(true);
+    expect(entry.createdAt).toEqual(props.createdAt);
+    expect(entry.isTaggingInProgress).toBe(true);
   });
 
   it('should throw an error when updating content with an empty title', () => {
@@ -164,6 +192,19 @@ describe('SearchEntry', () => {
     expect(entry.tags).toEqual(['newTag1', 'newTag2']);
   });
 
+  it('should preserve isFeatured, createdAt and isTaggingInProgress when updating tags', () => {
+    const props = makeProps();
+    const entry = SearchEntry.create(props);
+    entry.setFeatured(true);
+    entry.setTaggingInProgress(true);
+
+    entry.updateTags({ tags: ['newTag'] });
+
+    expect(entry.isFeatured).toBe(true);
+    expect(entry.createdAt).toEqual(props.createdAt);
+    expect(entry.isTaggingInProgress).toBe(true);
+  });
+
   it('should throw an error when updating with more than 10 tags', () => {
     const entry = SearchEntry.create(makeProps());
     const tooManyTags = Array.from({ length: 11 }, (_, i) => `tag${i}`);
@@ -202,5 +243,39 @@ describe('SearchEntry', () => {
     expect(() => entry.updateTags({ tags: ['tag', 'tag'] })).toThrow(InvalidSearchEntryError);
 
     expect(entry.tags).toEqual(props.tags);
+  });
+
+  it('should flip isFeatured when setFeatured changes the value', () => {
+    const entry = SearchEntry.create(makeProps());
+
+    entry.setFeatured(true);
+
+    expect(entry.isFeatured).toBe(true);
+  });
+
+  it('should be a no-op when setFeatured is called with the current value', () => {
+    const entry = SearchEntry.create(makeProps());
+    entry.setFeatured(true);
+
+    entry.setFeatured(true);
+
+    expect(entry.isFeatured).toBe(true);
+  });
+
+  it('should flip isTaggingInProgress when setTaggingInProgress changes the value', () => {
+    const entry = SearchEntry.create(makeProps());
+
+    entry.setTaggingInProgress(true);
+
+    expect(entry.isTaggingInProgress).toBe(true);
+  });
+
+  it('should be a no-op when setTaggingInProgress is called with the current value', () => {
+    const entry = SearchEntry.create(makeProps());
+    entry.setTaggingInProgress(true);
+
+    entry.setTaggingInProgress(true);
+
+    expect(entry.isTaggingInProgress).toBe(true);
   });
 });

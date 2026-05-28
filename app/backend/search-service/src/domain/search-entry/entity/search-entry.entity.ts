@@ -7,6 +7,9 @@ interface SearchEntryProps {
   title: string;
   body: string;
   tags: string[];
+  isFeatured: boolean;
+  createdAt: Date;
+  isTaggingInProgress: boolean;
 }
 
 export interface CreateSearchEntryProps {
@@ -14,6 +17,7 @@ export interface CreateSearchEntryProps {
   title: string;
   body: string;
   tags: string[];
+  createdAt: Date;
 }
 
 const createSearchEntrySchema = z
@@ -32,6 +36,7 @@ const createSearchEntrySchema = z
       .refine((tags) => new Set(tags).size === tags.length, {
         message: 'Tags cannot be duplicated',
       }),
+    createdAt: z.date({ message: 'createdAt must be a valid date' }),
   })
   .strict();
 
@@ -80,15 +85,14 @@ export default class SearchEntry {
       title: props.title,
       body: props.body,
       tags: props.tags,
+      createdAt: props.createdAt,
     });
 
     if (!result.success) {
       throw new InvalidSearchEntryError(result.error.issues.map((e) => e.message));
     }
 
-    const searchEntry = new SearchEntry({ ...props });
-
-    return searchEntry;
+    return new SearchEntry({ ...props, isFeatured: false, isTaggingInProgress: false });
   }
 
   updateContent(props: UpdateSearchEntryContentProps): void {
@@ -122,6 +126,16 @@ export default class SearchEntry {
     this.props.tags = props.tags;
   }
 
+  setFeatured(value: boolean): void {
+    if (this.props.isFeatured === value) return;
+    this.props.isFeatured = value;
+  }
+
+  setTaggingInProgress(value: boolean): void {
+    if (this.props.isTaggingInProgress === value) return;
+    this.props.isTaggingInProgress = value;
+  }
+
   get postId(): PostId {
     return this.props.postId;
   }
@@ -136,5 +150,17 @@ export default class SearchEntry {
 
   get tags(): string[] {
     return [...this.props.tags];
+  }
+
+  get isFeatured(): boolean {
+    return this.props.isFeatured;
+  }
+
+  get createdAt(): Date {
+    return this.props.createdAt;
+  }
+
+  get isTaggingInProgress(): boolean {
+    return this.props.isTaggingInProgress;
   }
 }
