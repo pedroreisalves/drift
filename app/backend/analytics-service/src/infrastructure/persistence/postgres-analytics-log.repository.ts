@@ -78,9 +78,10 @@ export default class PostgresAnalyticsLogRepository implements AnalyticsLogRepos
         SELECT al.post_id, COUNT(*) AS count
         FROM analytics_log al
         LEFT JOIN post_owners po ON al.post_id = po.post_id
+        LEFT JOIN post_last_updated plu ON al.post_id = plu.post_id
         WHERE al.event_type = $1
           AND al.post_id = ANY($2::uuid[])
-          AND al.timestamp >= $3::timestamptz
+          AND al.timestamp >= GREATEST($3::timestamptz, COALESCE(plu.updated_at, $3::timestamptz))
           AND al.timestamp < $4::timestamptz
           AND (po.owner_client_id IS NULL OR al.client_id != po.owner_client_id)
         GROUP BY al.post_id

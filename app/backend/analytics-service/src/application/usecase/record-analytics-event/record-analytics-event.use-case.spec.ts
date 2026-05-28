@@ -3,6 +3,8 @@ import RecordAnalyticsEventUseCase from './record-analytics-event.use-case';
 import type AnalyticsLogRepository from '../../../domain/analytics-log/repository/analytics-log.repository';
 import type DeletedPostRepository from '../../../domain/analytics-log/repository/deleted-post.repository';
 import type PostOwnerRepository from '../../../domain/analytics-log/repository/post-owner.repository';
+import type PostLastUpdatedRepository from '../../../domain/analytics-log/repository/post-last-updated.repository';
+import type EngagementStateRepository from '../../../domain/analytics-log/repository/engagement-state.repository';
 import type { EventDispatcher, Logger } from '@drift/shared';
 import AnalyticsLog from '../../../domain/analytics-log/entity/analytics-log.entity';
 import { EventTypeEnum } from '../../../domain/analytics-log/value-object/event-type.value-object';
@@ -21,6 +23,17 @@ const makePostOwnerRepository = (): PostOwnerRepository => ({
   save: vi.fn().mockResolvedValue(undefined),
 });
 
+const makePostLastUpdatedRepository = (): PostLastUpdatedRepository => ({
+  save: vi.fn().mockResolvedValue(undefined),
+});
+
+const makeEngagementStateRepository = (): EngagementStateRepository => ({
+  save: vi.fn().mockResolvedValue(undefined),
+  saveMany: vi.fn().mockResolvedValue(undefined),
+  findByPostIds: vi.fn().mockResolvedValue([]),
+  findAllRaised: vi.fn().mockResolvedValue([]),
+});
+
 const makeDispatcher = (): EventDispatcher => ({
   dispatch: vi.fn().mockResolvedValue(undefined),
 });
@@ -35,6 +48,8 @@ describe('RecordAnalyticsEventUseCase', () => {
   let analyticsLogRepository: AnalyticsLogRepository;
   let deletedPostRepository: DeletedPostRepository;
   let postOwnerRepository: PostOwnerRepository;
+  let postLastUpdatedRepository: PostLastUpdatedRepository;
+  let engagementStateRepository: EngagementStateRepository;
   let dispatcher: EventDispatcher;
   let useCase: RecordAnalyticsEventUseCase;
 
@@ -42,11 +57,15 @@ describe('RecordAnalyticsEventUseCase', () => {
     analyticsLogRepository = makeAnalyticsLogRepository();
     deletedPostRepository = makeDeletedPostRepository();
     postOwnerRepository = makePostOwnerRepository();
+    postLastUpdatedRepository = makePostLastUpdatedRepository();
+    engagementStateRepository = makeEngagementStateRepository();
     dispatcher = makeDispatcher();
     useCase = new RecordAnalyticsEventUseCase(
       analyticsLogRepository,
       deletedPostRepository,
       postOwnerRepository,
+      postLastUpdatedRepository,
+      engagementStateRepository,
       dispatcher,
       makeLogger(),
     );
@@ -226,5 +245,92 @@ describe('RecordAnalyticsEventUseCase', () => {
       'postOwnerRepository.save',
       'dispatcher.dispatch',
     ]);
+  });
+
+  it('should save to postLastUpdatedRepository when eventType is PostUpdated', async () => {
+    const postId = uuidv7();
+    const clientId = uuidv7();
+    const timestamp = '2026-01-01T00:00:00.000Z';
+    const saveSpy = vi.spyOn(postLastUpdatedRepository, 'save');
+
+    await useCase.execute({ eventType: EventTypeEnum.PostUpdated, postId, clientId, timestamp });
+
+    expect(saveSpy).toHaveBeenCalledTimes(1);
+    expect(saveSpy.mock.calls[0][0].toString()).toBe(postId);
+    expect(saveSpy.mock.calls[0][1]).toEqual(new Date(timestamp));
+  });
+
+  it('should not save to postLastUpdatedRepository for non-PostUpdated events', async () => {
+    const saveSpy = vi.spyOn(postLastUpdatedRepository, 'save');
+
+    await useCase.execute({
+      eventType: EventTypeEnum.PostViewed,
+      postId: uuidv7(),
+      clientId: uuidv7(),
+      timestamp: new Date().toISOString(),
+    });
+
+    expect(saveSpy).not.toHaveBeenCalled();
+  });
+
+  it('should call analyticsLogRepository.save before postLastUpdatedRepository.save before engagementStateRepository.save before dispatcher.dispatch for PostUpdated events', async () => {
+    const callOrder: string[] = [];
+    vi.spyOn(analyticsLogRepository, 'save').mockImplementation(() => {
+      callOrder.push('analyticsLogRepository.save');
+      return Promise.resolve();
+    });
+    vi.spyOn(postLastUpdatedRepository, 'save').mockImplementation(() => {
+      callOrder.push('postLastUpdatedRepository.save');
+      return Promise.resolve();
+    });
+    vi.spyOn(engagementStateRepository, 'save').mockImplementation(() => {
+      callOrder.push('engagementStateRepository.save');
+      return Promise.resolve();
+    });
+    vi.spyOn(dispatcher, 'dispatch').mockImplementation(() => {
+      callOrder.push('dispatcher.dispatch');
+      return Promise.resolve();
+    });
+
+    await useCase.execute({
+      eventType: EventTypeEnum.PostUpdated,
+      postId: uuidv7(),
+      clientId: uuidv7(),
+      timestamp: new Date().toISOString(),
+    });
+
+    expect(callOrder).toEqual([
+      'analyticsLogRepository.save',
+      'postLastUpdatedRepository.save',
+      'engagementStateRepository.save',
+      'dispatcher.dispatch',
+    ]);
+  });
+
+  it('should save a dropped EngagementState via engagementStateRepository.save when eventType is PostUpdated', async () => {
+    const postId = uuidv7();
+    const clientId = uuidv7();
+    const timestamp = '2026-01-01T00:00:00.000Z';
+    const saveSpy = vi.spyOn(engagementStateRepository, 'save');
+
+    await useCase.execute({ eventType: EventTypeEnum.PostUpdated, postId, clientId, timestamp });
+
+    expect(saveSpy).toHaveBeenCalledTimes(1);
+    const savedState = saveSpy.mock.calls[0][0];
+    expect(savedState.postId.toString()).toBe(postId);
+    expect(savedState.lastSignal.toString()).toBe('dropped');
+  });
+
+  it('should not call engagementStateRepository.save for non-PostUpdated events', async () => {
+    const saveSpy = vi.spyOn(engagementStateRepository, 'save');
+
+    await useCase.execute({
+      eventType: EventTypeEnum.PostViewed,
+      postId: uuidv7(),
+      clientId: uuidv7(),
+      timestamp: new Date().toISOString(),
+    });
+
+    expect(saveSpy).not.toHaveBeenCalled();
   });
 });

@@ -27,3 +27,8 @@ CREATE TABLE engagement_state (
 	post_id UUID PRIMARY KEY
 	,last_signal VARCHAR NOT NULL
 	);
+
+CREATE TABLE post_last_updated (
+	post_id     UUID        PRIMARY KEY
+	,updated_at TIMESTAMPTZ NOT NULL
+	);

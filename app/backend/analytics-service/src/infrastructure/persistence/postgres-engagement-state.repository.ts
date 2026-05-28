@@ -86,6 +86,16 @@ export default class PostgresEngagementStateRepository implements EngagementStat
     return result.rows.map((row) => this.toDomain(row));
   }
 
+  async save(state: EngagementState): Promise<void> {
+    await this.pool.query(
+      `INSERT INTO engagement_state (post_id, last_signal)
+       VALUES ($1, $2)
+       ON CONFLICT (post_id) DO UPDATE SET
+         last_signal = EXCLUDED.last_signal`,
+      [state.postId.toString(), state.lastSignal.toString()],
+    );
+  }
+
   private toDomain(row: EngagementStateRow): EngagementState {
     return EngagementState.reconstruct({
       postId: new PostId(row.post_id),

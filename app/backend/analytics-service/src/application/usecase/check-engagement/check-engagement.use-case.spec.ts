@@ -17,6 +17,7 @@ const makeAnalyticsLogRepository = (): AnalyticsLogRepository => ({
 });
 
 const makeEngagementStateRepository = (): EngagementStateRepository => ({
+  save: vi.fn().mockResolvedValue(undefined),
   saveMany: vi.fn().mockResolvedValue(undefined),
   findByPostIds: vi.fn().mockResolvedValue([]),
   findAllRaised: vi.fn().mockResolvedValue([]),

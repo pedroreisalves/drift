@@ -9,6 +9,10 @@ import { uuidv7 } from 'uuidv7';
 import AnalyticsEventRecordedEvent from '../../../domain/analytics-log/event/analytics-event-recorded.event';
 import type DeletedPostRepository from '../../../domain/analytics-log/repository/deleted-post.repository';
 import type PostOwnerRepository from '../../../domain/analytics-log/repository/post-owner.repository';
+import type PostLastUpdatedRepository from '../../../domain/analytics-log/repository/post-last-updated.repository';
+import type EngagementStateRepository from '../../../domain/analytics-log/repository/engagement-state.repository';
+import EngagementState from '../../../domain/analytics-log/entity/engagement-state.entity';
+import Signal, { SignalEnum } from '../../../domain/analytics-log/value-object/signal.value-object';
 
 export default class RecordAnalyticsEventUseCase implements UseCase<
   RecordAnalyticsEventInputDto,
@@ -18,6 +22,8 @@ export default class RecordAnalyticsEventUseCase implements UseCase<
     private readonly analyticsLogRepository: AnalyticsLogRepository,
     private readonly deletedPostRepository: DeletedPostRepository,
     private readonly postOwnerRepository: PostOwnerRepository,
+    private readonly postLastUpdatedRepository: PostLastUpdatedRepository,
+    private readonly engagementStateRepository: EngagementStateRepository,
     private readonly eventDispatcher: EventDispatcher,
     private readonly logger: Logger,
   ) {}
@@ -45,6 +51,13 @@ export default class RecordAnalyticsEventUseCase implements UseCase<
 
     if (eventType.equals(new EventType(EventTypeEnum.PostCreated)) && postId) {
       await this.postOwnerRepository.save(postId, clientId);
+    }
+
+    if (eventType.equals(new EventType(EventTypeEnum.PostUpdated)) && postId) {
+      await this.postLastUpdatedRepository.save(postId, timestamp);
+      await this.engagementStateRepository.save(
+        EngagementState.create({ postId, lastSignal: new Signal(SignalEnum.dropped) }),
+      );
     }
 
     this.logger.info('Analytics event recorded', {
