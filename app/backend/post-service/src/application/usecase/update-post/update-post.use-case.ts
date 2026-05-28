@@ -3,6 +3,7 @@ import { PostId, ClientId, type EventDispatcher, type Logger, type UseCase } fro
 import type PostRepository from '../../../domain/post/repository/post.repository';
 import type PostLockRepository from '../../../domain/post/repository/post-lock.repository';
 import { POST_LOCK_TYPE } from '../../../domain/post/repository/post-lock.repository';
+import type PostFeaturedRepository from '../../../domain/post/repository/post-featured.repository';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
 import { ForbiddenPostOperationError } from '../../@shared/error/forbidden-post-update.error';
 import TaggingInProgressError from '../../@shared/error/tagging-in-progress.error';
@@ -11,6 +12,7 @@ export default class UpdatePostUseCase implements UseCase<UpdatePostInputDto, vo
   constructor(
     private readonly postRepository: PostRepository,
     private readonly postLockRepository: PostLockRepository,
+    private readonly postFeaturedRepository: PostFeaturedRepository,
     private readonly eventDispatcher: EventDispatcher,
     private readonly logger: Logger,
   ) {}
@@ -46,7 +48,16 @@ export default class UpdatePostUseCase implements UseCase<UpdatePostInputDto, vo
 
     post.update({ title: input.title, body: input.body });
 
+    const wasFeatured = post.isFeatured;
+    if (wasFeatured) {
+      post.demote('post_updated');
+    }
+
     await this.postRepository.save(post);
+
+    if (wasFeatured) {
+      await this.postFeaturedRepository.delete(postId);
+    }
 
     this.logger.info('Post updated', { postId: postId.toString() });
 

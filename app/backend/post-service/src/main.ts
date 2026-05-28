@@ -58,6 +58,7 @@ async function main(): Promise<void> {
   const updatePostUseCase = new UpdatePostUseCase(
     repository,
     postLockRepository,
+    postFeaturedRepository,
     dispatcher,
     logger,
   );

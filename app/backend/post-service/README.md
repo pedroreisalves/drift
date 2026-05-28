@@ -13,6 +13,7 @@ Manages post lifecycle (create, update, delete, read), featured post promotion, 
 - Consumes `PostEngagementDropped` from analytics-service and flags the featured post as having a drop in engagement; silently ignored if the post is not currently featured
 - Runs an hourly scheduled job (`CheckFeaturedExpiry`) that demotes all featured posts that are both engagement-drop flagged and have been featured for more than 48 hours
 - When a featured post is deleted, removes featured state first and emits `FeaturedPostRemoved` before `PostDeleted`
+- When a featured post is updated, automatically demotes it (reason: `post_updated`) before persisting — updated content starts fresh without inheriting the previous featured status
 
 ## HTTP endpoints
 
@@ -36,18 +37,18 @@ Manages post lifecycle (create, update, delete, read), featured post promotion, 
 
 ## Events produced
 
-| Event                     | Consumed by                                    |
-| ------------------------- | ---------------------------------------------- |
-| `PostCreated`             | tag-service, search-service, analytics-service |
-| `PostUpdated`             | tag-service, search-service, analytics-service |
-| `PostTagsUpdated`         | search-service                                 |
-| `PostDeleted`             | search-service, analytics-service              |
-| `PostViewed`              | analytics-service                              |
-| `PostPromoted`            | none                                           |
-| `EngagementDropFlagged`   | none                                           |
-| `EngagementDropRecovered` | none                                           |
-| `PostDemoted`             | none                                           |
-| `FeaturedPostRemoved`     | none                                           |
+| Event                     | Consumed by                                                                                                                             |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `PostCreated`             | tag-service, search-service, analytics-service                                                                                          |
+| `PostUpdated`             | tag-service, search-service, analytics-service                                                                                          |
+| `PostTagsUpdated`         | search-service                                                                                                                          |
+| `PostDeleted`             | search-service, analytics-service                                                                                                       |
+| `PostViewed`              | analytics-service                                                                                                                       |
+| `PostPromoted`            | none                                                                                                                                    |
+| `EngagementDropFlagged`   | none                                                                                                                                    |
+| `EngagementDropRecovered` | none                                                                                                                                    |
+| `PostDemoted`             | none (emitted by `CheckFeaturedExpiry` with reason `expiry_and_engagement_drop`, and by `UpdatePostUseCase` with reason `post_updated`) |
+| `FeaturedPostRemoved`     | none                                                                                                                                    |
 
 ## Tech
 
@@ -78,10 +79,10 @@ Manages post lifecycle (create, update, delete, read), featured post promotion, 
 
 Sparse table: a row is present only while a post is featured. Presence = featured; absence = not featured.
 
-| Column        | Type          | Notes                                              |
-| ------------- | ------------- | -------------------------------------------------- |
-| `post_id`     | `UUID`        | Primary key; FK → `posts(id) ON DELETE CASCADE`    |
-| `featured_at` | `TIMESTAMPTZ` | Set to `NOW()` when the post is promoted           |
+| Column        | Type          | Notes                                           |
+| ------------- | ------------- | ----------------------------------------------- |
+| `post_id`     | `UUID`        | Primary key; FK → `posts(id) ON DELETE CASCADE` |
+| `featured_at` | `TIMESTAMPTZ` | Set to `NOW()` when the post is promoted        |
 
 `isFeatured` and `featuredAt` on the Post aggregate are hydrated via `LEFT JOIN post_featured` on every read.
 
@@ -89,11 +90,11 @@ Sparse table: a row is present only while a post is featured. Presence = feature
 
 Sparse table: a row is present only while a post is locked for a given operation. Presence = locked; absence = not locked.
 
-| Column      | Type          | Notes                                                        |
-| ----------- | ------------- | ------------------------------------------------------------ |
+| Column      | Type          | Notes                                                             |
+| ----------- | ------------- | ----------------------------------------------------------------- |
 | `post_id`   | `UUID`        | Composite PK with `lock_type`; FK → `posts(id) ON DELETE CASCADE` |
-| `lock_type` | `TEXT`        | Currently only `'tagging'`; extensible to other lock types   |
-| `locked_at` | `TIMESTAMPTZ` | Set to `NOW()` when the lock is acquired                     |
+| `lock_type` | `TEXT`        | Currently only `'tagging'`; extensible to other lock types        |
+| `locked_at` | `TIMESTAMPTZ` | Set to `NOW()` when the lock is acquired                          |
 
 `isTaggingInProgress` on the Post aggregate is hydrated via `LEFT JOIN post_locks` on every read.
 
