@@ -27,6 +27,7 @@ const logger = new PinoLogger(Environment.SERVICE_NAME, Environment.LOG_LEVEL);
 async function main(): Promise<void> {
   const meiliClient = new Meilisearch({ host: Environment.MEILISEARCH_URL });
   const repository = new MeilisearchSearchEntryRepository(meiliClient);
+  await repository.init();
 
   const dispatcher = new RabbitMQEventDispatcher(
     Environment.RABBITMQ_URL,

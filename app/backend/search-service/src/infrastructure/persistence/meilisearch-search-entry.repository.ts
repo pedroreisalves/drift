@@ -14,11 +14,26 @@ interface SearchEntryDocument {
   isTaggingInProgress: boolean;
 }
 
+const INDEX_NAME = 'posts';
+const PRIMARY_KEY = 'id';
+
 export default class MeilisearchSearchEntryRepository implements SearchEntryRepository {
   private readonly meiliIndex: Index<SearchEntryDocument>;
 
-  constructor(client: Meilisearch) {
-    this.meiliIndex = client.index<SearchEntryDocument>('posts');
+  constructor(private readonly client: Meilisearch) {
+    this.meiliIndex = client.index<SearchEntryDocument>(INDEX_NAME);
+  }
+
+  async init(): Promise<void> {
+    try {
+      await this.client.getIndex(INDEX_NAME);
+    } catch (error) {
+      if (error instanceof MeilisearchApiError && error.cause?.code === 'index_not_found') {
+        await this.client.createIndex(INDEX_NAME, { primaryKey: PRIMARY_KEY }).waitTask();
+        return;
+      }
+      throw error;
+    }
   }
 
   async index(entry: SearchEntry): Promise<void> {
