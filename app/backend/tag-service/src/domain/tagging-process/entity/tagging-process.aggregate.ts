@@ -1,4 +1,7 @@
 import { AggregateRoot, type PostId } from '@drift/shared';
+import { z } from 'zod';
+
+import { MAX_RETRY_COUNT } from '../../../application/@shared/constant/tagging-process.constant';
 import InvalidTaggingProcessError from '../error/invalid-tagging-process.error';
 import PostTaggedEvent from '../event/post-tagged.event';
 import TaggingAbandonedEvent from '../event/tagging-abandoned.event';
@@ -6,9 +9,6 @@ import TaggingFailedEvent from '../event/tagging-failed.event';
 import TaggingInitializedEvent from '../event/tagging-initialized.event';
 import type TaggingProcessId from '../value-object/tagging-process-id.value-object';
 import TaggingStatus, { TaggingStatusEnum } from '../value-object/tagging-status.value-object';
-import { MAX_RETRY_COUNT } from '../../../application/@shared/constant/tagging-process.constant';
-
-import { z } from 'zod';
 
 interface TaggingProcessProps {
   id: TaggingProcessId;

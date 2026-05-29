@@ -1,5 +1,6 @@
-import { uuidv7 } from 'uuidv7';
 import { InvalidValueObjectError } from '@drift/shared';
+import { uuidv7 } from 'uuidv7';
+
 import TaggingProcessId from './tagging-process-id.value-object';
 
 describe('TaggingProcessId', () => {

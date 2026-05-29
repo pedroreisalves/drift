@@ -1,14 +1,15 @@
-import { uuidv7 } from 'uuidv7';
-import TaggingProcess from './tagging-process.aggregate';
 import { PostId } from '@drift/shared';
+import { uuidv7 } from 'uuidv7';
+
+import InvalidTaggingProcessError from '../error/invalid-tagging-process.error';
+import PostTaggedEvent from '../event/post-tagged.event';
+import TaggingAbandonedEvent from '../event/tagging-abandoned.event';
+import TaggingFailedEvent from '../event/tagging-failed.event';
+import TaggingInitializedEvent from '../event/tagging-initialized.event';
 import TaggingProcessId from '../value-object/tagging-process-id.value-object';
 import TaggingStatus, { TaggingStatusEnum } from '../value-object/tagging-status.value-object';
-import InvalidTaggingProcessError from '../error/invalid-tagging-process.error';
-import TaggingInitializedEvent from '../event/tagging-initialized.event';
-import PostTaggedEvent from '../event/post-tagged.event';
-import TaggingFailedEvent from '../event/tagging-failed.event';
-import TaggingAbandonedEvent from '../event/tagging-abandoned.event';
 import type { CreateTaggingProcessProps } from './tagging-process.aggregate';
+import TaggingProcess from './tagging-process.aggregate';
 
 describe('TaggingProcess', () => {
   const makeProps = (

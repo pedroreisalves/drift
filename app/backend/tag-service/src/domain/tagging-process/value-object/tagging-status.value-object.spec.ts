@@ -1,4 +1,5 @@
 import { InvalidValueObjectError } from '@drift/shared';
+
 import TaggingStatus, { TaggingStatusEnum } from './tagging-status.value-object';
 
 describe('TaggingStatus', () => {

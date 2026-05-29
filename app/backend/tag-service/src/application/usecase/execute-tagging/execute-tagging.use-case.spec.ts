@@ -1,18 +1,19 @@
-import { uuidv7 } from 'uuidv7';
-import ExecuteTaggingUseCase from './execute-tagging.use-case';
-import TaggingProcess from '../../../domain/tagging-process/entity/tagging-process.aggregate';
 import { PostId } from '@drift/shared';
+import { type EventDispatcher, type Logger } from '@drift/shared';
+import { uuidv7 } from 'uuidv7';
+
+import TaggingProcess from '../../../domain/tagging-process/entity/tagging-process.aggregate';
+import PostTaggedEvent from '../../../domain/tagging-process/event/post-tagged.event';
+import TaggingAbandonedEvent from '../../../domain/tagging-process/event/tagging-abandoned.event';
+import TaggingFailedEvent from '../../../domain/tagging-process/event/tagging-failed.event';
+import type TaggingProcessRepository from '../../../domain/tagging-process/repository/tagging-process.repository';
 import TaggingProcessId from '../../../domain/tagging-process/value-object/tagging-process-id.value-object';
 import TaggingStatus, {
   TaggingStatusEnum,
 } from '../../../domain/tagging-process/value-object/tagging-status.value-object';
-import type TaggingProcessRepository from '../../../domain/tagging-process/repository/tagging-process.repository';
-import { type EventDispatcher, type Logger } from '@drift/shared';
-import type TagGenerator from '../../@shared/interface/tag-generator.interface';
 import TaggingProcessNotFoundError from '../../@shared/error/tagging-process-not-found.error';
-import PostTaggedEvent from '../../../domain/tagging-process/event/post-tagged.event';
-import TaggingFailedEvent from '../../../domain/tagging-process/event/tagging-failed.event';
-import TaggingAbandonedEvent from '../../../domain/tagging-process/event/tagging-abandoned.event';
+import type TagGenerator from '../../@shared/interface/tag-generator.interface';
+import ExecuteTaggingUseCase from './execute-tagging.use-case';
 
 const makeRepository = (): TaggingProcessRepository => ({
   save: vi.fn().mockResolvedValue(undefined),

@@ -1,5 +1,6 @@
-import type TaggingProcess from '../entity/tagging-process.aggregate';
 import type { PostId } from '@drift/shared';
+
+import type TaggingProcess from '../entity/tagging-process.aggregate';
 import type TaggingProcessId from '../value-object/tagging-process-id.value-object';
 
 export default interface TaggingProcessRepository {

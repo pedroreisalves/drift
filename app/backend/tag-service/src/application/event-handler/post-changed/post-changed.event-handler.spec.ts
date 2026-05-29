@@ -1,6 +1,7 @@
 import type { Logger } from '@drift/shared';
-import PostChangedEventHandler, { type PostChangedMessage } from './post-changed.event-handler';
+
 import type TagPostUseCase from '../../usecase/tag-post/tag-post.use-case';
+import PostChangedEventHandler, { type PostChangedMessage } from './post-changed.event-handler';
 
 const makeLogger = (): Logger => ({
   info: vi.fn(),

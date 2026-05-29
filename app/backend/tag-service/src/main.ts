@@ -1,14 +1,14 @@
+import { PinoLogger, RabbitMQEventConsumer, RabbitMQEventDispatcher } from '@drift/shared';
 import { Pool } from 'pg';
-import Environment from './infrastructure/config/environment';
 
-import { RabbitMQEventDispatcher, RabbitMQEventConsumer, PinoLogger } from '@drift/shared';
-import PostgresTaggingProcessRepository from './infrastructure/persistence/postgres-tagging-process.repository';
-import OllamaTagGenerator from './infrastructure/llm/ollama-tag-generator';
+import PostChangedEventHandler from './application/event-handler/post-changed/post-changed.event-handler';
+import TaggingFailedEventHandler from './application/event-handler/tagging-failed/tagging-failed.event-handler';
+import TaggingInitializedEventHandler from './application/event-handler/tagging-initialized/tagging-initialized.event-handler';
 import ExecuteTaggingUseCase from './application/usecase/execute-tagging/execute-tagging.use-case';
 import TagPostUseCase from './application/usecase/tag-post/tag-post.use-case';
-import PostChangedEventHandler from './application/event-handler/post-changed/post-changed.event-handler';
-import TaggingInitializedEventHandler from './application/event-handler/tagging-initialized/tagging-initialized.event-handler';
-import TaggingFailedEventHandler from './application/event-handler/tagging-failed/tagging-failed.event-handler';
+import Environment from './infrastructure/config/environment';
+import OllamaTagGenerator from './infrastructure/llm/ollama-tag-generator';
+import PostgresTaggingProcessRepository from './infrastructure/persistence/postgres-tagging-process.repository';
 
 const logger = new PinoLogger(Environment.SERVICE_NAME, Environment.LOG_LEVEL);
 

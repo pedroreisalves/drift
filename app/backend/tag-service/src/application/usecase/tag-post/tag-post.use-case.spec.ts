@@ -1,14 +1,15 @@
-import { uuidv7 } from 'uuidv7';
-import TagPostUseCase from './tag-post.use-case';
-import TaggingProcess from '../../../domain/tagging-process/entity/tagging-process.aggregate';
 import { PostId } from '@drift/shared';
-import TaggingProcessId from '../../../domain/tagging-process/value-object/tagging-process-id.value-object';
-import { TaggingStatusEnum } from '../../../domain/tagging-process/value-object/tagging-status.value-object';
-import type TaggingProcessRepository from '../../../domain/tagging-process/repository/tagging-process.repository';
 import { type EventDispatcher, type Logger } from '@drift/shared';
+import { uuidv7 } from 'uuidv7';
+
+import TaggingProcess from '../../../domain/tagging-process/entity/tagging-process.aggregate';
 import TaggingInitializedEvent from '../../../domain/tagging-process/event/tagging-initialized.event';
+import type TaggingProcessRepository from '../../../domain/tagging-process/repository/tagging-process.repository';
+import TaggingProcessId from '../../../domain/tagging-process/value-object/tagging-process-id.value-object';
 import TaggingStatus from '../../../domain/tagging-process/value-object/tagging-status.value-object';
+import { TaggingStatusEnum } from '../../../domain/tagging-process/value-object/tagging-status.value-object';
 import type { TagPostInputDto } from './tag-post.dto';
+import TagPostUseCase from './tag-post.use-case';
 
 const makeRepository = (): TaggingProcessRepository => ({
   save: vi.fn().mockResolvedValue(undefined),

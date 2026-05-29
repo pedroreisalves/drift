@@ -1,5 +1,6 @@
-import { z } from 'zod';
 import { type EventHandler, type Logger } from '@drift/shared';
+import { z } from 'zod';
+
 import type TagPostUseCase from '../../usecase/tag-post/tag-post.use-case';
 
 export const postChangedMessageSchema = z.object({

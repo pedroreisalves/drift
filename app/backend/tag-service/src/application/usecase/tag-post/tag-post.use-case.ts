@@ -1,9 +1,10 @@
-import { PostId, type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
-import type TaggingProcessRepository from '../../../domain/tagging-process/repository/tagging-process.repository';
-import type { TagPostInputDto } from './tag-post.dto';
-import TaggingProcess from '../../../domain/tagging-process/entity/tagging-process.aggregate';
-import TaggingProcessId from '../../../domain/tagging-process/value-object/tagging-process-id.value-object';
+import { type EventDispatcher, type Logger, PostId, type UseCase } from '@drift/shared';
 import { uuidv7 } from 'uuidv7';
+
+import TaggingProcess from '../../../domain/tagging-process/entity/tagging-process.aggregate';
+import type TaggingProcessRepository from '../../../domain/tagging-process/repository/tagging-process.repository';
+import TaggingProcessId from '../../../domain/tagging-process/value-object/tagging-process-id.value-object';
+import type { TagPostInputDto } from './tag-post.dto';
 
 export default class TagPostUseCase implements UseCase<TagPostInputDto, void> {
   constructor(

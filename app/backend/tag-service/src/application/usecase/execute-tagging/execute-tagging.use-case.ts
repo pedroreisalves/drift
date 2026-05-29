@@ -1,9 +1,10 @@
 import { type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
+
 import type TaggingProcessRepository from '../../../domain/tagging-process/repository/tagging-process.repository';
-import type { ExecuteTaggingInputDto } from './execute-tagging.dto';
-import type TagGenerator from '../../@shared/interface/tag-generator.interface';
-import TaggingProcessNotFoundError from '../../@shared/error/tagging-process-not-found.error';
 import TaggingProcessId from '../../../domain/tagging-process/value-object/tagging-process-id.value-object';
+import TaggingProcessNotFoundError from '../../@shared/error/tagging-process-not-found.error';
+import type TagGenerator from '../../@shared/interface/tag-generator.interface';
+import type { ExecuteTaggingInputDto } from './execute-tagging.dto';
 
 export default class ExecuteTaggingUseCase implements UseCase<ExecuteTaggingInputDto, void> {
   constructor(

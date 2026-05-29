@@ -1,8 +1,9 @@
 import type { Logger } from '@drift/shared';
+
+import type ExecuteTaggingUseCase from '../../usecase/execute-tagging/execute-tagging.use-case';
 import TaggingFailedEventHandler, {
   type TaggingFailedMessage,
 } from './tagging-failed.event-handler';
-import type ExecuteTaggingUseCase from '../../usecase/execute-tagging/execute-tagging.use-case';
 
 const makeLogger = (): Logger => ({
   info: vi.fn(),
