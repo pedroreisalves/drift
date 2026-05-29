@@ -1,9 +1,10 @@
 import type { DomainEvent, EventDispatcher, Logger, UseCase } from '@drift/shared';
+
 import type PostRepository from '../../../domain/post/repository/post.repository';
 import type PostFeaturedRepository from '../../../domain/post/repository/post-featured.repository';
 import {
-  FEATURED_MAX_AGE_MS,
   FEATURED_EXPIRY_DEMOTION_REASON,
+  FEATURED_MAX_AGE_MS,
 } from '../../@shared/constant/check-featured-expiry.constant';
 
 export default class CheckFeaturedExpiryUseCase implements UseCase<void, void> {

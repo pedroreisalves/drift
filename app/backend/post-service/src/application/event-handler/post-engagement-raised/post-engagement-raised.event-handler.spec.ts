@@ -1,9 +1,10 @@
 import type { Logger } from '@drift/shared';
+
+import PostNotFoundError from '../../@shared/error/post-not-found.error';
+import type PromotePostUseCase from '../../usecase/promote-post/promote-post.use-case';
 import PostEngagementRaisedEventHandler, {
   type PostEngagementRaisedMessage,
 } from './post-engagement-raised.event-handler';
-import type PromotePostUseCase from '../../usecase/promote-post/promote-post.use-case';
-import PostNotFoundError from '../../@shared/error/post-not-found.error';
 
 const makeLogger = (): Logger => ({
   info: vi.fn(),

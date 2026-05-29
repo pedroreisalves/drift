@@ -1,8 +1,9 @@
 import type { Logger } from '@drift/shared';
-import PostTaggedEventHandler, { type PostTaggedMessage } from './post-tagged.event-handler';
-import type UpdatePostTagsUseCase from '../../usecase/update-post-tags/update-post-tags.use-case';
-import type UnlockPostForTaggingUseCase from '../../usecase/unlock-post-for-tagging/unlock-post-for-tagging.use-case';
+
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
+import type UnlockPostForTaggingUseCase from '../../usecase/unlock-post-for-tagging/unlock-post-for-tagging.use-case';
+import type UpdatePostTagsUseCase from '../../usecase/update-post-tags/update-post-tags.use-case';
+import PostTaggedEventHandler, { type PostTaggedMessage } from './post-tagged.event-handler';
 
 const makeLogger = (): Logger => ({
   info: vi.fn(),

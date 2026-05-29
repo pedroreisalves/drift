@@ -1,9 +1,10 @@
-import { PostId, ClientId, type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
+import { ClientId, type EventDispatcher, type Logger, PostId, type UseCase } from '@drift/shared';
+
 import type PostRepository from '../../../domain/post/repository/post.repository';
-import type { DeletePostInputDto } from './delete-post.dto';
-import PostNotFoundError from '../../@shared/error/post-not-found.error';
 import { ForbiddenPostOperationError } from '../../@shared/error/forbidden-post-update.error';
+import PostNotFoundError from '../../@shared/error/post-not-found.error';
 import TaggingInProgressError from '../../@shared/error/tagging-in-progress.error';
+import type { DeletePostInputDto } from './delete-post.dto';
 
 export default class DeletePostUseCase implements UseCase<DeletePostInputDto, void> {
   constructor(

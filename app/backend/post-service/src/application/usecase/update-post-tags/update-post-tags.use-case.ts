@@ -1,7 +1,8 @@
-import type { UpdatePostTagsInputDto } from './update-post-tags.dto';
-import { PostId, type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
+import { type EventDispatcher, type Logger, PostId, type UseCase } from '@drift/shared';
+
 import type PostRepository from '../../../domain/post/repository/post.repository';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
+import type { UpdatePostTagsInputDto } from './update-post-tags.dto';
 
 export default class UpdatePostTagsUseCase implements UseCase<UpdatePostTagsInputDto, void> {
   constructor(

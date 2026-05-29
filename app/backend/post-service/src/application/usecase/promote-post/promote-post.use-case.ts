@@ -1,8 +1,9 @@
-import { PostId, type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
+import { type EventDispatcher, type Logger, PostId, type UseCase } from '@drift/shared';
+
 import type PostRepository from '../../../domain/post/repository/post.repository';
 import type PostFeaturedRepository from '../../../domain/post/repository/post-featured.repository';
-import type { PromotePostInputDto } from './promote-post.dto';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
+import type { PromotePostInputDto } from './promote-post.dto';
 
 export default class PromotePostUseCase implements UseCase<PromotePostInputDto, void> {
   constructor(

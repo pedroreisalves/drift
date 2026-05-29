@@ -1,9 +1,10 @@
-import type { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
+
 import type CreatePostUseCase from '../../../application/usecase/create-post/create-post.use-case';
 import type DeletePostUseCase from '../../../application/usecase/delete-post/delete-post.use-case';
-import type UpdatePostUseCase from '../../../application/usecase/update-post/update-post.use-case';
 import type GetPostUseCase from '../../../application/usecase/get-post/get-post.use-case';
 import type ListPostUseCase from '../../../application/usecase/list-post/list-post.use-case';
+import type UpdatePostUseCase from '../../../application/usecase/update-post/update-post.use-case';
 
 interface CreatePostBody {
   clientId: string;

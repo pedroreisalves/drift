@@ -1,4 +1,5 @@
 import { Router } from 'express';
+
 import type PostController from '../controllers/post.controller';
 import type PostViewedMiddleware from '../middleware/post-viewed.middleware';
 

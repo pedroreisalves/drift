@@ -1,9 +1,10 @@
-import { uuidv7 } from 'uuidv7';
-import CreatePostUseCase from './create-post.use-case';
-import Post from '../../../domain/post/entity/post.aggregate';
-import type PostRepository from '../../../domain/post/repository/post.repository';
 import { type EventDispatcher, type Logger } from '@drift/shared';
+import { uuidv7 } from 'uuidv7';
+
+import Post from '../../../domain/post/entity/post.aggregate';
 import PostCreatedEvent from '../../../domain/post/event/post-created.event';
+import type PostRepository from '../../../domain/post/repository/post.repository';
+import CreatePostUseCase from './create-post.use-case';
 
 const makeRepository = (): PostRepository => ({
   save: vi.fn().mockResolvedValue(undefined),

@@ -1,40 +1,36 @@
+import {
+  NodeCronScheduler,
+  PinoLogger,
+  RabbitMQEventConsumer,
+  RabbitMQEventDispatcher,
+} from '@drift/shared';
 import express from 'express';
 import { Pool } from 'pg';
-import Environment from './infrastructure/config/environment';
 
-import {
-  RabbitMQEventDispatcher,
-  RabbitMQEventConsumer,
-  PinoLogger,
-  NodeCronScheduler,
-} from '@drift/shared';
-
-import CreatePostUseCase from './application/usecase/create-post/create-post.use-case';
-import UpdatePostUseCase from './application/usecase/update-post/update-post.use-case';
-import DeletePostUseCase from './application/usecase/delete-post/delete-post.use-case';
-import UpdatePostTagsUseCase from './application/usecase/update-post-tags/update-post-tags.use-case';
-import LockPostForTaggingUseCase from './application/usecase/lock-post-for-tagging/lock-post-for-tagging.use-case';
-import UnlockPostForTaggingUseCase from './application/usecase/unlock-post-for-tagging/unlock-post-for-tagging.use-case';
-import PromotePostUseCase from './application/usecase/promote-post/promote-post.use-case';
-import FlagPostEngagementDropUseCase from './application/usecase/flag-post-engagement-drop/flag-post-engagement-drop.use-case';
-import CheckFeaturedExpiryUseCase from './application/usecase/check-featured-expiry/check-featured-expiry.use-case';
-
-import PostTaggedEventHandler from './application/event-handler/post-tagged/post-tagged.event-handler';
-import TaggingInitializedEventHandler from './application/event-handler/tagging-initialized/tagging-initialized.event-handler';
-import TaggingAbandonedEventHandler from './application/event-handler/tagging-abandoned/tagging-abandoned.event-handler';
-import PostEngagementRaisedEventHandler from './application/event-handler/post-engagement-raised/post-engagement-raised.event-handler';
 import PostEngagementDroppedEventHandler from './application/event-handler/post-engagement-dropped/post-engagement-dropped.event-handler';
-
-import PostgresPostLockRepository from './infrastructure/persistence/postgres-post-lock.repository';
-import PostgresPostFeaturedRepository from './infrastructure/persistence/postgres-post-featured.repository';
-
-import PostViewedMiddleware from './infrastructure/http/middleware/post-viewed.middleware';
-import PostgresPostRepository from './infrastructure/persistence/postgres-post.repository';
+import PostEngagementRaisedEventHandler from './application/event-handler/post-engagement-raised/post-engagement-raised.event-handler';
+import PostTaggedEventHandler from './application/event-handler/post-tagged/post-tagged.event-handler';
+import TaggingAbandonedEventHandler from './application/event-handler/tagging-abandoned/tagging-abandoned.event-handler';
+import TaggingInitializedEventHandler from './application/event-handler/tagging-initialized/tagging-initialized.event-handler';
+import CheckFeaturedExpiryUseCase from './application/usecase/check-featured-expiry/check-featured-expiry.use-case';
+import CreatePostUseCase from './application/usecase/create-post/create-post.use-case';
+import DeletePostUseCase from './application/usecase/delete-post/delete-post.use-case';
+import FlagPostEngagementDropUseCase from './application/usecase/flag-post-engagement-drop/flag-post-engagement-drop.use-case';
 import GetPostUseCase from './application/usecase/get-post/get-post.use-case';
 import ListPostUseCase from './application/usecase/list-post/list-post.use-case';
+import LockPostForTaggingUseCase from './application/usecase/lock-post-for-tagging/lock-post-for-tagging.use-case';
+import PromotePostUseCase from './application/usecase/promote-post/promote-post.use-case';
+import UnlockPostForTaggingUseCase from './application/usecase/unlock-post-for-tagging/unlock-post-for-tagging.use-case';
+import UpdatePostUseCase from './application/usecase/update-post/update-post.use-case';
+import UpdatePostTagsUseCase from './application/usecase/update-post-tags/update-post-tags.use-case';
+import Environment from './infrastructure/config/environment';
 import PostController from './infrastructure/http/controllers/post.controller';
-import createPostRoutes from './infrastructure/http/routes/post.routes';
 import createErrorMiddleware from './infrastructure/http/middleware/error.middleware';
+import PostViewedMiddleware from './infrastructure/http/middleware/post-viewed.middleware';
+import createPostRoutes from './infrastructure/http/routes/post.routes';
+import PostgresPostRepository from './infrastructure/persistence/postgres-post.repository';
+import PostgresPostFeaturedRepository from './infrastructure/persistence/postgres-post-featured.repository';
+import PostgresPostLockRepository from './infrastructure/persistence/postgres-post-lock.repository';
 
 const logger = new PinoLogger(Environment.SERVICE_NAME, Environment.LOG_LEVEL);
 

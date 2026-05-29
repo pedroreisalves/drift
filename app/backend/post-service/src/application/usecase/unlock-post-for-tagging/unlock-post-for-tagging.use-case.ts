@@ -1,7 +1,8 @@
-import type { UnlockPostForTaggingInputDto } from './unlock-post-for-tagging.dto';
+import { type Logger, PostId, type UseCase } from '@drift/shared';
+
 import type PostLockRepository from '../../../domain/post/repository/post-lock.repository';
 import { POST_LOCK_TYPE } from '../../../domain/post/repository/post-lock.repository';
-import { PostId, type Logger, type UseCase } from '@drift/shared';
+import type { UnlockPostForTaggingInputDto } from './unlock-post-for-tagging.dto';
 
 export default class UnlockPostForTaggingUseCase implements UseCase<
   UnlockPostForTaggingInputDto,

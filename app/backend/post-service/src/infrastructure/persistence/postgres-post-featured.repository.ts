@@ -1,5 +1,6 @@
-import type { Pool } from 'pg';
 import type { PostId } from '@drift/shared';
+import type { Pool } from 'pg';
+
 import type PostFeaturedRepository from '../../domain/post/repository/post-featured.repository';
 
 export default class PostgresPostFeaturedRepository implements PostFeaturedRepository {

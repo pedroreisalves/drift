@@ -1,9 +1,10 @@
+import { ClientId, type EventDispatcher, type Logger, PostId, type UseCase } from '@drift/shared';
 import { uuidv7 } from 'uuidv7';
+
 import Post from '../../../domain/post/entity/post.aggregate';
+import type PostRepository from '../../../domain/post/repository/post.repository';
 import type { CreatePostInputDto, CreatePostOutputDto } from './create-post.dto';
 import { toCreatePostOutputDto } from './create-post.mapper';
-import { PostId, ClientId, type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
-import type PostRepository from '../../../domain/post/repository/post.repository';
 
 export default class CreatePostUseCase implements UseCase<CreatePostInputDto, CreatePostOutputDto> {
   constructor(

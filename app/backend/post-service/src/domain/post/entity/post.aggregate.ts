@@ -1,15 +1,16 @@
-import { z } from 'zod';
 import { AggregateRoot, type ClientId, type PostId } from '@drift/shared';
-import PostCreatedEvent from '../event/post-created.event';
-import PostDeletedEvent from '../event/post-deleted.event';
-import PostTagsUpdatedEvent from '../event/post-tags-updated.event';
-import PostUpdatedEvent from '../event/post-updated.event';
-import PostPromotedEvent from '../event/post-promoted.event';
+import { z } from 'zod';
+
+import InvalidPostError from '../error/invalid-post.error';
 import EngagementDropFlaggedEvent from '../event/engagement-drop-flagged.event';
 import EngagementDropRecoveredEvent from '../event/engagement-drop-recovered.event';
-import PostDemotedEvent from '../event/post-demoted.event';
 import FeaturedPostRemovedEvent from '../event/featured-post-removed.event';
-import InvalidPostError from '../error/invalid-post.error';
+import PostCreatedEvent from '../event/post-created.event';
+import PostDeletedEvent from '../event/post-deleted.event';
+import PostDemotedEvent from '../event/post-demoted.event';
+import PostPromotedEvent from '../event/post-promoted.event';
+import PostTagsUpdatedEvent from '../event/post-tags-updated.event';
+import PostUpdatedEvent from '../event/post-updated.event';
 
 interface PostProps {
   id: PostId;

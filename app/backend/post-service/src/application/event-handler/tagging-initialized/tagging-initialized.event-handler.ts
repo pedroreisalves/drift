@@ -1,5 +1,6 @@
-import { z } from 'zod';
 import { type EventHandler, type Logger } from '@drift/shared';
+import { z } from 'zod';
+
 import type LockPostForTaggingUseCase from '../../usecase/lock-post-for-tagging/lock-post-for-tagging.use-case';
 
 export const taggingInitializedMessageSchema = z.object({

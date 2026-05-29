@@ -1,6 +1,7 @@
+import { type Logger, type UseCase } from '@drift/shared';
+
 import type PostRepository from '../../../domain/post/repository/post.repository';
 import type { ListPostInputDto, ListPostOutputDto } from './list-post.dto';
-import { type Logger, type UseCase } from '@drift/shared';
 import { toListPostOutputDto } from './list-post.mapper';
 
 export default class ListPostUseCase implements UseCase<ListPostInputDto, ListPostOutputDto[]> {

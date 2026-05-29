@@ -1,9 +1,10 @@
+import { ClientId, type Logger, PostId } from '@drift/shared';
 import { uuidv7 } from 'uuidv7';
-import GetPostUseCase from './get-post.use-case';
+
 import Post from '../../../domain/post/entity/post.aggregate';
-import { PostId, ClientId, type Logger } from '@drift/shared';
 import type PostRepository from '../../../domain/post/repository/post.repository';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
+import GetPostUseCase from './get-post.use-case';
 
 const makeRepository = (): PostRepository => ({
   save: vi.fn().mockResolvedValue(undefined),

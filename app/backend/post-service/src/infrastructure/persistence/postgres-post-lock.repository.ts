@@ -1,5 +1,6 @@
-import type { Pool } from 'pg';
 import type { PostId } from '@drift/shared';
+import type { Pool } from 'pg';
+
 import type PostLockRepository from '../../domain/post/repository/post-lock.repository';
 import type { PostLockType } from '../../domain/post/repository/post-lock.repository';
 

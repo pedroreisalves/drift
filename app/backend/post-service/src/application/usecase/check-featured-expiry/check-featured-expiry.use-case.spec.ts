@@ -1,14 +1,15 @@
+import { ClientId, type EventDispatcher, type Logger, PostId } from '@drift/shared';
 import { uuidv7 } from 'uuidv7';
-import { PostId, ClientId, type EventDispatcher, type Logger } from '@drift/shared';
-import CheckFeaturedExpiryUseCase from './check-featured-expiry.use-case';
+
 import Post from '../../../domain/post/entity/post.aggregate';
+import PostDemotedEvent from '../../../domain/post/event/post-demoted.event';
 import type PostRepository from '../../../domain/post/repository/post.repository';
 import type PostFeaturedRepository from '../../../domain/post/repository/post-featured.repository';
-import PostDemotedEvent from '../../../domain/post/event/post-demoted.event';
 import {
-  FEATURED_MAX_AGE_MS,
   FEATURED_EXPIRY_DEMOTION_REASON,
+  FEATURED_MAX_AGE_MS,
 } from '../../@shared/constant/check-featured-expiry.constant';
+import CheckFeaturedExpiryUseCase from './check-featured-expiry.use-case';
 
 const makeRepository = (): PostRepository => ({
   save: vi.fn().mockResolvedValue(undefined),

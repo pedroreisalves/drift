@@ -1,8 +1,9 @@
 import type { Logger } from '@drift/shared';
+
+import type UnlockPostForTaggingUseCase from '../../usecase/unlock-post-for-tagging/unlock-post-for-tagging.use-case';
 import TaggingAbandonedEventHandler, {
   type TaggingAbandonedMessage,
 } from './tagging-abandoned.event-handler';
-import type UnlockPostForTaggingUseCase from '../../usecase/unlock-post-for-tagging/unlock-post-for-tagging.use-case';
 
 const makeLogger = (): Logger => ({
   info: vi.fn(),

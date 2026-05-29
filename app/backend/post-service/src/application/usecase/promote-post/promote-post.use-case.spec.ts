@@ -1,12 +1,13 @@
+import { ClientId, type EventDispatcher, type Logger, PostId } from '@drift/shared';
 import { uuidv7 } from 'uuidv7';
-import { PostId, ClientId, type EventDispatcher, type Logger } from '@drift/shared';
-import PromotePostUseCase from './promote-post.use-case';
+
 import Post from '../../../domain/post/entity/post.aggregate';
+import EngagementDropRecoveredEvent from '../../../domain/post/event/engagement-drop-recovered.event';
+import PostPromotedEvent from '../../../domain/post/event/post-promoted.event';
 import type PostRepository from '../../../domain/post/repository/post.repository';
 import type PostFeaturedRepository from '../../../domain/post/repository/post-featured.repository';
-import PostPromotedEvent from '../../../domain/post/event/post-promoted.event';
-import EngagementDropRecoveredEvent from '../../../domain/post/event/engagement-drop-recovered.event';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
+import PromotePostUseCase from './promote-post.use-case';
 
 const makeRepository = (): PostRepository => ({
   save: vi.fn().mockResolvedValue(undefined),

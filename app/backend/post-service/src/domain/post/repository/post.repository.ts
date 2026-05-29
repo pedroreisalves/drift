@@ -1,5 +1,6 @@
-import type Post from '../entity/post.aggregate';
 import type { PostId } from '@drift/shared';
+
+import type Post from '../entity/post.aggregate';
 
 export default interface PostRepository {
   save(post: Post): Promise<void>;

@@ -1,13 +1,14 @@
+import { ClientId, type EventDispatcher, type Logger, PostId } from '@drift/shared';
 import { uuidv7 } from 'uuidv7';
-import DeletePostUseCase from './delete-post.use-case';
+
 import Post from '../../../domain/post/entity/post.aggregate';
-import { PostId, ClientId, type EventDispatcher, type Logger } from '@drift/shared';
-import type PostRepository from '../../../domain/post/repository/post.repository';
-import PostDeletedEvent from '../../../domain/post/event/post-deleted.event';
 import FeaturedPostRemovedEvent from '../../../domain/post/event/featured-post-removed.event';
-import PostNotFoundError from '../../@shared/error/post-not-found.error';
+import PostDeletedEvent from '../../../domain/post/event/post-deleted.event';
+import type PostRepository from '../../../domain/post/repository/post.repository';
 import { ForbiddenPostOperationError } from '../../@shared/error/forbidden-post-update.error';
+import PostNotFoundError from '../../@shared/error/post-not-found.error';
 import TaggingInProgressError from '../../@shared/error/tagging-in-progress.error';
+import DeletePostUseCase from './delete-post.use-case';
 
 const makeRepository = (): PostRepository => ({
   save: vi.fn().mockResolvedValue(undefined),

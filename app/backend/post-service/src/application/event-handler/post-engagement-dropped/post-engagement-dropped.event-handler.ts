@@ -1,7 +1,8 @@
-import { z } from 'zod';
 import { type EventHandler, type Logger } from '@drift/shared';
-import type FlagPostEngagementDropUseCase from '../../usecase/flag-post-engagement-drop/flag-post-engagement-drop.use-case';
+import { z } from 'zod';
+
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
+import type FlagPostEngagementDropUseCase from '../../usecase/flag-post-engagement-drop/flag-post-engagement-drop.use-case';
 
 export const postEngagementDroppedMessageSchema = z.object({
   eventName: z.literal('PostEngagementDropped'),

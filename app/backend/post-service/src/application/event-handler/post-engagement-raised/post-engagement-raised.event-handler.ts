@@ -1,7 +1,8 @@
-import { z } from 'zod';
 import { type EventHandler, type Logger } from '@drift/shared';
-import type PromotePostUseCase from '../../usecase/promote-post/promote-post.use-case';
+import { z } from 'zod';
+
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
+import type PromotePostUseCase from '../../usecase/promote-post/promote-post.use-case';
 
 export const postEngagementRaisedMessageSchema = z.object({
   eventName: z.literal('PostEngagementRaised'),

@@ -1,8 +1,9 @@
+import { type Logger, PostId } from '@drift/shared';
 import { uuidv7 } from 'uuidv7';
-import UnlockPostForTaggingUseCase from './unlock-post-for-tagging.use-case';
+
 import type PostLockRepository from '../../../domain/post/repository/post-lock.repository';
 import { POST_LOCK_TYPE } from '../../../domain/post/repository/post-lock.repository';
-import { PostId, type Logger } from '@drift/shared';
+import UnlockPostForTaggingUseCase from './unlock-post-for-tagging.use-case';
 
 const makePostLockRepository = (): PostLockRepository => ({
   lock: vi.fn().mockResolvedValue(undefined),

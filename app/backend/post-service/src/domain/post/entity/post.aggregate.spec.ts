@@ -1,17 +1,18 @@
-import { uuidv7 } from 'uuidv7';
 import { PostId } from '@drift/shared';
 import { ClientId } from '@drift/shared';
-import Post, { type CreatePostProps } from './post.aggregate';
+import { uuidv7 } from 'uuidv7';
+
 import InvalidPostError from '../error/invalid-post.error';
-import PostCreatedEvent from '../event/post-created.event';
-import PostDeletedEvent from '../event/post-deleted.event';
-import PostUpdatedEvent from '../event/post-updated.event';
-import PostTagsUpdatedEvent from '../event/post-tags-updated.event';
-import PostPromotedEvent from '../event/post-promoted.event';
 import EngagementDropFlaggedEvent from '../event/engagement-drop-flagged.event';
 import EngagementDropRecoveredEvent from '../event/engagement-drop-recovered.event';
-import PostDemotedEvent from '../event/post-demoted.event';
 import FeaturedPostRemovedEvent from '../event/featured-post-removed.event';
+import PostCreatedEvent from '../event/post-created.event';
+import PostDeletedEvent from '../event/post-deleted.event';
+import PostDemotedEvent from '../event/post-demoted.event';
+import PostPromotedEvent from '../event/post-promoted.event';
+import PostTagsUpdatedEvent from '../event/post-tags-updated.event';
+import PostUpdatedEvent from '../event/post-updated.event';
+import Post, { type CreatePostProps } from './post.aggregate';
 
 describe('Post', () => {
   const makeProps = (overrides: Partial<CreatePostProps> = {}): CreatePostProps => ({

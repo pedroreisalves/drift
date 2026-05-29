@@ -1,4 +1,5 @@
-import { truncateText, POST_BODY_PREVIEW_LENGTH } from '@drift/shared';
+import { POST_BODY_PREVIEW_LENGTH, truncateText } from '@drift/shared';
+
 import type Post from '../../../domain/post/entity/post.aggregate';
 import type { ListPostOutputDto } from './list-post.dto';
 

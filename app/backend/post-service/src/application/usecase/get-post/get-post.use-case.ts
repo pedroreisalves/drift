@@ -1,7 +1,8 @@
-import type { GetPostInputDto, GetPostOutputDto } from './get-post.dto';
-import { PostId, type Logger, type UseCase } from '@drift/shared';
+import { type Logger, PostId, type UseCase } from '@drift/shared';
+
 import type PostRepository from '../../../domain/post/repository/post.repository';
 import PostNotFoundError from '../../@shared/error/post-not-found.error';
+import type { GetPostInputDto, GetPostOutputDto } from './get-post.dto';
 import { toGetPostOutputDto } from './get-post.mapper';
 
 export default class GetPostUseCase implements UseCase<GetPostInputDto, GetPostOutputDto> {

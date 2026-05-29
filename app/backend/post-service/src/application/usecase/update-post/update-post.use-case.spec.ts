@@ -1,15 +1,16 @@
+import { ClientId, type EventDispatcher, type Logger, PostId } from '@drift/shared';
 import { uuidv7 } from 'uuidv7';
-import UpdatePostUseCase from './update-post.use-case';
+
 import Post from '../../../domain/post/entity/post.aggregate';
-import { PostId, ClientId, type EventDispatcher, type Logger } from '@drift/shared';
-import type PostRepository from '../../../domain/post/repository/post.repository';
-import type PostLockRepository from '../../../domain/post/repository/post-lock.repository';
-import type PostFeaturedRepository from '../../../domain/post/repository/post-featured.repository';
-import PostUpdatedEvent from '../../../domain/post/event/post-updated.event';
 import type PostDemotedEvent from '../../../domain/post/event/post-demoted.event';
-import PostNotFoundError from '../../@shared/error/post-not-found.error';
+import PostUpdatedEvent from '../../../domain/post/event/post-updated.event';
+import type PostRepository from '../../../domain/post/repository/post.repository';
+import type PostFeaturedRepository from '../../../domain/post/repository/post-featured.repository';
+import type PostLockRepository from '../../../domain/post/repository/post-lock.repository';
 import { ForbiddenPostOperationError } from '../../@shared/error/forbidden-post-update.error';
+import PostNotFoundError from '../../@shared/error/post-not-found.error';
 import TaggingInProgressError from '../../@shared/error/tagging-in-progress.error';
+import UpdatePostUseCase from './update-post.use-case';
 
 const makeRepository = (): PostRepository => ({
   save: vi.fn().mockResolvedValue(undefined),
