@@ -1,10 +1,11 @@
-import { uuidv7 } from 'uuidv7';
 import { PostId } from '@drift/shared';
+import { uuidv7 } from 'uuidv7';
+
+import Signal, { SignalEnum } from '../value-object/signal.value-object';
 import EngagementState, {
   type CreateEngagementStateProps,
   type UpdateEngagementStateProps,
 } from './engagement-state.entity';
-import Signal, { SignalEnum } from '../value-object/signal.value-object';
 
 describe('EngagementState', () => {
   const makeProps = (

@@ -1,5 +1,6 @@
-import type { Pool } from 'pg';
 import type { PostId } from '@drift/shared';
+import type { Pool } from 'pg';
+
 import type DeletedPostRepository from '../../domain/analytics-log/repository/deleted-post.repository';
 
 export default class PostgresDeletedPostRepository implements DeletedPostRepository {

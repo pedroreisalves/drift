@@ -1,14 +1,15 @@
-import { uuidv7 } from 'uuidv7';
+import type { EventDispatcher, Logger } from '@drift/shared';
 import { PostId } from '@drift/shared';
-import CheckEngagementUseCase from './check-engagement.use-case';
+import { uuidv7 } from 'uuidv7';
+
+import EngagementState from '../../../domain/analytics-log/entity/engagement-state.entity';
+import PostEngagementDroppedEvent from '../../../domain/analytics-log/event/post-engagement-dropped.event';
+import PostEngagementRaisedEvent from '../../../domain/analytics-log/event/post-engagement-raised.event';
 import type AnalyticsLogRepository from '../../../domain/analytics-log/repository/analytics-log.repository';
 import type EngagementStateRepository from '../../../domain/analytics-log/repository/engagement-state.repository';
-import type { EventDispatcher, Logger } from '@drift/shared';
-import EngagementState from '../../../domain/analytics-log/entity/engagement-state.entity';
 import Signal, { SignalEnum } from '../../../domain/analytics-log/value-object/signal.value-object';
-import PostEngagementRaisedEvent from '../../../domain/analytics-log/event/post-engagement-raised.event';
-import PostEngagementDroppedEvent from '../../../domain/analytics-log/event/post-engagement-dropped.event';
 import { ENGAGEMENT_WINDOW_HOURS } from '../../@shared/constant/check-engagement.constant';
+import CheckEngagementUseCase from './check-engagement.use-case';
 
 const makeAnalyticsLogRepository = (): AnalyticsLogRepository => ({
   save: vi.fn().mockResolvedValue(undefined),

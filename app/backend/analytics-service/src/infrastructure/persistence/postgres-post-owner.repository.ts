@@ -1,5 +1,6 @@
+import type { ClientId, PostId } from '@drift/shared';
 import type { Pool } from 'pg';
-import type { PostId, ClientId } from '@drift/shared';
+
 import type PostOwnerRepository from '../../domain/analytics-log/repository/post-owner.repository';
 
 export default class PostgresPostOwnerRepository implements PostOwnerRepository {

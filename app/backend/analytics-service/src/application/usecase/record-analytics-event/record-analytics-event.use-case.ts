@@ -1,18 +1,19 @@
-import { ClientId, PostId, type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
-import type AnalyticsLogRepository from '../../../domain/analytics-log/repository/analytics-log.repository';
-import type { RecordAnalyticsEventInputDto } from './record-analytics-event.dto';
-import { EventTypeEnum } from '../../../domain/analytics-log/value-object/event-type.value-object';
-import EventType from '../../../domain/analytics-log/value-object/event-type.value-object';
-import AnalyticsLog from '../../../domain/analytics-log/entity/analytics-log.entity';
-import AnalyticsLogId from '../../../domain/analytics-log/value-object/analytics-log-id.value-object';
+import { ClientId, type EventDispatcher, type Logger, PostId, type UseCase } from '@drift/shared';
 import { uuidv7 } from 'uuidv7';
-import AnalyticsEventRecordedEvent from '../../../domain/analytics-log/event/analytics-event-recorded.event';
-import type DeletedPostRepository from '../../../domain/analytics-log/repository/deleted-post.repository';
-import type PostOwnerRepository from '../../../domain/analytics-log/repository/post-owner.repository';
-import type PostLastUpdatedRepository from '../../../domain/analytics-log/repository/post-last-updated.repository';
-import type EngagementStateRepository from '../../../domain/analytics-log/repository/engagement-state.repository';
+
+import AnalyticsLog from '../../../domain/analytics-log/entity/analytics-log.entity';
 import EngagementState from '../../../domain/analytics-log/entity/engagement-state.entity';
+import AnalyticsEventRecordedEvent from '../../../domain/analytics-log/event/analytics-event-recorded.event';
+import type AnalyticsLogRepository from '../../../domain/analytics-log/repository/analytics-log.repository';
+import type DeletedPostRepository from '../../../domain/analytics-log/repository/deleted-post.repository';
+import type EngagementStateRepository from '../../../domain/analytics-log/repository/engagement-state.repository';
+import type PostLastUpdatedRepository from '../../../domain/analytics-log/repository/post-last-updated.repository';
+import type PostOwnerRepository from '../../../domain/analytics-log/repository/post-owner.repository';
+import AnalyticsLogId from '../../../domain/analytics-log/value-object/analytics-log-id.value-object';
+import EventType from '../../../domain/analytics-log/value-object/event-type.value-object';
+import { EventTypeEnum } from '../../../domain/analytics-log/value-object/event-type.value-object';
 import Signal, { SignalEnum } from '../../../domain/analytics-log/value-object/signal.value-object';
+import type { RecordAnalyticsEventInputDto } from './record-analytics-event.dto';
 
 export default class RecordAnalyticsEventUseCase implements UseCase<
   RecordAnalyticsEventInputDto,

@@ -1,9 +1,10 @@
+import { ClientId, PostId } from '@drift/shared';
 import { uuidv7 } from 'uuidv7';
-import { PostId, ClientId } from '@drift/shared';
-import AnalyticsLog, { type CreateAnalyticsLogProps } from './analytics-log.entity';
+
 import InvalidAnalyticsLogError from '../error/invalid-analytics-log.error';
 import AnalyticsLogId from '../value-object/analytics-log-id.value-object';
 import EventType, { EventTypeEnum } from '../value-object/event-type.value-object';
+import AnalyticsLog, { type CreateAnalyticsLogProps } from './analytics-log.entity';
 
 describe('AnalyticsLog', () => {
   const makeProps = (

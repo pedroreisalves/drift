@@ -1,24 +1,24 @@
-import { Pool } from 'pg';
-import Environment from './infrastructure/config/environment';
-
 import {
-  RabbitMQEventDispatcher,
-  RabbitMQEventConsumer,
-  PinoLogger,
   NodeCronScheduler,
+  PinoLogger,
+  RabbitMQEventConsumer,
+  RabbitMQEventDispatcher,
 } from '@drift/shared';
-import PostgresAnalyticsLogRepository from './infrastructure/persistence/postgres-analytics-log.repository';
-import PostgresEngagementStateRepository from './infrastructure/persistence/postgres-engagement-state.repository';
-import PostgresDeletedPostRepository from './infrastructure/persistence/postgres-deleted-post.repository';
-import PostgresPostOwnerRepository from './infrastructure/persistence/postgres-post-owner.repository';
-import PostgresPostLastUpdatedRepository from './infrastructure/persistence/postgres-post-last-updated.repository';
-import RecordAnalyticsEventUseCase from './application/usecase/record-analytics-event/record-analytics-event.use-case';
-import CheckEngagementUseCase from './application/usecase/check-engagement/check-engagement.use-case';
+import { Pool } from 'pg';
+
 import PostCreatedEventHandler from './application/event-handler/post-created/post-created.event-handler';
+import PostDeletedEventHandler from './application/event-handler/post-deleted/post-deleted.event-handler';
+import PostSearchedEventHandler from './application/event-handler/post-searched/post-searched.event-handler';
 import PostUpdatedEventHandler from './application/event-handler/post-updated/post-updated.event-handler';
 import PostViewedEventHandler from './application/event-handler/post-viewed/post-viewed.event-handler';
-import PostSearchedEventHandler from './application/event-handler/post-searched/post-searched.event-handler';
-import PostDeletedEventHandler from './application/event-handler/post-deleted/post-deleted.event-handler';
+import CheckEngagementUseCase from './application/usecase/check-engagement/check-engagement.use-case';
+import RecordAnalyticsEventUseCase from './application/usecase/record-analytics-event/record-analytics-event.use-case';
+import Environment from './infrastructure/config/environment';
+import PostgresAnalyticsLogRepository from './infrastructure/persistence/postgres-analytics-log.repository';
+import PostgresDeletedPostRepository from './infrastructure/persistence/postgres-deleted-post.repository';
+import PostgresEngagementStateRepository from './infrastructure/persistence/postgres-engagement-state.repository';
+import PostgresPostLastUpdatedRepository from './infrastructure/persistence/postgres-post-last-updated.repository';
+import PostgresPostOwnerRepository from './infrastructure/persistence/postgres-post-owner.repository';
 
 const logger = new PinoLogger(Environment.SERVICE_NAME, Environment.LOG_LEVEL);
 

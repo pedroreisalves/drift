@@ -1,14 +1,15 @@
 import type { DomainEvent, EventDispatcher, Logger, PostId, UseCase } from '@drift/shared';
+
+import EngagementState from '../../../domain/analytics-log/entity/engagement-state.entity';
+import PostEngagementDroppedEvent from '../../../domain/analytics-log/event/post-engagement-dropped.event';
+import PostEngagementRaisedEvent from '../../../domain/analytics-log/event/post-engagement-raised.event';
 import type AnalyticsLogRepository from '../../../domain/analytics-log/repository/analytics-log.repository';
 import type EngagementStateRepository from '../../../domain/analytics-log/repository/engagement-state.repository';
-import EngagementState from '../../../domain/analytics-log/entity/engagement-state.entity';
-import PostEngagementRaisedEvent from '../../../domain/analytics-log/event/post-engagement-raised.event';
 import Signal, { SignalEnum } from '../../../domain/analytics-log/value-object/signal.value-object';
-import PostEngagementDroppedEvent from '../../../domain/analytics-log/event/post-engagement-dropped.event';
 import {
+  DROP_THRESHOLD,
   ENGAGEMENT_WINDOW_HOURS,
   RAISE_THRESHOLD,
-  DROP_THRESHOLD,
 } from '../../@shared/constant/check-engagement.constant';
 
 export default class CheckEngagementUseCase implements UseCase<void, void> {

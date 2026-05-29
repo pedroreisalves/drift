@@ -1,5 +1,6 @@
-import { uuidv7 } from 'uuidv7';
 import { InvalidValueObjectError } from '@drift/shared';
+import { uuidv7 } from 'uuidv7';
+
 import AnalyticsLogId from './analytics-log-id.value-object';
 
 describe('AnalyticsLogId', () => {

@@ -1,9 +1,10 @@
 import { type ClientId, type PostId } from '@drift/shared';
+import { z } from 'zod';
+
+import InvalidAnalyticsLogError from '../error/invalid-analytics-log.error';
 import type AnalyticsLogId from '../value-object/analytics-log-id.value-object';
 import type EventType from '../value-object/event-type.value-object';
 import { EventTypeEnum } from '../value-object/event-type.value-object';
-import { z } from 'zod';
-import InvalidAnalyticsLogError from '../error/invalid-analytics-log.error';
 
 interface AnalyticsLogProps {
   id: AnalyticsLogId;

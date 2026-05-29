@@ -1,6 +1,7 @@
 import type { Logger } from '@drift/shared';
-import PostSearchedEventHandler, { type PostSearchedMessage } from './post-searched.event-handler';
+
 import type RecordAnalyticsEventUseCase from '../../usecase/record-analytics-event/record-analytics-event.use-case';
+import PostSearchedEventHandler, { type PostSearchedMessage } from './post-searched.event-handler';
 
 const makeLogger = (): Logger => ({
   info: vi.fn(),

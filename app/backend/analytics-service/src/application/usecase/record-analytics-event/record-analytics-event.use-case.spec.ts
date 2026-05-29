@@ -1,13 +1,14 @@
+import type { EventDispatcher, Logger } from '@drift/shared';
 import { uuidv7 } from 'uuidv7';
-import RecordAnalyticsEventUseCase from './record-analytics-event.use-case';
+
+import AnalyticsLog from '../../../domain/analytics-log/entity/analytics-log.entity';
 import type AnalyticsLogRepository from '../../../domain/analytics-log/repository/analytics-log.repository';
 import type DeletedPostRepository from '../../../domain/analytics-log/repository/deleted-post.repository';
-import type PostOwnerRepository from '../../../domain/analytics-log/repository/post-owner.repository';
-import type PostLastUpdatedRepository from '../../../domain/analytics-log/repository/post-last-updated.repository';
 import type EngagementStateRepository from '../../../domain/analytics-log/repository/engagement-state.repository';
-import type { EventDispatcher, Logger } from '@drift/shared';
-import AnalyticsLog from '../../../domain/analytics-log/entity/analytics-log.entity';
+import type PostLastUpdatedRepository from '../../../domain/analytics-log/repository/post-last-updated.repository';
+import type PostOwnerRepository from '../../../domain/analytics-log/repository/post-owner.repository';
 import { EventTypeEnum } from '../../../domain/analytics-log/value-object/event-type.value-object';
+import RecordAnalyticsEventUseCase from './record-analytics-event.use-case';
 
 const makeAnalyticsLogRepository = (): AnalyticsLogRepository => ({
   save: vi.fn().mockResolvedValue(undefined),

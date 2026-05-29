@@ -1,7 +1,8 @@
-import { z } from 'zod';
 import { type EventHandler, type Logger } from '@drift/shared';
-import type RecordAnalyticsEventUseCase from '../../usecase/record-analytics-event/record-analytics-event.use-case';
+import { z } from 'zod';
+
 import { EventTypeEnum } from '../../../domain/analytics-log/value-object/event-type.value-object';
+import type RecordAnalyticsEventUseCase from '../../usecase/record-analytics-event/record-analytics-event.use-case';
 
 export const postViewedMessageSchema = z.object({
   eventName: z.literal('PostViewed'),

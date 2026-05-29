@@ -1,5 +1,6 @@
+import { chunk, PostId } from '@drift/shared';
 import type { Pool, PoolClient } from 'pg';
-import { PostId, chunk } from '@drift/shared';
+
 import EngagementState from '../../domain/analytics-log/entity/engagement-state.entity';
 import type EngagementStateRepository from '../../domain/analytics-log/repository/engagement-state.repository';
 import type { FindAllRaisedOptions } from '../../domain/analytics-log/repository/engagement-state.repository';

@@ -1,4 +1,5 @@
 import type { PostId } from '@drift/shared';
+
 import type AnalyticsLog from '../entity/analytics-log.entity';
 
 export interface FindPostIdsWithRecentViewsOptions {

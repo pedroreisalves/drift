@@ -1,5 +1,6 @@
-import type { Pool } from 'pg';
 import type { PostId } from '@drift/shared';
+import type { Pool } from 'pg';
+
 import type PostLastUpdatedRepository from '../../domain/analytics-log/repository/post-last-updated.repository';
 
 export default class PostgresPostLastUpdatedRepository implements PostLastUpdatedRepository {

@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import { InvalidValueObjectError } from '@drift/shared';
+import { z } from 'zod';
 
 export enum EventTypeEnum {
   PostCreated = 'PostCreated',

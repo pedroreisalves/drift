@@ -1,4 +1,5 @@
 import type { PostId } from '@drift/shared';
+
 import type Signal from '../value-object/signal.value-object';
 
 interface EngagementStateProps {

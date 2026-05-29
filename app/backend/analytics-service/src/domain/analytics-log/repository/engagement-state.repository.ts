@@ -1,4 +1,5 @@
 import type { PostId } from '@drift/shared';
+
 import type EngagementState from '../entity/engagement-state.entity';
 
 export interface FindAllRaisedOptions {

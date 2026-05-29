@@ -1,4 +1,5 @@
 import { InvalidValueObjectError } from '@drift/shared';
+
 import EventType, { EventTypeEnum } from './event-type.value-object';
 
 describe('EventType', () => {

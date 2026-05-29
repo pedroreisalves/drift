@@ -1,4 +1,5 @@
 import { InvalidValueObjectError } from '@drift/shared';
+
 import Signal, { SignalEnum } from './signal.value-object';
 
 describe('Signal', () => {
