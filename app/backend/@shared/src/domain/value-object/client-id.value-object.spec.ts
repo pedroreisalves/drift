@@ -1,4 +1,5 @@
 import { uuidv7 } from 'uuidv7';
+
 import { ClientId, InvalidValueObjectError } from '../../index';
 
 describe('ClientId', () => {

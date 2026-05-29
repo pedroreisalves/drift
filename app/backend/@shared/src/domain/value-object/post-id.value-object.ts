@@ -1,4 +1,5 @@
 import { z } from 'zod';
+
 import InvalidValueObjectError from '../error/invalid-value-object.error';
 
 export const postIdSchema = z.uuidv7({ error: 'Invalid Post ID format' });

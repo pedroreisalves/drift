@@ -1,7 +1,7 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
-import { sharedRules } from '../../../eslint.config.base.mjs';
+import { importSortConfig, sharedRules } from '../../../eslint.config.base.mjs';
 
 const ignores = [
   'dist/**',
@@ -15,6 +15,7 @@ export const createBackendConfig = (dir) => [
   { ignores },
   js.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
+  importSortConfig,
   {
     languageOptions: {
       ecmaVersion: 'latest',

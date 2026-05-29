@@ -1,6 +1,7 @@
 import type { ChannelWrapper } from 'amqp-connection-manager';
 import amqp from 'amqp-connection-manager';
 import type { ConfirmChannel, ConsumeMessage } from 'amqplib';
+
 import type EventConsumer from '../../application/interface/event-consumer.interface';
 import type EventHandler from '../../application/interface/event-handler.interface';
 import type Logger from '../../application/interface/logger.interface';

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+
 import InvalidValueObjectError from '../error/invalid-value-object.error';
 
 export const clientIdSchema = z.uuidv7({ error: 'Invalid Client ID format' });

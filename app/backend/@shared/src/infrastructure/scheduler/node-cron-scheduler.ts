@@ -1,4 +1,5 @@
 import cron from 'node-cron';
+
 import type Scheduler from '../../application/interface/scheduler.interface';
 import type { SchedulerOptions } from '../../application/interface/scheduler.interface';
 

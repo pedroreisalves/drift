@@ -1,5 +1,5 @@
-import { AggregateRoot } from './aggregate-root';
 import { DomainEvent } from '../event/domain-event';
+import { AggregateRoot } from './aggregate-root';
 
 class StubEvent extends DomainEvent {
   readonly eventName = 'StubEvent';

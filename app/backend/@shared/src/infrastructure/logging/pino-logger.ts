@@ -1,4 +1,5 @@
 import pino from 'pino';
+
 import type Logger from '../../application/interface/logger.interface';
 
 export default class PinoLogger implements Logger {
