@@ -1,4 +1,5 @@
-import { truncateText, POST_BODY_PREVIEW_LENGTH } from '@drift/shared';
+import { POST_BODY_PREVIEW_LENGTH, truncateText } from '@drift/shared';
+
 import type SearchEntry from '../../../domain/search-entry/entity/search-entry.entity';
 import type { SearchPostsOutputDto } from './search-posts.dto';
 

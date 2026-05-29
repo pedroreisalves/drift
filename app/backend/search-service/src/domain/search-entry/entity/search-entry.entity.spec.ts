@@ -1,7 +1,8 @@
-import { uuidv7 } from 'uuidv7';
 import { PostId } from '@drift/shared';
-import SearchEntry, { type CreateSearchEntryProps } from './search-entry.entity';
+import { uuidv7 } from 'uuidv7';
+
 import InvalidSearchEntryError from '../error/invalid-search-entry.error';
+import SearchEntry, { type CreateSearchEntryProps } from './search-entry.entity';
 
 describe('SearchEntry', () => {
   const makeProps = (overrides: Partial<CreateSearchEntryProps> = {}): CreateSearchEntryProps => ({

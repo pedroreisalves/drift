@@ -1,8 +1,9 @@
 import { type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
+
+import PostSearchedEvent from '../../../domain/search-entry/event/post-searched.event';
 import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository';
 import type { SearchPostsInputDto, SearchPostsOutputDto } from './search-posts.dto';
 import { toSearchPostsOutputDto } from './search-posts.mapper';
-import PostSearchedEvent from '../../../domain/search-entry/event/post-searched.event';
 
 export default class SearchPostsUseCase implements UseCase<
   SearchPostsInputDto,

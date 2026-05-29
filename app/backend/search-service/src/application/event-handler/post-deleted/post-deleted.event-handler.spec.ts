@@ -1,6 +1,7 @@
 import type { Logger } from '@drift/shared';
-import PostDeletedEventHandler, { type PostDeletedMessage } from './post-deleted.event-handler';
+
 import type RemovePostFromIndexUseCase from '../../usecase/remove-post-from-index/remove-post-from-index.use-case';
+import PostDeletedEventHandler, { type PostDeletedMessage } from './post-deleted.event-handler';
 
 const makeLogger = (): Logger => ({
   info: vi.fn(),

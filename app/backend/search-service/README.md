@@ -17,15 +17,15 @@ Indexes posts into Meilisearch and exposes a full-text search API for clients.
 
 ## Events consumed
 
-| Event              | Source service | Effect                                              |
-| ------------------ | -------------- | --------------------------------------------------- |
-| `PostCreated`      | post-service   | Creates a new search entry (`isTaggingInProgress: true`) |
+| Event              | Source service | Effect                                                                |
+| ------------------ | -------------- | --------------------------------------------------------------------- |
+| `PostCreated`      | post-service   | Creates a new search entry (`isTaggingInProgress: true`)              |
 | `PostUpdated`      | post-service   | Updates title/body of an existing entry (`isTaggingInProgress: true`) |
-| `PostDeleted`      | post-service   | Removes the entry from the index                    |
-| `PostTagsUpdated`  | post-service   | Replaces tags and clears `isTaggingInProgress`      |
-| `PostPromoted`     | post-service   | Sets `isFeatured: true` on the entry                |
-| `PostDemoted`      | post-service   | Sets `isFeatured: false` on the entry               |
-| `TaggingAbandoned` | post-service   | Sets `isTaggingInProgress: false` on the entry      |
+| `PostDeleted`      | post-service   | Removes the entry from the index                                      |
+| `PostTagsUpdated`  | post-service   | Replaces tags and clears `isTaggingInProgress`                        |
+| `PostPromoted`     | post-service   | Sets `isFeatured: true` on the entry                                  |
+| `PostDemoted`      | post-service   | Sets `isFeatured: false` on the entry                                 |
+| `TaggingAbandoned` | post-service   | Sets `isTaggingInProgress: false` on the entry                        |
 
 ## Events produced
 

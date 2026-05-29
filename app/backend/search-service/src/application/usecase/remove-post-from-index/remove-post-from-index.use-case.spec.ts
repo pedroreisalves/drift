@@ -1,11 +1,12 @@
-import { uuidv7 } from 'uuidv7';
-import RemovePostFromIndexUseCase from './remove-post-from-index.use-case';
-import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository';
 import type { EventDispatcher, Logger } from '@drift/shared';
 import { PostId } from '@drift/shared';
+import { uuidv7 } from 'uuidv7';
+
 import SearchEntry from '../../../domain/search-entry/entity/search-entry.entity';
 import PostRemovedFromIndexEvent from '../../../domain/search-entry/event/post-removed-from-index.event';
+import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository';
 import RemovalFailedError from '../../@shared/error/removal-failed.error';
+import RemovePostFromIndexUseCase from './remove-post-from-index.use-case';
 
 const makeRepository = (): SearchEntryRepository => ({
   index: vi.fn().mockResolvedValue(undefined),

@@ -1,5 +1,6 @@
 import type { PostId } from '@drift/shared';
 import { z } from 'zod';
+
 import InvalidSearchEntryError from '../error/invalid-search-entry.error';
 
 interface SearchEntryProps {

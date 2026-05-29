@@ -1,5 +1,6 @@
-import { z } from 'zod';
 import { type EventHandler, type Logger } from '@drift/shared';
+import { z } from 'zod';
+
 import type RemovePostFromIndexUseCase from '../../usecase/remove-post-from-index/remove-post-from-index.use-case';
 
 export const postDeletedMessageSchema = z.object({

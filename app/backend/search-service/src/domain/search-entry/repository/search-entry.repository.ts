@@ -1,4 +1,5 @@
 import type { PostId } from '@drift/shared';
+
 import type SearchEntry from '../entity/search-entry.entity';
 
 export default interface SearchEntryRepository {

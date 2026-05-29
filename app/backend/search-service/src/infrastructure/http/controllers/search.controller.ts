@@ -1,4 +1,5 @@
-import type { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
+
 import type SearchPostsUseCase from '../../../application/usecase/search-posts/search-posts.use-case';
 
 export default class SearchController {

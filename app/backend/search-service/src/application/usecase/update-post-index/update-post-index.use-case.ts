@@ -1,9 +1,10 @@
-import { PostId, type EventDispatcher, type Logger, type UseCase } from '@drift/shared';
-import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository';
-import type { UpdatePostIndexInputDto } from './update-post-index.dto';
+import { type EventDispatcher, type Logger, PostId, type UseCase } from '@drift/shared';
+
 import PostIndexedEvent from '../../../domain/search-entry/event/post-indexed.event';
+import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository';
 import DocumentNotFoundError from '../../@shared/error/document-not-found.error';
 import IndexingFailedError from '../../@shared/error/indexing-failed.error';
+import type { UpdatePostIndexInputDto } from './update-post-index.dto';
 
 export default class UpdatePostIndexUseCase implements UseCase<UpdatePostIndexInputDto, void> {
   constructor(

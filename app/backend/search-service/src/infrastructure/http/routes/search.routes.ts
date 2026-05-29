@@ -1,4 +1,5 @@
 import { Router } from 'express';
+
 import type SearchController from '../controllers/search.controller';
 
 export default function createSearchRoutes(controller: SearchController): Router {

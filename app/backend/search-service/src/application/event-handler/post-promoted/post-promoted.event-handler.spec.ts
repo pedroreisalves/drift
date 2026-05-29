@@ -1,7 +1,8 @@
 import type { Logger } from '@drift/shared';
-import PostPromotedEventHandler, { type PostPromotedMessage } from './post-promoted.event-handler';
-import type UpdateSearchEntryFeaturedStatusUseCase from '../../usecase/update-search-entry-featured-status/update-search-entry-featured-status.use-case';
+
 import DocumentNotFoundError from '../../@shared/error/document-not-found.error';
+import type UpdateSearchEntryFeaturedStatusUseCase from '../../usecase/update-search-entry-featured-status/update-search-entry-featured-status.use-case';
+import PostPromotedEventHandler, { type PostPromotedMessage } from './post-promoted.event-handler';
 
 const makeLogger = (): Logger => ({
   info: vi.fn(),

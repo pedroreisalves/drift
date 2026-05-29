@@ -1,9 +1,10 @@
 import type { Logger } from '@drift/shared';
+
+import DocumentNotFoundError from '../../@shared/error/document-not-found.error';
+import type UpdateSearchEntryTaggingStatusUseCase from '../../usecase/update-search-entry-tagging-status/update-search-entry-tagging-status.use-case';
 import TaggingAbandonedEventHandler, {
   type TaggingAbandonedMessage,
 } from './tagging-abandoned.event-handler';
-import type UpdateSearchEntryTaggingStatusUseCase from '../../usecase/update-search-entry-tagging-status/update-search-entry-tagging-status.use-case';
-import DocumentNotFoundError from '../../@shared/error/document-not-found.error';
 
 const makeLogger = (): Logger => ({
   info: vi.fn(),

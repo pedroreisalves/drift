@@ -1,11 +1,12 @@
-import { uuidv7 } from 'uuidv7';
-import UpdateSearchEntryFeaturedStatusUseCase from './update-search-entry-featured-status.use-case';
-import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository';
 import type { Logger } from '@drift/shared';
 import { PostId } from '@drift/shared';
+import { uuidv7 } from 'uuidv7';
+
 import SearchEntry from '../../../domain/search-entry/entity/search-entry.entity';
+import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository';
 import DocumentNotFoundError from '../../@shared/error/document-not-found.error';
 import IndexingFailedError from '../../@shared/error/indexing-failed.error';
+import UpdateSearchEntryFeaturedStatusUseCase from './update-search-entry-featured-status.use-case';
 
 const makeRepository = (): SearchEntryRepository => ({
   index: vi.fn().mockResolvedValue(undefined),

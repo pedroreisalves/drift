@@ -1,8 +1,9 @@
-import { PostId, type Logger, type UseCase } from '@drift/shared';
+import { type Logger, PostId, type UseCase } from '@drift/shared';
+
 import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository';
-import type { UpdateSearchEntryFeaturedStatusInputDto } from './update-search-entry-featured-status.dto';
 import DocumentNotFoundError from '../../@shared/error/document-not-found.error';
 import IndexingFailedError from '../../@shared/error/indexing-failed.error';
+import type { UpdateSearchEntryFeaturedStatusInputDto } from './update-search-entry-featured-status.dto';
 
 export default class UpdateSearchEntryFeaturedStatusUseCase implements UseCase<
   UpdateSearchEntryFeaturedStatusInputDto,

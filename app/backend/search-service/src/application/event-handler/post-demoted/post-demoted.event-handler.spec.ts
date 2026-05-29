@@ -1,7 +1,8 @@
 import type { Logger } from '@drift/shared';
-import PostDemotedEventHandler, { type PostDemotedMessage } from './post-demoted.event-handler';
-import type UpdateSearchEntryFeaturedStatusUseCase from '../../usecase/update-search-entry-featured-status/update-search-entry-featured-status.use-case';
+
 import DocumentNotFoundError from '../../@shared/error/document-not-found.error';
+import type UpdateSearchEntryFeaturedStatusUseCase from '../../usecase/update-search-entry-featured-status/update-search-entry-featured-status.use-case';
+import PostDemotedEventHandler, { type PostDemotedMessage } from './post-demoted.event-handler';
 
 const makeLogger = (): Logger => ({
   info: vi.fn(),

@@ -1,10 +1,11 @@
-import { uuidv7 } from 'uuidv7';
-import IndexPostUseCase from './index-post.use-case';
-import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository';
 import type { EventDispatcher, Logger } from '@drift/shared';
+import { uuidv7 } from 'uuidv7';
+
 import SearchEntry from '../../../domain/search-entry/entity/search-entry.entity';
 import PostIndexedEvent from '../../../domain/search-entry/event/post-indexed.event';
+import type SearchEntryRepository from '../../../domain/search-entry/repository/search-entry.repository';
 import IndexingFailedError from '../../@shared/error/indexing-failed.error';
+import IndexPostUseCase from './index-post.use-case';
 
 const makeRepository = (): SearchEntryRepository => ({
   index: vi.fn().mockResolvedValue(undefined),

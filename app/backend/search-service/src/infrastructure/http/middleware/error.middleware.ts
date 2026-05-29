@@ -1,5 +1,5 @@
-import type { Request, Response, NextFunction } from 'express';
 import { type Logger } from '@drift/shared';
+import type { NextFunction, Request, Response } from 'express';
 
 export default function createErrorMiddleware(logger: Logger) {
   return function errorMiddleware(

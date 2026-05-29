@@ -1,7 +1,8 @@
-import { z } from 'zod';
 import { type EventHandler, type Logger } from '@drift/shared';
-import type IndexPostTagsUseCase from '../../usecase/index-post-tags/index-post-tags.use-case';
+import { z } from 'zod';
+
 import DocumentNotFoundError from '../../@shared/error/document-not-found.error';
+import type IndexPostTagsUseCase from '../../usecase/index-post-tags/index-post-tags.use-case';
 
 export const postTagsUpdatedMessageSchema = z.object({
   eventName: z.literal('PostTagsUpdated'),

@@ -1,5 +1,6 @@
-import { z } from 'zod';
 import { type EventHandler, type Logger } from '@drift/shared';
+import { z } from 'zod';
+
 import type IndexPostUseCase from '../../usecase/index-post/index-post.use-case';
 
 export const postCreatedMessageSchema = z.object({

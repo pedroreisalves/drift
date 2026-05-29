@@ -1,7 +1,8 @@
-import { z } from 'zod';
 import { type EventHandler, type Logger } from '@drift/shared';
-import type UpdateSearchEntryTaggingStatusUseCase from '../../usecase/update-search-entry-tagging-status/update-search-entry-tagging-status.use-case';
+import { z } from 'zod';
+
 import DocumentNotFoundError from '../../@shared/error/document-not-found.error';
+import type UpdateSearchEntryTaggingStatusUseCase from '../../usecase/update-search-entry-tagging-status/update-search-entry-tagging-status.use-case';
 
 export const taggingAbandonedMessageSchema = z.object({
   eventName: z.literal('TaggingAbandoned'),

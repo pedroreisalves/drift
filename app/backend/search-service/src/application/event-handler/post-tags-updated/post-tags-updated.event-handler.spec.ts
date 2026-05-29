@@ -1,9 +1,10 @@
 import type { Logger } from '@drift/shared';
+
+import DocumentNotFoundError from '../../@shared/error/document-not-found.error';
+import type IndexPostTagsUseCase from '../../usecase/index-post-tags/index-post-tags.use-case';
 import PostTagsUpdatedEventHandler, {
   type PostTagsUpdatedMessage,
 } from './post-tags-updated.event-handler';
-import type IndexPostTagsUseCase from '../../usecase/index-post-tags/index-post-tags.use-case';
-import DocumentNotFoundError from '../../@shared/error/document-not-found.error';
 
 const makeLogger = (): Logger => ({
   info: vi.fn(),

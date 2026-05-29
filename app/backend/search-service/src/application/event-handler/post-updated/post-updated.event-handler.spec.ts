@@ -1,7 +1,8 @@
 import type { Logger } from '@drift/shared';
-import PostUpdatedEventHandler, { type PostUpdatedMessage } from './post-updated.event-handler';
-import type UpdatePostIndexUseCase from '../../usecase/update-post-index/update-post-index.use-case';
+
 import DocumentNotFoundError from '../../@shared/error/document-not-found.error';
+import type UpdatePostIndexUseCase from '../../usecase/update-post-index/update-post-index.use-case';
+import PostUpdatedEventHandler, { type PostUpdatedMessage } from './post-updated.event-handler';
 
 const makeLogger = (): Logger => ({
   info: vi.fn(),

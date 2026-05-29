@@ -1,7 +1,8 @@
-import { z } from 'zod';
 import { type EventHandler, type Logger } from '@drift/shared';
-import type UpdateSearchEntryFeaturedStatusUseCase from '../../usecase/update-search-entry-featured-status/update-search-entry-featured-status.use-case';
+import { z } from 'zod';
+
 import DocumentNotFoundError from '../../@shared/error/document-not-found.error';
+import type UpdateSearchEntryFeaturedStatusUseCase from '../../usecase/update-search-entry-featured-status/update-search-entry-featured-status.use-case';
 
 export const postPromotedMessageSchema = z.object({
   eventName: z.literal('PostPromoted'),
