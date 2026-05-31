@@ -68,17 +68,19 @@ const makeExistingPost = (postId: string, clientId: string): Post => {
 
 describe('UpdatePostUseCase', () => {
   let repository: PostRepository;
+  let postLockRepository: PostLockRepository;
   let postFeaturedRepository: PostFeaturedRepository;
   let dispatcher: EventDispatcher;
   let useCase: UpdatePostUseCase;
 
   beforeEach(() => {
     repository = makeRepository();
+    postLockRepository = makePostLockRepository();
     postFeaturedRepository = makePostFeaturedRepository();
     dispatcher = makeDispatcher();
     useCase = new UpdatePostUseCase(
       repository,
-      makePostLockRepository(),
+      postLockRepository,
       postFeaturedRepository,
       dispatcher,
       makeLogger(),
@@ -102,6 +104,41 @@ describe('UpdatePostUseCase', () => {
     expect(dispatchSpy).toHaveBeenCalledWith(expect.any(PostUpdatedEvent));
 
     expect(existing.getDomainEvents()).toEqual([]);
+  });
+
+  it('should acquire the tagging lock so the post reports tagging in progress immediately after the update', async () => {
+    const postId = uuidv7();
+    const clientId = uuidv7();
+    const existing = makeExistingPost(postId, clientId);
+    vi.spyOn(repository, 'findById').mockResolvedValue(existing);
+    const lockSpy = vi.spyOn(postLockRepository, 'lock');
+
+    await useCase.execute({ postId, clientId, title: 'Updated Title', body: 'Updated body.' });
+
+    expect(lockSpy).toHaveBeenCalledTimes(1);
+    expect(lockSpy.mock.calls[0][0].toString()).toBe(postId);
+    expect(lockSpy.mock.calls[0][1]).toBe('tagging');
+  });
+
+  it('should persist the update before acquiring the tagging lock', async () => {
+    const postId = uuidv7();
+    const clientId = uuidv7();
+    const existing = makeExistingPost(postId, clientId);
+    vi.spyOn(repository, 'findById').mockResolvedValue(existing);
+
+    const callOrder: string[] = [];
+    vi.spyOn(repository, 'save').mockImplementation(() => {
+      callOrder.push('repository.save');
+      return Promise.resolve();
+    });
+    vi.spyOn(postLockRepository, 'lock').mockImplementation(() => {
+      callOrder.push('postLockRepository.lock');
+      return Promise.resolve();
+    });
+
+    await useCase.execute({ postId, clientId, title: 'Title', body: 'Body.' });
+
+    expect(callOrder).toEqual(['repository.save', 'postLockRepository.lock']);
   });
 
   it('should call findById, then repository.save, then dispatcher.dispatch in order', async () => {

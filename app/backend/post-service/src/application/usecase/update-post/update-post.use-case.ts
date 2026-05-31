@@ -56,6 +56,8 @@ export default class UpdatePostUseCase implements UseCase<UpdatePostInputDto, vo
 
     await this.postRepository.save(post);
 
+    await this.postLockRepository.lock(postId, POST_LOCK_TYPE.TAGGING);
+
     if (wasFeatured) {
       await this.postFeaturedRepository.delete(postId);
     }
