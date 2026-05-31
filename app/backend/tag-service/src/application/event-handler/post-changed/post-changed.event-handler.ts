@@ -1,4 +1,4 @@
-import { type EventHandler, type Logger } from '@drift/shared';
+import { clientHashSchema, type EventHandler, type Logger } from '@drift/shared';
 import { z } from 'zod';
 
 import type TagPostUseCase from '../../usecase/tag-post/tag-post.use-case';
@@ -8,7 +8,7 @@ export const postChangedMessageSchema = z.object({
   occurredAt: z.iso.datetime(),
   payload: z.object({
     postId: z.uuidv7(),
-    clientId: z.uuidv7(),
+    clientHash: clientHashSchema,
     clientName: z.string(),
     title: z.string(),
     body: z.string(),

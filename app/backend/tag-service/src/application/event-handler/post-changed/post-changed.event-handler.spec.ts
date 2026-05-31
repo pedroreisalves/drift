@@ -14,7 +14,7 @@ const makeValidMessage = (overrides: Partial<PostChangedMessage> = {}): PostChan
   occurredAt: '2026-01-01T00:00:00.000Z',
   payload: {
     postId: '019682a0-1234-7000-8000-abcdef012345',
-    clientId: '019682a0-1234-7000-8000-abcdef012346',
+    clientHash: 'a'.repeat(64),
     clientName: 'Test Client',
     title: 'Test Post Title',
     body: 'Test post body content',
@@ -54,7 +54,7 @@ describe('PostChangedEventHandler', () => {
         makeValidMessage({
           payload: {
             postId: 'not-a-uuid',
-            clientId: '019682a0-1234-7000-8000-abcdef012346',
+            clientHash: 'a'.repeat(64),
             clientName: 'Test Client',
             title: 'Test Post Title',
             body: 'Test post body content',
