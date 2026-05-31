@@ -11,6 +11,10 @@ export type { default as UseCase } from './application/interface/use-case.interf
 export { AggregateRoot } from './domain/entity/aggregate-root';
 export { default as InvalidValueObjectError } from './domain/error/invalid-value-object.error';
 export { DomainEvent } from './domain/event/domain-event';
+export {
+  default as ClientHash,
+  clientHashSchema,
+} from './domain/value-object/client-hash.value-object';
 export { default as ClientId, clientIdSchema } from './domain/value-object/client-id.value-object';
 export { default as PostId, postIdSchema } from './domain/value-object/post-id.value-object';
 export { default as PinoLogger } from './infrastructure/logging/pino-logger';
@@ -18,4 +22,5 @@ export { default as RabbitMQEventConsumer } from './infrastructure/messaging/rab
 export { default as RabbitMQEventDispatcher } from './infrastructure/messaging/rabbitmq-event-dispatcher';
 export { default as NodeCronScheduler } from './infrastructure/scheduler/node-cron-scheduler';
 export { chunk } from './utils/array/chunk';
+export { sha256Hex } from './utils/crypto/sha256';
 export { truncateText } from './utils/text/truncate-text';
