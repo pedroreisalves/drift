@@ -2,7 +2,7 @@ import { DomainEvent } from '@drift/shared';
 
 interface PostSearchedEventPayload extends Record<string, unknown> {
   query: string;
-  clientId: string;
+  clientHash: string;
   resultCount: number;
   searchedAt: string;
 }

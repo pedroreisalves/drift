@@ -25,20 +25,22 @@ export default class SearchPostsUseCase implements UseCase<
 
     this.logger.info('Posts searched', { q: input.q, resultCount: results.length, limit, offset });
 
-    this.eventDispatcher
-      .dispatch(
-        new PostSearchedEvent({
-          query: input.q,
-          clientId: input.clientId,
-          resultCount: results.length,
-          searchedAt,
-        }),
-      )
-      .catch((err: unknown) => {
-        this.logger.warn('Failed to dispatch PostSearchedEvent', {
-          error: err instanceof Error ? err.message : String(err),
+    if (input.clientHash) {
+      this.eventDispatcher
+        .dispatch(
+          new PostSearchedEvent({
+            query: input.q,
+            clientHash: input.clientHash,
+            resultCount: results.length,
+            searchedAt,
+          }),
+        )
+        .catch((err: unknown) => {
+          this.logger.warn('Failed to dispatch PostSearchedEvent', {
+            error: err instanceof Error ? err.message : String(err),
+          });
         });
-      });
+    }
 
     return results.map((entry) => toSearchPostsOutputDto(entry));
   }

@@ -8,7 +8,6 @@ export const postDeletedMessageSchema = z.object({
   occurredAt: z.iso.datetime(),
   payload: z.object({
     postId: z.uuidv7(),
-    clientId: z.uuidv7(),
     deletedAt: z.iso.datetime(),
   }),
 });

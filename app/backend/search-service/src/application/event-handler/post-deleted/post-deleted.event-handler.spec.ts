@@ -14,7 +14,6 @@ const makeValidMessage = (overrides: Partial<PostDeletedMessage> = {}): PostDele
   occurredAt: '2026-01-01T00:00:00.000Z',
   payload: {
     postId: '01944d6e-6b1a-7f4b-a9c2-3e8d5f1a2b3c',
-    clientId: '01944d6e-6b1a-7f4b-a9c2-3e8d5f1a2b3d',
     deletedAt: '2026-01-01T00:00:00.000Z',
   },
   ...overrides,
@@ -52,7 +51,6 @@ describe('PostDeletedEventHandler', () => {
         makeValidMessage({
           payload: {
             postId: 'not-a-uuid',
-            clientId: '01944d6e-6b1a-7f4b-a9c2-3e8d5f1a2b3d',
             deletedAt: '2026-01-01T00:00:00.000Z',
           },
         }),

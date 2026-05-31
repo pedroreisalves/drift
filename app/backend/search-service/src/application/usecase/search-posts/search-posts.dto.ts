@@ -1,6 +1,6 @@
 export interface SearchPostsInputDto {
   q: string;
-  clientId: string;
+  clientHash?: string;
   limit?: number;
   offset?: number;
 }

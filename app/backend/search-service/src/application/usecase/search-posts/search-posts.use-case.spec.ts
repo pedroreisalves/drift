@@ -61,7 +61,8 @@ describe('SearchPostsUseCase', () => {
     ]);
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
-    const result = await useCase.execute({ q: 'drift', clientId: uuidv7() });
+    const clientHash = '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08';
+    const result = await useCase.execute({ q: 'drift', clientHash });
 
     await Promise.resolve();
 
@@ -80,6 +81,7 @@ describe('SearchPostsUseCase', () => {
     const dispatched = dispatchSpy.mock.calls[0][0] as PostSearchedEvent;
     expect(dispatched.payload.resultCount).toBe(2);
     expect(dispatched.payload.query).toBe('drift');
+    expect(dispatched.payload.clientHash).toBe(clientHash);
   });
 
   it('should still return results when event dispatch fails with an Error', async () => {
@@ -87,7 +89,10 @@ describe('SearchPostsUseCase', () => {
     vi.spyOn(repository, 'search').mockResolvedValue([makeEntry(postId)]);
     vi.spyOn(dispatcher, 'dispatch').mockRejectedValue(new Error('Analytics down'));
 
-    const result = await useCase.execute({ q: 'drift', clientId: uuidv7() });
+    const result = await useCase.execute({
+      q: 'drift',
+      clientHash: '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
+    });
 
     await Promise.resolve();
 
@@ -100,7 +105,10 @@ describe('SearchPostsUseCase', () => {
     vi.spyOn(repository, 'search').mockResolvedValue([makeEntry(postId)]);
     vi.spyOn(dispatcher, 'dispatch').mockRejectedValue('raw string error');
 
-    const result = await useCase.execute({ q: 'drift', clientId: uuidv7() });
+    const result = await useCase.execute({
+      q: 'drift',
+      clientHash: '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
+    });
 
     await Promise.resolve();
 
@@ -110,7 +118,12 @@ describe('SearchPostsUseCase', () => {
   it('should forward the provided limit and offset to the repository', async () => {
     const searchSpy = vi.spyOn(repository, 'search');
 
-    await useCase.execute({ q: 'query', clientId: uuidv7(), limit: 20, offset: 5 });
+    await useCase.execute({
+      q: 'query',
+      clientHash: '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
+      limit: 20,
+      offset: 5,
+    });
 
     expect(searchSpy).toHaveBeenCalledWith({ q: 'query', limit: 20, offset: 5 });
   });
@@ -118,8 +131,25 @@ describe('SearchPostsUseCase', () => {
   it('should default to limit 10 and offset 0 when both are omitted', async () => {
     const searchSpy = vi.spyOn(repository, 'search');
 
-    await useCase.execute({ q: 'query', clientId: uuidv7() });
+    await useCase.execute({
+      q: 'query',
+      clientHash: '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
+    });
 
     expect(searchSpy).toHaveBeenCalledWith({ q: 'query', limit: 10, offset: 0 });
+  });
+
+  it('should still return results and not dispatch when clientHash is absent', async () => {
+    const postId = uuidv7();
+    vi.spyOn(repository, 'search').mockResolvedValue([makeEntry(postId)]);
+    const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
+
+    const result = await useCase.execute({ q: 'no-identity' });
+
+    await Promise.resolve();
+
+    expect(result).toHaveLength(1);
+    expect(result[0].postId).toBe(postId);
+    expect(dispatchSpy).not.toHaveBeenCalled();
   });
 });

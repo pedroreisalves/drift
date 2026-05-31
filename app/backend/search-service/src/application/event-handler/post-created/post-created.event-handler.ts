@@ -8,7 +8,6 @@ export const postCreatedMessageSchema = z.object({
   occurredAt: z.iso.datetime(),
   payload: z.object({
     postId: z.uuidv7(),
-    clientId: z.uuidv7(),
     title: z.string(),
     body: z.string(),
     createdAt: z.iso.datetime(),
