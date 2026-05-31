@@ -3,6 +3,6 @@ import type { EventTypeEnum } from '../../../domain/analytics-log/value-object/e
 export interface RecordAnalyticsEventInputDto {
   eventType: EventTypeEnum;
   postId: string | null;
-  clientId: string;
+  clientHash: string;
   timestamp: string;
 }

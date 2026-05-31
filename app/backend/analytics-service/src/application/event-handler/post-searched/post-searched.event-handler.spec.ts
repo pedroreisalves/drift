@@ -3,6 +3,8 @@ import type { Logger } from '@drift/shared';
 import type RecordAnalyticsEventUseCase from '../../usecase/record-analytics-event/record-analytics-event.use-case';
 import PostSearchedEventHandler, { type PostSearchedMessage } from './post-searched.event-handler';
 
+const VALID_CLIENT_HASH = 'c'.repeat(64);
+
 const makeLogger = (): Logger => ({
   info: vi.fn(),
   warn: vi.fn(),
@@ -14,7 +16,7 @@ const makeValidMessage = (overrides: Partial<PostSearchedMessage> = {}): PostSea
   occurredAt: '2026-01-01T00:00:00.000Z',
   payload: {
     query: 'typescript patterns',
-    clientId: '019682a0-1234-7000-8000-abcdef012346',
+    clientHash: VALID_CLIENT_HASH,
     resultCount: 42,
     searchedAt: '2026-01-01T00:00:00.000Z',
   },
@@ -41,7 +43,7 @@ describe('PostSearchedEventHandler', () => {
     expect(executeSpy).toHaveBeenCalledWith({
       eventType: 'PostSearched',
       postId: null,
-      clientId: '019682a0-1234-7000-8000-abcdef012346',
+      clientHash: VALID_CLIENT_HASH,
       timestamp: '2026-01-01T00:00:00.000Z',
     });
   });
@@ -54,7 +56,7 @@ describe('PostSearchedEventHandler', () => {
         makeValidMessage({
           payload: {
             query: 'typescript patterns',
-            clientId: '019682a0-1234-7000-8000-abcdef012346',
+            clientHash: VALID_CLIENT_HASH,
             resultCount: 'not-a-number',
             searchedAt: '2026-01-01T00:00:00.000Z',
           } as unknown as PostSearchedMessage['payload'],

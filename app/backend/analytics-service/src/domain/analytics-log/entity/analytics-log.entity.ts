@@ -1,4 +1,4 @@
-import { type ClientId, type PostId } from '@drift/shared';
+import { type ClientHash, type PostId } from '@drift/shared';
 import { z } from 'zod';
 
 import InvalidAnalyticsLogError from '../error/invalid-analytics-log.error';
@@ -10,7 +10,7 @@ interface AnalyticsLogProps {
   id: AnalyticsLogId;
   eventType: EventType;
   postId: PostId | null;
-  clientId: ClientId;
+  clientHash: ClientHash;
   timestamp: Date;
 }
 
@@ -18,7 +18,7 @@ export interface CreateAnalyticsLogProps {
   id: AnalyticsLogId;
   eventType: EventType;
   postId: PostId | null;
-  clientId: ClientId;
+  clientHash: ClientHash;
   timestamp: Date;
 }
 
@@ -54,7 +54,7 @@ export default class AnalyticsLog {
     const analyticsLog = new AnalyticsLog({
       id: props.id,
       eventType: props.eventType,
-      clientId: props.clientId,
+      clientHash: props.clientHash,
       postId: props.postId,
       timestamp: props.timestamp,
     });
@@ -70,8 +70,8 @@ export default class AnalyticsLog {
     return this.props.eventType;
   }
 
-  get clientId(): ClientId {
-    return this.props.clientId;
+  get clientHash(): ClientHash {
+    return this.props.clientHash;
   }
 
   get postId(): PostId | null {

@@ -3,6 +3,8 @@ import type { Logger } from '@drift/shared';
 import type RecordAnalyticsEventUseCase from '../../usecase/record-analytics-event/record-analytics-event.use-case';
 import PostViewedEventHandler, { type PostViewedMessage } from './post-viewed.event-handler';
 
+const VALID_CLIENT_HASH = 'c'.repeat(64);
+
 const makeLogger = (): Logger => ({
   info: vi.fn(),
   warn: vi.fn(),
@@ -14,7 +16,7 @@ const makeValidMessage = (overrides: Partial<PostViewedMessage> = {}): PostViewe
   occurredAt: '2026-01-01T00:00:00.000Z',
   payload: {
     postId: '019682a0-1234-7000-8000-abcdef012345',
-    clientId: '019682a0-1234-7000-8000-abcdef012346',
+    clientHash: VALID_CLIENT_HASH,
     viewedAt: '2026-01-01T00:00:00.000Z',
   },
   ...overrides,
@@ -40,7 +42,7 @@ describe('PostViewedEventHandler', () => {
     expect(executeSpy).toHaveBeenCalledWith({
       eventType: 'PostViewed',
       postId: '019682a0-1234-7000-8000-abcdef012345',
-      clientId: '019682a0-1234-7000-8000-abcdef012346',
+      clientHash: VALID_CLIENT_HASH,
       timestamp: '2026-01-01T00:00:00.000Z',
     });
   });
@@ -53,7 +55,7 @@ describe('PostViewedEventHandler', () => {
         makeValidMessage({
           payload: {
             postId: 'not-a-uuid',
-            clientId: '019682a0-1234-7000-8000-abcdef012346',
+            clientHash: VALID_CLIENT_HASH,
             viewedAt: '2026-01-01T00:00:00.000Z',
           },
         }),

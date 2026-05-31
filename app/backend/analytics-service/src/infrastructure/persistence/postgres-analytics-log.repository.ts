@@ -21,7 +21,7 @@ export default class PostgresAnalyticsLogRepository implements AnalyticsLogRepos
 
   async save(analyticsLog: AnalyticsLog): Promise<void> {
     const query = `
-      INSERT INTO analytics_log (id, event_type, post_id, client_id, timestamp)
+      INSERT INTO analytics_log (id, event_type, post_id, client_hash, timestamp)
       VALUES ($1, $2, $3, $4, $5)
     `;
 
@@ -29,7 +29,7 @@ export default class PostgresAnalyticsLogRepository implements AnalyticsLogRepos
       analyticsLog.id.toString(),
       analyticsLog.eventType.toString(),
       analyticsLog.postId?.toString() ?? null,
-      analyticsLog.clientId.toString(),
+      analyticsLog.clientHash.toString(),
       analyticsLog.timestamp,
     ]);
   }
@@ -47,7 +47,7 @@ export default class PostgresAnalyticsLogRepository implements AnalyticsLogRepos
       WHERE al.event_type = $1
         AND al.post_id IS NOT NULL
         AND al.timestamp >= $2::timestamptz - make_interval(hours => $3)
-        AND (po.owner_client_id IS NULL OR al.client_id != po.owner_client_id)
+        AND (po.owner_client_hash IS NULL OR al.client_hash != po.owner_client_hash)
         ${
           options.excludeDeleted
             ? 'AND NOT EXISTS (SELECT 1 FROM deleted_posts d WHERE d.post_id = al.post_id)'
@@ -84,7 +84,7 @@ export default class PostgresAnalyticsLogRepository implements AnalyticsLogRepos
           AND al.post_id = ANY($2::uuid[])
           AND al.timestamp >= GREATEST($3::timestamptz, COALESCE(plu.updated_at, $3::timestamptz))
           AND al.timestamp < $4::timestamptz
-          AND (po.owner_client_id IS NULL OR al.client_id != po.owner_client_id)
+          AND (po.owner_client_hash IS NULL OR al.client_hash != po.owner_client_hash)
         GROUP BY al.post_id
       `;
 

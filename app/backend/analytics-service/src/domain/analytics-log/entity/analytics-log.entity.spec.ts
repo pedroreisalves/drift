@@ -1,10 +1,12 @@
-import { ClientId, PostId } from '@drift/shared';
+import { ClientHash, PostId } from '@drift/shared';
 import { uuidv7 } from 'uuidv7';
 
 import InvalidAnalyticsLogError from '../error/invalid-analytics-log.error';
 import AnalyticsLogId from '../value-object/analytics-log-id.value-object';
 import EventType, { EventTypeEnum } from '../value-object/event-type.value-object';
 import AnalyticsLog, { type CreateAnalyticsLogProps } from './analytics-log.entity';
+
+const VALID_CLIENT_HASH = 'a'.repeat(64);
 
 describe('AnalyticsLog', () => {
   const makeProps = (
@@ -13,7 +15,7 @@ describe('AnalyticsLog', () => {
     id: new AnalyticsLogId(uuidv7()),
     eventType: new EventType(EventTypeEnum.PostViewed),
     postId: new PostId(uuidv7()),
-    clientId: new ClientId(uuidv7()),
+    clientHash: new ClientHash(VALID_CLIENT_HASH),
     timestamp: new Date(),
     ...overrides,
   });
@@ -26,7 +28,7 @@ describe('AnalyticsLog', () => {
     expect(analyticsLog).toBeInstanceOf(AnalyticsLog);
     expect(analyticsLog.id).toEqual(props.id);
     expect(analyticsLog.eventType).toEqual(props.eventType);
-    expect(analyticsLog.clientId).toEqual(props.clientId);
+    expect(analyticsLog.clientHash).toEqual(props.clientHash);
     expect(analyticsLog.postId).toEqual(props.postId);
     expect(analyticsLog.timestamp).toEqual(props.timestamp);
   });
@@ -44,7 +46,7 @@ describe('AnalyticsLog', () => {
       id: new AnalyticsLogId(uuidv7()),
       eventType: new EventType(EventTypeEnum.PostCreated),
       postId: new PostId(uuidv7()),
-      clientId: new ClientId(uuidv7()),
+      clientHash: new ClientHash(VALID_CLIENT_HASH),
       timestamp,
     };
 
@@ -53,7 +55,7 @@ describe('AnalyticsLog', () => {
     expect(analyticsLog).toBeInstanceOf(AnalyticsLog);
     expect(analyticsLog.id).toEqual(props.id);
     expect(analyticsLog.eventType).toEqual(props.eventType);
-    expect(analyticsLog.clientId).toEqual(props.clientId);
+    expect(analyticsLog.clientHash).toEqual(props.clientHash);
     expect(analyticsLog.postId).toEqual(props.postId);
     expect(analyticsLog.timestamp).toEqual(timestamp);
   });
@@ -98,7 +100,7 @@ describe('AnalyticsLog', () => {
       id: new AnalyticsLogId(uuidv7()),
       eventType: new EventType(EventTypeEnum.PostSearched),
       postId: null,
-      clientId: new ClientId(uuidv7()),
+      clientHash: new ClientHash(VALID_CLIENT_HASH),
       timestamp: new Date('2026-01-01T00:00:00.000Z'),
     };
 

@@ -1,4 +1,4 @@
-import { ClientId, type EventDispatcher, type Logger, PostId, type UseCase } from '@drift/shared';
+import { ClientHash, type EventDispatcher, type Logger, PostId, type UseCase } from '@drift/shared';
 import { uuidv7 } from 'uuidv7';
 
 import AnalyticsLog from '../../../domain/analytics-log/entity/analytics-log.entity';
@@ -33,12 +33,12 @@ export default class RecordAnalyticsEventUseCase implements UseCase<
     const analyticsLogId = new AnalyticsLogId(uuidv7());
     const eventType = new EventType(input.eventType);
     const postId = input.postId ? new PostId(input.postId) : null;
-    const clientId = new ClientId(input.clientId);
+    const clientHash = new ClientHash(input.clientHash);
     const timestamp = new Date(input.timestamp);
 
     const analyticsLog = AnalyticsLog.create({
       id: analyticsLogId,
-      clientId,
+      clientHash,
       eventType,
       postId,
       timestamp,
@@ -51,7 +51,7 @@ export default class RecordAnalyticsEventUseCase implements UseCase<
     }
 
     if (eventType.equals(new EventType(EventTypeEnum.PostCreated)) && postId) {
-      await this.postOwnerRepository.save(postId, clientId);
+      await this.postOwnerRepository.save(postId, clientHash);
     }
 
     if (eventType.equals(new EventType(EventTypeEnum.PostUpdated)) && postId) {
@@ -64,11 +64,11 @@ export default class RecordAnalyticsEventUseCase implements UseCase<
     this.logger.info('Analytics event recorded', {
       eventType: input.eventType,
       postId: input.postId,
-      clientId: input.clientId,
+      clientHash: input.clientHash,
     });
 
     const event = new AnalyticsEventRecordedEvent({
-      clientId: clientId.toString(),
+      clientHash: clientHash.toString(),
       eventType: eventType.toString(),
       postId: postId ? postId.toString() : null,
       timestamp: timestamp.toISOString(),

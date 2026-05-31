@@ -6,7 +6,7 @@ CREATE TABLE analytics_log (
 	id UUID PRIMARY KEY
 	,event_type VARCHAR NOT NULL
 	,post_id UUID
-	,client_id UUID NOT NULL
+	,client_hash TEXT NOT NULL
 	,TIMESTAMP TIMESTAMPTZ NOT NULL DEFAULT NOW()
 	);
 
@@ -20,7 +20,7 @@ CREATE TABLE deleted_posts (
 
 CREATE TABLE post_owners (
 	post_id UUID PRIMARY KEY
-	,owner_client_id UUID NOT NULL
+	,owner_client_hash TEXT NOT NULL
 	);
 
 CREATE TABLE engagement_state (

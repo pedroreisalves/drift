@@ -3,6 +3,8 @@ import type { Logger } from '@drift/shared';
 import type RecordAnalyticsEventUseCase from '../../usecase/record-analytics-event/record-analytics-event.use-case';
 import PostCreatedEventHandler, { type PostCreatedMessage } from './post-created.event-handler';
 
+const VALID_CLIENT_HASH = 'c'.repeat(64);
+
 const makeLogger = (): Logger => ({
   info: vi.fn(),
   warn: vi.fn(),
@@ -14,7 +16,7 @@ const makeValidMessage = (overrides: Partial<PostCreatedMessage> = {}): PostCrea
   occurredAt: '2026-01-01T00:00:00.000Z',
   payload: {
     postId: '019682a0-1234-7000-8000-abcdef012345',
-    clientId: '019682a0-1234-7000-8000-abcdef012346',
+    clientHash: VALID_CLIENT_HASH,
     title: 'My first post',
     body: 'Hello world',
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -42,7 +44,7 @@ describe('PostCreatedEventHandler', () => {
     expect(executeSpy).toHaveBeenCalledWith({
       eventType: 'PostCreated',
       postId: '019682a0-1234-7000-8000-abcdef012345',
-      clientId: '019682a0-1234-7000-8000-abcdef012346',
+      clientHash: VALID_CLIENT_HASH,
       timestamp: '2026-01-01T00:00:00.000Z',
     });
   });
@@ -55,7 +57,7 @@ describe('PostCreatedEventHandler', () => {
         makeValidMessage({
           payload: {
             postId: 'not-a-uuid',
-            clientId: '019682a0-1234-7000-8000-abcdef012346',
+            clientHash: VALID_CLIENT_HASH,
             title: 'My first post',
             body: 'Hello world',
             createdAt: '2026-01-01T00:00:00.000Z',

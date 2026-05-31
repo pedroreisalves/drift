@@ -1,4 +1,4 @@
-import type { EventDispatcher, Logger } from '@drift/shared';
+import { ClientHash, type EventDispatcher, type Logger } from '@drift/shared';
 import { uuidv7 } from 'uuidv7';
 
 import AnalyticsLog from '../../../domain/analytics-log/entity/analytics-log.entity';
@@ -9,6 +9,8 @@ import type PostLastUpdatedRepository from '../../../domain/analytics-log/reposi
 import type PostOwnerRepository from '../../../domain/analytics-log/repository/post-owner.repository';
 import { EventTypeEnum } from '../../../domain/analytics-log/value-object/event-type.value-object';
 import RecordAnalyticsEventUseCase from './record-analytics-event.use-case';
+
+const VALID_CLIENT_HASH = 'b'.repeat(64);
 
 const makeAnalyticsLogRepository = (): AnalyticsLogRepository => ({
   save: vi.fn().mockResolvedValue(undefined),
@@ -74,39 +76,39 @@ describe('RecordAnalyticsEventUseCase', () => {
 
   it('should persist an AnalyticsLog and dispatch AnalyticsEventRecordedEvent', async () => {
     const postId = uuidv7();
-    const clientId = uuidv7();
+    const clientHash = VALID_CLIENT_HASH;
     const timestamp = new Date().toISOString();
 
     const saveSpy = vi.spyOn(analyticsLogRepository, 'save');
     const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
-    await useCase.execute({ eventType: EventTypeEnum.PostViewed, postId, clientId, timestamp });
+    await useCase.execute({ eventType: EventTypeEnum.PostViewed, postId, clientHash, timestamp });
 
     expect(saveSpy).toHaveBeenCalledTimes(1);
     const persisted = saveSpy.mock.calls[0][0];
     expect(persisted).toBeInstanceOf(AnalyticsLog);
     expect(persisted.eventType.toString()).toBe(EventTypeEnum.PostViewed);
     expect(persisted.postId?.toString()).toBe(postId);
-    expect(persisted.clientId.toString()).toBe(clientId);
+    expect(persisted.clientHash.toString()).toBe(clientHash);
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     const dispatched = dispatchSpy.mock.calls[0][0] as unknown as {
-      payload: { eventType: string; postId: string; clientId: string };
+      payload: { eventType: string; postId: string; clientHash: string };
     };
     expect(dispatched.payload.eventType).toBe(EventTypeEnum.PostViewed);
     expect(dispatched.payload.postId).toBe(postId);
-    expect(dispatched.payload.clientId).toBe(clientId);
+    expect(dispatched.payload.clientHash).toBe(clientHash);
   });
 
   it('should handle null postId for non-post events', async () => {
-    const clientId = uuidv7();
+    const clientHash = VALID_CLIENT_HASH;
     const timestamp = new Date().toISOString();
 
     const saveSpy = vi.spyOn(analyticsLogRepository, 'save');
     await useCase.execute({
       eventType: EventTypeEnum.PostSearched,
       postId: null,
-      clientId,
+      clientHash,
       timestamp,
     });
 
@@ -116,12 +118,12 @@ describe('RecordAnalyticsEventUseCase', () => {
 
   it('should also save to deletedPostRepository when eventType is PostDeleted', async () => {
     const postId = uuidv7();
-    const clientId = uuidv7();
+    const clientHash = VALID_CLIENT_HASH;
     const timestamp = new Date().toISOString();
 
     const deletedSaveSpy = vi.spyOn(deletedPostRepository, 'save');
 
-    await useCase.execute({ eventType: EventTypeEnum.PostDeleted, postId, clientId, timestamp });
+    await useCase.execute({ eventType: EventTypeEnum.PostDeleted, postId, clientHash, timestamp });
 
     expect(deletedSaveSpy).toHaveBeenCalledTimes(1);
   });
@@ -132,7 +134,7 @@ describe('RecordAnalyticsEventUseCase', () => {
     await useCase.execute({
       eventType: EventTypeEnum.PostViewed,
       postId: uuidv7(),
-      clientId: uuidv7(),
+      clientHash: VALID_CLIENT_HASH,
       timestamp: new Date().toISOString(),
     });
 
@@ -157,7 +159,7 @@ describe('RecordAnalyticsEventUseCase', () => {
     await useCase.execute({
       eventType: EventTypeEnum.PostDeleted,
       postId: uuidv7(),
-      clientId: uuidv7(),
+      clientHash: VALID_CLIENT_HASH,
       timestamp: new Date().toISOString(),
     });
 
@@ -182,7 +184,7 @@ describe('RecordAnalyticsEventUseCase', () => {
     await useCase.execute({
       eventType: EventTypeEnum.PostViewed,
       postId: uuidv7(),
-      clientId: uuidv7(),
+      clientHash: VALID_CLIENT_HASH,
       timestamp: new Date().toISOString(),
     });
 
@@ -191,19 +193,20 @@ describe('RecordAnalyticsEventUseCase', () => {
 
   it('should save to postOwnerRepository when eventType is PostCreated', async () => {
     const postId = uuidv7();
-    const clientId = uuidv7();
+    const clientHash = VALID_CLIENT_HASH;
     const ownerSaveSpy = vi.spyOn(postOwnerRepository, 'save');
 
     await useCase.execute({
       eventType: EventTypeEnum.PostCreated,
       postId,
-      clientId,
+      clientHash,
       timestamp: new Date().toISOString(),
     });
 
     expect(ownerSaveSpy).toHaveBeenCalledTimes(1);
     expect(ownerSaveSpy.mock.calls[0][0].toString()).toBe(postId);
-    expect(ownerSaveSpy.mock.calls[0][1].toString()).toBe(clientId);
+    expect(ownerSaveSpy.mock.calls[0][1]).toBeInstanceOf(ClientHash);
+    expect(ownerSaveSpy.mock.calls[0][1].toString()).toBe(clientHash);
   });
 
   it('should not save to postOwnerRepository for non-PostCreated events', async () => {
@@ -212,7 +215,7 @@ describe('RecordAnalyticsEventUseCase', () => {
     await useCase.execute({
       eventType: EventTypeEnum.PostViewed,
       postId: uuidv7(),
-      clientId: uuidv7(),
+      clientHash: VALID_CLIENT_HASH,
       timestamp: new Date().toISOString(),
     });
 
@@ -237,7 +240,7 @@ describe('RecordAnalyticsEventUseCase', () => {
     await useCase.execute({
       eventType: EventTypeEnum.PostCreated,
       postId: uuidv7(),
-      clientId: uuidv7(),
+      clientHash: VALID_CLIENT_HASH,
       timestamp: new Date().toISOString(),
     });
 
@@ -250,11 +253,11 @@ describe('RecordAnalyticsEventUseCase', () => {
 
   it('should save to postLastUpdatedRepository when eventType is PostUpdated', async () => {
     const postId = uuidv7();
-    const clientId = uuidv7();
+    const clientHash = VALID_CLIENT_HASH;
     const timestamp = '2026-01-01T00:00:00.000Z';
     const saveSpy = vi.spyOn(postLastUpdatedRepository, 'save');
 
-    await useCase.execute({ eventType: EventTypeEnum.PostUpdated, postId, clientId, timestamp });
+    await useCase.execute({ eventType: EventTypeEnum.PostUpdated, postId, clientHash, timestamp });
 
     expect(saveSpy).toHaveBeenCalledTimes(1);
     expect(saveSpy.mock.calls[0][0].toString()).toBe(postId);
@@ -267,7 +270,7 @@ describe('RecordAnalyticsEventUseCase', () => {
     await useCase.execute({
       eventType: EventTypeEnum.PostViewed,
       postId: uuidv7(),
-      clientId: uuidv7(),
+      clientHash: VALID_CLIENT_HASH,
       timestamp: new Date().toISOString(),
     });
 
@@ -296,7 +299,7 @@ describe('RecordAnalyticsEventUseCase', () => {
     await useCase.execute({
       eventType: EventTypeEnum.PostUpdated,
       postId: uuidv7(),
-      clientId: uuidv7(),
+      clientHash: VALID_CLIENT_HASH,
       timestamp: new Date().toISOString(),
     });
 
@@ -310,11 +313,11 @@ describe('RecordAnalyticsEventUseCase', () => {
 
   it('should save a dropped EngagementState via engagementStateRepository.save when eventType is PostUpdated', async () => {
     const postId = uuidv7();
-    const clientId = uuidv7();
+    const clientHash = VALID_CLIENT_HASH;
     const timestamp = '2026-01-01T00:00:00.000Z';
     const saveSpy = vi.spyOn(engagementStateRepository, 'save');
 
-    await useCase.execute({ eventType: EventTypeEnum.PostUpdated, postId, clientId, timestamp });
+    await useCase.execute({ eventType: EventTypeEnum.PostUpdated, postId, clientHash, timestamp });
 
     expect(saveSpy).toHaveBeenCalledTimes(1);
     const savedState = saveSpy.mock.calls[0][0];
@@ -328,7 +331,7 @@ describe('RecordAnalyticsEventUseCase', () => {
     await useCase.execute({
       eventType: EventTypeEnum.PostViewed,
       postId: uuidv7(),
-      clientId: uuidv7(),
+      clientHash: VALID_CLIENT_HASH,
       timestamp: new Date().toISOString(),
     });
 

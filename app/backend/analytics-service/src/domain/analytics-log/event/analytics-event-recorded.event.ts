@@ -3,7 +3,7 @@ import { DomainEvent } from '@drift/shared';
 interface AnalyticsEventRecordedEventPayload extends Record<string, unknown> {
   eventType: string;
   postId: string | null;
-  clientId: string;
+  clientHash: string;
   timestamp: string;
 }
 

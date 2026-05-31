@@ -1,4 +1,4 @@
-import { type EventHandler, type Logger } from '@drift/shared';
+import { clientHashSchema, type EventHandler, type Logger } from '@drift/shared';
 import { z } from 'zod';
 
 import { EventTypeEnum } from '../../../domain/analytics-log/value-object/event-type.value-object';
@@ -9,7 +9,7 @@ export const postSearchedMessageSchema = z.object({
   occurredAt: z.iso.datetime(),
   payload: z.object({
     query: z.string(),
-    clientId: z.uuidv7(),
+    clientHash: clientHashSchema,
     resultCount: z.number(),
     searchedAt: z.iso.datetime(),
   }),
@@ -25,14 +25,14 @@ export default class PostSearchedEventHandler implements EventHandler {
 
   async handle(raw: unknown): Promise<void> {
     const event = postSearchedMessageSchema.parse(raw);
-    const { clientId, searchedAt } = event.payload;
+    const { clientHash, searchedAt } = event.payload;
 
-    this.logger.info('Received PostSearched event, recording analytics', { clientId });
+    this.logger.info('Received PostSearched event, recording analytics', { clientHash });
 
     await this.recordAnalyticsEventUseCase.execute({
       eventType: EventTypeEnum.PostSearched,
       postId: null,
-      clientId,
+      clientHash,
       timestamp: searchedAt,
     });
   }
