@@ -44,6 +44,8 @@ describe('IndexPostUseCase', () => {
     const createdAt = '2026-05-01T12:00:00.000Z';
     await useCase.execute({
       postId,
+      clientHash: 'a'.repeat(64),
+      clientName: 'witty_owl042',
       title: 'My Post Title',
       body: 'Body content for the post.',
       createdAt,
@@ -71,6 +73,8 @@ describe('IndexPostUseCase', () => {
     await expect(
       useCase.execute({
         postId: uuidv7(),
+        clientHash: 'a'.repeat(64),
+        clientName: 'witty_owl042',
         title: 'Title',
         body: 'Body content.',
         createdAt: '2026-05-01T12:00:00.000Z',
@@ -87,6 +91,8 @@ describe('IndexPostUseCase', () => {
     await expect(
       useCase.execute({
         postId: uuidv7(),
+        clientHash: 'a'.repeat(64),
+        clientName: 'witty_owl042',
         title: 'Title',
         body: 'Body content.',
         createdAt: '2026-05-01T12:00:00.000Z',
@@ -109,6 +115,8 @@ describe('IndexPostUseCase', () => {
 
     await useCase.execute({
       postId: uuidv7(),
+      clientHash: 'a'.repeat(64),
+      clientName: 'witty_owl042',
       title: 'Title',
       body: 'Body content.',
       createdAt: '2026-05-01T12:00:00.000Z',

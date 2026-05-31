@@ -28,6 +28,8 @@ const makeLogger = (): Logger => ({
 const makeEntry = (postId = uuidv7(), overrides: Partial<SearchEntry> = {}): SearchEntry =>
   SearchEntry.reconstruct({
     postId: new PostId(postId),
+    clientHash: 'a'.repeat(64),
+    clientName: 'witty_owl042',
     title: 'A Post Title',
     body: 'Post body content.',
     tags: ['tag-a'],
@@ -72,6 +74,8 @@ describe('SearchPostsUseCase', () => {
     expect(result[0].isFeatured).toBe(true);
     expect(result[0].createdAt).toBe(firstCreatedAt.toISOString());
     expect(result[0].isTaggingInProgress).toBe(true);
+    expect(result[0].clientHash).toBe('a'.repeat(64));
+    expect(result[0].clientName).toBe('witty_owl042');
     expect(result[1].postId).toBe(secondId);
     expect(result[1].isFeatured).toBe(false);
     expect(result[1].isTaggingInProgress).toBe(false);

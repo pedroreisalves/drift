@@ -5,6 +5,8 @@ import InvalidSearchEntryError from '../error/invalid-search-entry.error';
 
 interface SearchEntryProps {
   postId: PostId;
+  clientHash: string;
+  clientName: string;
   title: string;
   body: string;
   tags: string[];
@@ -15,6 +17,8 @@ interface SearchEntryProps {
 
 export interface CreateSearchEntryProps {
   postId: PostId;
+  clientHash: string;
+  clientName: string;
   title: string;
   body: string;
   tags: string[];
@@ -23,6 +27,7 @@ export interface CreateSearchEntryProps {
 
 const createSearchEntrySchema = z
   .object({
+    clientName: z.string().nonempty('Client name cannot be empty'),
     title: z
       .string()
       .nonempty('Title cannot be empty')
@@ -83,6 +88,7 @@ export default class SearchEntry {
 
   static create(props: CreateSearchEntryProps): SearchEntry {
     const result = createSearchEntrySchema.safeParse({
+      clientName: props.clientName,
       title: props.title,
       body: props.body,
       tags: props.tags,
@@ -139,6 +145,14 @@ export default class SearchEntry {
 
   get postId(): PostId {
     return this.props.postId;
+  }
+
+  get clientHash(): string {
+    return this.props.clientHash;
+  }
+
+  get clientName(): string {
+    return this.props.clientName;
   }
 
   get title(): string {

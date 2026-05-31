@@ -7,6 +7,8 @@ export interface SearchPostsInputDto {
 
 export interface SearchPostsOutputDto {
   postId: string;
+  clientHash: string;
+  clientName: string;
   title: string;
   bodyPreview: string;
   tags: string[];

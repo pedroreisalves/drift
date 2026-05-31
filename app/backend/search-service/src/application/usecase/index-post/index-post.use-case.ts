@@ -18,6 +18,8 @@ export default class IndexPostUseCase implements UseCase<IndexPostInputDto, void
 
     const entry = SearchEntry.create({
       postId,
+      clientHash: input.clientHash,
+      clientName: input.clientName,
       title: input.title,
       body: input.body,
       tags: [],

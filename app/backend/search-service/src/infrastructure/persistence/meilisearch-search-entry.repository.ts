@@ -6,6 +6,8 @@ import type SearchEntryRepository from '../../domain/search-entry/repository/sea
 
 interface SearchEntryDocument {
   id: string;
+  clientHash: string;
+  clientName: string;
   title: string;
   body: string;
   tags: string[];
@@ -71,6 +73,8 @@ export default class MeilisearchSearchEntryRepository implements SearchEntryRepo
   private toDocument(entry: SearchEntry): SearchEntryDocument {
     return {
       id: entry.postId.toString(),
+      clientHash: entry.clientHash,
+      clientName: entry.clientName,
       title: entry.title,
       body: entry.body,
       tags: entry.tags,
@@ -83,6 +87,8 @@ export default class MeilisearchSearchEntryRepository implements SearchEntryRepo
   private toDomain(doc: SearchEntryDocument): SearchEntry {
     return SearchEntry.reconstruct({
       postId: new PostId(doc.id),
+      clientHash: doc.clientHash,
+      clientName: doc.clientName,
       title: doc.title,
       body: doc.body,
       tags: doc.tags,

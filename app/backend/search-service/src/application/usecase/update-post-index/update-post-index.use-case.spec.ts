@@ -30,6 +30,8 @@ const makeLogger = (): Logger => ({
 const makeEntry = (postId = uuidv7()): SearchEntry =>
   SearchEntry.reconstruct({
     postId: new PostId(postId),
+    clientHash: 'a'.repeat(64),
+    clientName: 'witty_owl042',
     title: 'Old Title',
     body: 'Old body content.',
     tags: ['existing-tag'],

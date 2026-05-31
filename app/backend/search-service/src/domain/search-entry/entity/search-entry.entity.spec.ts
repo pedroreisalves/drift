@@ -7,6 +7,8 @@ import SearchEntry, { type CreateSearchEntryProps } from './search-entry.entity'
 describe('SearchEntry', () => {
   const makeProps = (overrides: Partial<CreateSearchEntryProps> = {}): CreateSearchEntryProps => ({
     postId: new PostId(uuidv7()),
+    clientHash: 'a'.repeat(64),
+    clientName: 'witty_owl042',
     title: 'My First Post',
     body: 'This is the body of my first post.',
     tags: ['tag1', 'tag2'],
@@ -21,6 +23,8 @@ describe('SearchEntry', () => {
 
     expect(entry).toBeInstanceOf(SearchEntry);
     expect(entry.postId).toEqual(props.postId);
+    expect(entry.clientHash).toEqual(props.clientHash);
+    expect(entry.clientName).toEqual(props.clientName);
     expect(entry.title).toEqual(props.title);
     expect(entry.body).toEqual(props.body);
     expect(entry.tags).toEqual(props.tags);
@@ -92,6 +96,19 @@ describe('SearchEntry', () => {
     expect(() => SearchEntry.create(props)).toThrow('createdAt must be a valid date');
   });
 
+  it('should throw an error when creating with an empty clientName', () => {
+    const props = makeProps({ clientName: '' });
+
+    expect(() => SearchEntry.create(props)).toThrow(InvalidSearchEntryError);
+    expect(() => SearchEntry.create(props)).toThrow('Client name cannot be empty');
+  });
+
+  it('should accept any clientHash without validation (pre-derived, stored verbatim)', () => {
+    const entry = SearchEntry.create(makeProps({ clientHash: '' }));
+
+    expect(entry.clientHash).toEqual('');
+  });
+
   it('should reconstruct a search entry from existing properties', () => {
     const base = makeProps();
     const props = { ...base, isFeatured: true, isTaggingInProgress: true };
@@ -100,6 +117,8 @@ describe('SearchEntry', () => {
 
     expect(entry).toBeInstanceOf(SearchEntry);
     expect(entry.postId).toEqual(props.postId);
+    expect(entry.clientHash).toEqual(props.clientHash);
+    expect(entry.clientName).toEqual(props.clientName);
     expect(entry.title).toEqual(props.title);
     expect(entry.body).toEqual(props.body);
     expect(entry.tags).toEqual(props.tags);

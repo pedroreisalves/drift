@@ -1,4 +1,4 @@
-import { type EventHandler, type Logger } from '@drift/shared';
+import { clientHashSchema, type EventHandler, type Logger } from '@drift/shared';
 import { z } from 'zod';
 
 import type IndexPostUseCase from '../../usecase/index-post/index-post.use-case';
@@ -8,6 +8,8 @@ export const postCreatedMessageSchema = z.object({
   occurredAt: z.iso.datetime(),
   payload: z.object({
     postId: z.uuidv7(),
+    clientHash: clientHashSchema,
+    clientName: z.string(),
     title: z.string(),
     body: z.string(),
     createdAt: z.iso.datetime(),
@@ -24,10 +26,10 @@ export default class PostCreatedEventHandler implements EventHandler {
 
   async handle(raw: unknown): Promise<void> {
     const event = postCreatedMessageSchema.parse(raw);
-    const { postId, title, body, createdAt } = event.payload;
+    const { postId, clientHash, clientName, title, body, createdAt } = event.payload;
 
     this.logger.info('Received PostCreated event, indexing post', { postId });
 
-    await this.indexPostUseCase.execute({ postId, title, body, createdAt });
+    await this.indexPostUseCase.execute({ postId, clientHash, clientName, title, body, createdAt });
   }
 }

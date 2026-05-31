@@ -6,6 +6,8 @@ import type { SearchPostsOutputDto } from './search-posts.dto';
 export function toSearchPostsOutputDto(entry: SearchEntry): SearchPostsOutputDto {
   return {
     postId: entry.postId.toString(),
+    clientHash: entry.clientHash,
+    clientName: entry.clientName,
     title: entry.title,
     bodyPreview: truncateText(entry.body, POST_BODY_PREVIEW_LENGTH),
     tags: entry.tags,
