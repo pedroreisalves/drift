@@ -1,4 +1,4 @@
-import { POST_BODY_PREVIEW_LENGTH, truncateText } from '@drift/shared';
+import { POST_BODY_PREVIEW_LENGTH, sha256Hex, truncateText } from '@drift/shared';
 
 import type Post from '../../../domain/post/entity/post.aggregate';
 import type { ListPostOutputDto } from './list-post.dto';
@@ -6,7 +6,7 @@ import type { ListPostOutputDto } from './list-post.dto';
 export function toListPostOutputDto(post: Post): ListPostOutputDto {
   return {
     postId: post.id.toString(),
-    clientId: post.clientId.toString(),
+    clientHash: sha256Hex(post.clientId.toString()),
     clientName: post.clientName,
     title: post.title,
     bodyPreview: truncateText(post.body, POST_BODY_PREVIEW_LENGTH),

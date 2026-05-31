@@ -2,7 +2,7 @@ import { DomainEvent } from '@drift/shared';
 
 interface PostDeletedEventPayload extends Record<string, unknown> {
   postId: string;
-  clientId: string;
+  clientHash: string;
   deletedAt: string;
 }
 

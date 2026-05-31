@@ -1,5 +1,4 @@
-import { PostId } from '@drift/shared';
-import { ClientId } from '@drift/shared';
+import { ClientId, PostId, sha256Hex } from '@drift/shared';
 import { uuidv7 } from 'uuidv7';
 
 import InvalidPostError from '../error/invalid-post.error';
@@ -234,12 +233,13 @@ describe('Post', () => {
     expect(events[0].eventName).toEqual('PostCreated');
     expect(events[0].payload).toEqual({
       postId: props.id.toString(),
-      clientId: props.clientId.toString(),
+      clientHash: sha256Hex(props.clientId.toString()),
       clientName: props.clientName,
       title: props.title,
       body: props.body,
       createdAt: post.createdAt.toISOString(),
     });
+    expect(events[0].payload).not.toHaveProperty('clientId');
   });
 
   it('should not add any domain events when reconstructing a post aggregate', () => {
@@ -274,12 +274,13 @@ describe('Post', () => {
     expect(events[1].eventName).toEqual('PostUpdated');
     expect(events[1].payload).toEqual({
       postId: props.id.toString(),
-      clientId: props.clientId.toString(),
+      clientHash: sha256Hex(props.clientId.toString()),
       clientName: props.clientName,
       title: 'My Updated Post',
       body: 'Updated body.',
       updatedAt: post.updatedAt.toISOString(),
     });
+    expect(events[1].payload).not.toHaveProperty('clientId');
   });
 
   it('should add a PostTagsUpdatedEvent when applying tags to a post aggregate', () => {
@@ -330,9 +331,10 @@ describe('Post', () => {
     expect(events[0].eventName).toEqual('PostDeleted');
     expect(events[0].payload).toEqual({
       postId: props.id.toString(),
-      clientId: props.clientId.toString(),
+      clientHash: sha256Hex(props.clientId.toString()),
       deletedAt: deletedAt.toISOString(),
     });
+    expect(events[0].payload).not.toHaveProperty('clientId');
   });
 
   it('should promote a post and emit PostPromotedEvent', () => {

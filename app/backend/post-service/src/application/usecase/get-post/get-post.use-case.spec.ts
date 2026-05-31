@@ -1,4 +1,4 @@
-import { ClientId, type Logger, PostId } from '@drift/shared';
+import { ClientId, type Logger, PostId, sha256Hex } from '@drift/shared';
 import { uuidv7 } from 'uuidv7';
 
 import Post from '../../../domain/post/entity/post.aggregate';
@@ -54,6 +54,8 @@ describe('GetPostUseCase', () => {
     expect(result.body).toBe('Body content.');
     expect(result.isFeatured).toBe(false);
     expect(result.isTaggingInProgress).toBe(false);
+    expect(result.clientHash).toBe(sha256Hex(existing.clientId.toString()));
+    expect(result).not.toHaveProperty('clientId');
   });
 
   it('should throw PostNotFoundError when the post does not exist, without further calls', async () => {

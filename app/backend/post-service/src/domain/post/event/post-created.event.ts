@@ -2,7 +2,7 @@ import { DomainEvent } from '@drift/shared';
 
 interface PostCreatedEventPayload extends Record<string, unknown> {
   postId: string;
-  clientId: string;
+  clientHash: string;
   clientName: string;
   title: string;
   body: string;

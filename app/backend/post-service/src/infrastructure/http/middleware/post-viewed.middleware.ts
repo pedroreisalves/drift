@@ -10,21 +10,18 @@ export default class PostViewedMiddleware {
   ) {}
 
   handle = (req: Request, _res: Response, next: NextFunction): void => {
-    const { id } = req.params;
-    const clientId = req.headers['x-client-id'] as string;
+    const id = typeof req.params.id === 'string' ? req.params.id : undefined;
+    const clientHash = req.headers['x-client-hash'] as string;
 
-    if (!id || !clientId) {
-      this.logger.warn('PostViewed skipped: missing required fields', {
-        postId: id,
-        clientId: clientId,
-      });
+    if (!id || !clientHash) {
+      this.logger.warn('PostViewed skipped: missing required fields', { postId: id, clientHash });
       next();
       return;
     }
 
     const event = new PostViewedEvent({
-      postId: id as string,
-      clientId,
+      postId: id,
+      clientHash,
       viewedAt: new Date().toISOString(),
     });
 

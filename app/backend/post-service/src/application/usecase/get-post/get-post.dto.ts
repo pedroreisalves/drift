@@ -4,7 +4,7 @@ export interface GetPostInputDto {
 
 export interface GetPostOutputDto {
   postId: string;
-  clientId: string;
+  clientHash: string;
   clientName: string;
   title: string;
   body: string;

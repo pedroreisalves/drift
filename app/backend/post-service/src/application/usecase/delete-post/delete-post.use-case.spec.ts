@@ -1,4 +1,4 @@
-import { ClientId, type EventDispatcher, type Logger, PostId } from '@drift/shared';
+import { ClientId, type EventDispatcher, type Logger, PostId, sha256Hex } from '@drift/shared';
 import { uuidv7 } from 'uuidv7';
 
 import Post from '../../../domain/post/entity/post.aggregate';
@@ -83,7 +83,7 @@ describe('DeletePostUseCase', () => {
     expect(dispatchSpy).toHaveBeenCalledWith(expect.any(PostDeletedEvent));
     const dispatched = dispatchSpy.mock.calls[0][0] as PostDeletedEvent;
     expect(dispatched.payload.postId).toBe(postId);
-    expect(dispatched.payload.clientId).toBe(clientId);
+    expect(dispatched.payload.clientHash).toBe(sha256Hex(clientId));
   });
 
   it('should call findById, then repository.delete, then dispatcher.dispatch in order', async () => {

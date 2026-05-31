@@ -1,4 +1,4 @@
-import { ClientId, type Logger, PostId } from '@drift/shared';
+import { ClientId, type Logger, PostId, sha256Hex } from '@drift/shared';
 import { uuidv7 } from 'uuidv7';
 
 import Post from '../../../domain/post/entity/post.aggregate';
@@ -74,6 +74,16 @@ describe('ListPostUseCase', () => {
     await useCase.execute({ limit: 50 });
 
     expect(findAllSpy).toHaveBeenCalledWith({ limit: 50, offset: 0, featured: undefined });
+  });
+
+  it('should include clientHash derived from clientId and not expose clientId', async () => {
+    const post = makePost();
+    vi.spyOn(repository, 'findAll').mockResolvedValue([post]);
+
+    const result = await useCase.execute({});
+
+    expect(result[0].clientHash).toBe(sha256Hex(post.clientId.toString()));
+    expect(result[0]).not.toHaveProperty('clientId');
   });
 
   it('should include isFeatured in the returned DTOs', async () => {

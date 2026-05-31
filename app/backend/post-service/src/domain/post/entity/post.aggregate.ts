@@ -1,4 +1,4 @@
-import { AggregateRoot, type ClientId, type PostId } from '@drift/shared';
+import { AggregateRoot, type ClientId, type PostId, sha256Hex } from '@drift/shared';
 import { z } from 'zod';
 
 import InvalidPostError from '../error/invalid-post.error';
@@ -116,7 +116,7 @@ export default class Post extends AggregateRoot {
 
     const event = new PostCreatedEvent({
       postId: props.id.toString(),
-      clientId: props.clientId.toString(),
+      clientHash: sha256Hex(props.clientId.toString()),
       clientName: props.clientName,
       title: props.title,
       body: props.body,
@@ -147,7 +147,7 @@ export default class Post extends AggregateRoot {
 
     const event = new PostUpdatedEvent({
       postId: this.props.id.toString(),
-      clientId: this.props.clientId.toString(),
+      clientHash: sha256Hex(this.props.clientId.toString()),
       clientName: this.props.clientName,
       title: this.props.title,
       body: this.props.body,
@@ -266,7 +266,7 @@ export default class Post extends AggregateRoot {
   delete(): void {
     const event = new PostDeletedEvent({
       postId: this.props.id.toString(),
-      clientId: this.props.clientId.toString(),
+      clientHash: sha256Hex(this.props.clientId.toString()),
       deletedAt: new Date().toISOString(),
     });
 

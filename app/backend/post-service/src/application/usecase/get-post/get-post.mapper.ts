@@ -1,10 +1,12 @@
+import { sha256Hex } from '@drift/shared';
+
 import type Post from '../../../domain/post/entity/post.aggregate';
 import type { GetPostOutputDto } from './get-post.dto';
 
 export function toGetPostOutputDto(post: Post): GetPostOutputDto {
   return {
     postId: post.id.toString(),
-    clientId: post.clientId.toString(),
+    clientHash: sha256Hex(post.clientId.toString()),
     clientName: post.clientName,
     title: post.title,
     body: post.body,

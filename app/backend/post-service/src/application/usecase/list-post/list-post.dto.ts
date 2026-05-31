@@ -6,7 +6,7 @@ export interface ListPostInputDto {
 
 export interface ListPostOutputDto {
   postId: string;
-  clientId: string;
+  clientHash: string;
   clientName: string;
   title: string;
   bodyPreview: string;
